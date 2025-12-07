@@ -1,0 +1,96 @@
+{
+  "expo": {
+    "name": "Hizmetgo",
+    "slug": "hizmetgo",
+    "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF6000"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hizmetgo.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Hizmetgo, yakınındaki esnafları ve işleri bulmak için konum bilgisine ihtiyaç duyar.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Hizmetgo, yakınındaki esnafları ve işleri bulmak için konum bilgisine ihtiyaç duyar.",
+        "NSUserTrackingUsageDescription": "Hizmetgo, size daha iyi hizmet verebilmek için kullanım verilerini analiz eder.",
+        "NSCameraUsageDescription": "Hizmetgo, profil fotoğrafı ve iş fotoğrafları yüklemek için kamera erişimine ihtiyaç duyar.",
+        "NSPhotoLibraryUsageDescription": "Hizmetgo, profil fotoğrafı ve iş fotoğrafları yüklemek için fotoğraf kütüphanesi erişimine ihtiyaç duyar."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": []
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF6000"
+      },
+      "package": "com.hizmetgo.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "POST_NOTIFICATIONS",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Hizmetgo, yakınındaki esnafları ve işleri bulmak için konum bilgisine ihtiyaç duyar."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FF6000",
+          "sounds": [],
+          "mode": "production"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Hizmetgo, profil fotoğrafı ve iş fotoğrafları yüklemek için fotoğraf kütüphanesi erişimine ihtiyaç duyar.",
+          "cameraPermission": "Hizmetgo, profil fotoğrafı ve iş fotoğrafları yüklemek için kamera erişimine ihtiyaç duyar."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/REPLACE_WITH_EAS_PROJECT_ID",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD",
+      "enabled": true
+    },
+    "scheme": "hizmetgo",
+    "privacy": "public",
+    "description": "Hizmetgo ile yakınındaki esnafları bul, hızlı ve güvenilir hizmet al. Ev hizmetleri, tamir, boya, temizlik ve daha fazlası için tek tıkla usta bul.",
+    "githubUrl": "https://github.com/yourusername/hizmetgo"
+  }
+}

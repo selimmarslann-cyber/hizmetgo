@@ -1,0 +1,56 @@
+# dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# next.js build outputs
+.next/
+out/
+build/
+
+# coverage & test
+coverage/
+test-results/
+*.test.ts
+*.test.js
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# environment variables
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# vercel
+.vercel/
+.vercel-rebuild
+
+# turbo
+.turbo/
+
+# logs
+*.log
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma generated folders (optional)
+prisma/migrations/
+
+# temp uploads or API test files
+test-key-direct.mjs
+test-key-validation.mjs
+test-direct-api.mjs
+test-openai.mjs
+
+
