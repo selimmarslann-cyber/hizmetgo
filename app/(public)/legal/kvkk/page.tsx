@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   ],
 };
 
+export const dynamic = "force-dynamic";
+
+
 export default function KVKKPage() {
   const lastUpdated = "1 Ocak 2025";
 

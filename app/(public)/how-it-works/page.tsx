@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   ],
 };
 
+export const dynamic = "force-dynamic";
+
+
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-white">

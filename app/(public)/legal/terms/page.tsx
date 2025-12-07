@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   ],
 };
 
+export const dynamic = "force-dynamic";
+
+
 export default function TermsPage() {
   const lastUpdated = "1 Ocak 2025";
 
