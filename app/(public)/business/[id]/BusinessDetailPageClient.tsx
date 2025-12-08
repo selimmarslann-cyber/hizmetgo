@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/lib/hooks/useToast";
+import AvatarWithRating from "@/components/ui/AvatarWithRating";
 import { ArrowLeft, MapPin, MessageSquare, Phone, ShoppingCart, Star, Store } from "lucide-react";
 
 
@@ -183,39 +184,41 @@ export default function BusinessDetailPageClient() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h1 className="text-3xl font-bold text-slate-900">
-                      {business.name}
-                    </h1>
-                    <Badge
-                      variant={
-                        business.onlineStatus === "ONLINE"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className={
-                        business.onlineStatus === "ONLINE"
-                          ? "bg-green-500 text-white border-0"
-                          : "bg-slate-200 text-slate-700"
-                      }
-                    >
-                      {business.onlineStatus === "ONLINE" ? "Açık" : "Kapalı"}
-                    </Badge>
-                  </div>
-
+                  {/* Avatar with Rating - Ön planda */}
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xl font-bold text-slate-900">
-                        {business.avgRating?.toFixed(1) || "0.0"}
-                      </span>
-                      <span className="text-sm text-slate-600">
-                        ({business.reviewCount || 0} değerlendirme)
-                      </span>
+                    <AvatarWithRating
+                      src={business.avatarUrl}
+                      alt={business.name}
+                      fallback={business.name?.charAt(0) || "?"}
+                      rating={business.avgRating}
+                      reviewCount={business.reviewCount}
+                      size="xl"
+                      showRating={true}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold text-slate-900">
+                          {business.name}
+                        </h1>
+                        <Badge
+                          variant={
+                            business.onlineStatus === "ONLINE"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            business.onlineStatus === "ONLINE"
+                              ? "bg-green-500 text-white border-0"
+                              : "bg-slate-200 text-slate-700"
+                          }
+                        >
+                          {business.onlineStatus === "ONLINE" ? "Açık" : "Kapalı"}
+                        </Badge>
+                      </div>
+                      <Badge variant="outline" className="text-sm">
+                        {business.category}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-sm">
-                      {business.category}
-                    </Badge>
                   </div>
 
                   {business.description && (

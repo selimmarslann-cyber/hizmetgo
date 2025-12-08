@@ -12,6 +12,7 @@ import { getKeywordSuggestions } from "@/lib/utils/keywords";
 import RequestFlow from "@/components/request/RequestFlow";
 import AIChatModal from "@/components/AIChat/AIChatModal";
 import EmptyState from "@/components/ui/empty-state";
+import AvatarWithRating from "@/components/ui/AvatarWithRating";
 import { ChevronRight, FileText, Loader2, MapPin, MessageCircle, Search, Sparkles, Star } from "lucide-react";
 
 
@@ -26,6 +27,7 @@ interface Business {
   distance?: number;
   priceRange?: string;
   coverImageUrl?: string;
+  avatarUrl?: string | null;
   onlineStatus: "ONLINE" | "OFFLINE" | "AUTO_OFFLINE";
   phone?: string;
   addressText?: string;
@@ -312,37 +314,38 @@ export default function ServicesPageClient() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="h-full border-2 border-gray-200 hover:border-[#FF6000]/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all bg-white">
-                    {/* Business Info */}
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        {/* Header */}
-                        <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg text-slate-900 mb-1">
-                                {business.name}
-                              </h3>
-                              <p className="text-sm text-slate-600">
-                                {business.category}
-                              </p>
+                    <Card className="h-full border-2 border-gray-200 hover:border-[#FF6000]/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all bg-white">
+                      {/* Business Info */}
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          {/* Avatar with Rating - Ön planda */}
+                          <div className="flex items-center gap-3">
+                            <AvatarWithRating
+                              src={business.avatarUrl}
+                              alt={business.name}
+                              fallback={business.name.charAt(0)}
+                              rating={business.rating}
+                              reviewCount={business.reviewCount}
+                              size="lg"
+                              showRating={true}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between mb-1">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-lg text-slate-900 mb-1 line-clamp-1">
+                                    {business.name}
+                                  </h3>
+                                  <p className="text-sm text-slate-600 line-clamp-1">
+                                    {business.category}
+                                  </p>
+                                </div>
+                                {business.onlineStatus === "ONLINE" && (
+                                  <Badge className="bg-green-500 text-white ml-2 flex-shrink-0">
+                                    Online
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                            {business.onlineStatus === "ONLINE" && (
-                              <Badge className="bg-green-500 text-white">
-                                Online
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Rating */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="font-semibold text-sm text-slate-900">
-                              {business.rating.toFixed(1)}
-                            </span>
-                            <span className="text-xs text-slate-500">
-                              ({business.reviewCount} değerlendirme)
-                            </span>
                           </div>
 
                           {/* Distance */}

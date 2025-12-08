@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import AvatarWithRating from "@/components/ui/AvatarWithRating";
 import { Star, MapPin, Clock, Store, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
@@ -18,6 +19,7 @@ interface BusinessCardProps {
   distance?: number;
   priceRange?: string;
   image?: string;
+  avatarUrl?: string | null;
   isOnline?: boolean;
   href?: string;
   avgResponseTime?: number | null; // Saat cinsinden ortalama yanıt süresi
@@ -34,6 +36,7 @@ export default function BusinessCard({
   distance,
   priceRange,
   image,
+  avatarUrl,
   isOnline = false,
   href = `/business/${id}`,
   avgResponseTime,
@@ -73,27 +76,25 @@ export default function BusinessCard({
 
           <CardContent className="p-4 md:p-5">
             <div className="space-y-3">
-              {/* Name & Category */}
-              <div>
-                <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 line-clamp-1">
-                  {name}
-                </h3>
-                <p className="text-xs md:text-sm text-gray-600 line-clamp-1">
-                  {category}
-                </p>
-              </div>
-
-              {/* Rating */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-bold text-sm text-gray-900">
-                    {rating.toFixed(1)}
-                  </span>
+              {/* Avatar with Rating - Ön planda */}
+              <div className="flex items-center gap-3">
+                <AvatarWithRating
+                  src={avatarUrl}
+                  alt={name}
+                  fallback={name.charAt(0)}
+                  rating={rating}
+                  reviewCount={reviewCount}
+                  size="lg"
+                  showRating={true}
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 line-clamp-1">
+                    {name}
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-600 line-clamp-1">
+                    {category}
+                  </p>
                 </div>
-                <span className="text-xs text-gray-500">
-                  ({reviewCount} değerlendirme)
-                </span>
               </div>
 
               {/* Response Time */}
