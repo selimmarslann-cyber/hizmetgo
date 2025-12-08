@@ -395,9 +395,8 @@ export default function ServicesPageClient() {
                             Detayları Gör
                           </Button>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
                 </motion.div>
               ))}
             </div>
