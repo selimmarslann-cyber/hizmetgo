@@ -31,92 +31,43 @@ export async function POST(req: NextRequest) {
     // Admin credentials .env'den al
     const adminCredentials = getAdminCredentials();
 
-    // Önce email ile kullanıcıyı bul (normal kayıt olmuş olabilir)
-    let adminUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: validated.username }, // Email ile arama
-          { name: validated.username }, // Username ile arama
-        ],
-      },
-    });
-
-    // Eğer kullanıcı bulundu ve ADMIN rolündeyse
-    if (adminUser && adminUser.role === "ADMIN") {
-      // Şifre kontrolü
-      if (adminUser.passwordHash) {
-        // Prisma'da şifre hash'i varsa kontrol et
-        const bcrypt = require("bcryptjs");
-        const isPasswordValid = await bcrypt.compare(
-          validated.password,
-          adminUser.passwordHash,
-        );
-        if (!isPasswordValid) {
-          return NextResponse.json(
-            { error: "Kullanıcı adı veya şifre hatalı" },
-            { status: 401 },
-          );
-        }
-      } else {
-        // Supabase Auth kullanılıyorsa (passwordHash null)
-        try {
-          const { supabaseAdmin } = await import("@/lib/supabaseAdmin");
-          const { data: authData, error: authError } = 
-            await supabaseAdmin.auth.signInWithPassword({
-              email: adminUser.email,
-              password: validated.password,
-            });
-
-          if (authError || !authData.user) {
-            return NextResponse.json(
-              { error: "Kullanıcı adı veya şifre hatalı" },
-              { status: 401 },
-            );
-          }
-        } catch (supabaseError) {
-          console.error("Supabase auth check error:", supabaseError);
-          return NextResponse.json(
-            { error: "Giriş yapılamadı. Lütfen tekrar deneyin." },
-            { status: 401 },
-          );
-        }
-      }
-    } 
-    // Admin credentials ile kontrol (default admin)
-    else if (
+    // Sadece default admin credentials ile giriş yapılabilir
+    // Normal kullanıcılar admin paneline giriş yapamaz
+    const isAdminCredentials = 
       (validated.username === adminCredentials.username || 
        validated.username === adminCredentials.adminEmail) &&
-      validated.password === adminCredentials.password
-    ) {
-      // Admin kullanıcıyı bul veya oluştur
-      if (!adminUser) {
-        // Admin kullanıcı yoksa oluştur
-        const bcrypt = require("bcryptjs");
-        const passwordHash = await bcrypt.hash(adminCredentials.password, 10);
+      validated.password === adminCredentials.password;
 
-        adminUser = await prisma.user.create({
-          data: {
-            email: adminCredentials.adminEmail,
-            passwordHash,
-            name: adminCredentials.username,
-            role: "ADMIN",
-          },
-        });
-      } else {
-        // Kullanıcı var ama ADMIN değilse rolünü güncelle
-        if (adminUser.role !== "ADMIN") {
-          adminUser = await prisma.user.update({
-            where: { id: adminUser.id },
-            data: { role: "ADMIN" },
-          });
-        }
-      }
-    } else {
-      // Ne admin credentials ne de admin kullanıcı
+    if (!isAdminCredentials) {
       return NextResponse.json(
         { error: "Kullanıcı adı veya şifre hatalı" },
         { status: 401 },
       );
+    }
+
+    // Admin kullanıcıyı bul veya oluştur
+    let adminUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: adminCredentials.adminEmail, role: "ADMIN" },
+          { name: adminCredentials.username, role: "ADMIN" },
+        ],
+      },
+    });
+
+    if (!adminUser) {
+      // Admin kullanıcı yoksa oluştur
+      const bcrypt = require("bcryptjs");
+      const passwordHash = await bcrypt.hash(adminCredentials.password, 10);
+
+      adminUser = await prisma.user.create({
+        data: {
+          email: adminCredentials.adminEmail,
+          passwordHash,
+          name: adminCredentials.username,
+          role: "ADMIN",
+        },
+      });
     }
 
     if (!adminUser || adminUser.role !== "ADMIN") {
