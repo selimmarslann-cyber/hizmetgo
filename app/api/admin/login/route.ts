@@ -103,13 +103,6 @@ export async function POST(req: NextRequest) {
       });
 
       return response;
-    }
-
-    // Kullanıcı adı veya şifre hatalı
-    return NextResponse.json(
-      { error: "Kullanıcı adı veya şifre hatalı" },
-      { status: 401 },
-    );
   } catch (error: any) {
     console.error("Admin login error:", error);
     return NextResponse.json(
