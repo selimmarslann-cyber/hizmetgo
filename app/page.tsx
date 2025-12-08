@@ -34,7 +34,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       {/* Layout Components */}
       <PromotionalBanner />
-      <AppHeader isPublic={true} />
+      <Suspense fallback={<div className="h-[170px] bg-white border-b border-slate-200" />}>
+        <AppHeader isPublic={true} />
+      </Suspense>
 
       {/* Main Content */}
       <main className="flex-1">
