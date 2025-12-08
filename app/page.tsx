@@ -41,7 +41,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="flex-1">
         <div className="w-full bg-white relative">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 relative z-0">
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 relative z-0">
             {/* Hero Section */}
             <section className="relative pb-12 md:pb-16">
               <div className="w-full">
