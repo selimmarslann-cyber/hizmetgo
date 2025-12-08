@@ -67,7 +67,7 @@ export default function AppFooter() {
             </h3>
             <Link
               href="/admin/login"
-              className="text-sm text-slate-600 font-normal leading-relaxed mb-6 max-w-xs block opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+              className="text-sm text-slate-600 font-normal leading-relaxed mb-6 max-w-xs block hover:text-brand-500 transition-colors cursor-pointer"
               title="Admin Panel"
             >
               İşini hallet.
