@@ -50,18 +50,26 @@ export async function createReview(data: {
       },
     });
 
-    // İşletme rating'ini güncelle
+    // İşletme rating'ini güncelle - sadece onaylanmış review'lar sayılır
+    // Not: Yeni review henüz PENDING olduğu için rating'e dahil edilmez
+    // 1 saat sonra otomatik onaylandığında rating güncellenecek
     const business = await tx.business.findUnique({
       where: { id: data.businessId },
       include: {
-        reviews: true,
+        reviews: {
+          where: {
+            moderationStatus: "APPROVED",
+          },
+        },
       },
     });
 
     if (business) {
       const allRatings = business.reviews.map((r) => r.rating);
       const avgRating =
-        allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length;
+        allRatings.length > 0
+          ? allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length
+          : 0;
 
       await tx.business.update({
         where: { id: data.businessId },
@@ -105,11 +113,14 @@ export async function createReview(data: {
 }
 
 /**
- * İşletme review'larını getir
+ * İşletme review'larını getir - sadece onaylanmış review'lar
  */
 export async function getBusinessReviews(businessId: string, limit = 20) {
   return prisma.review.findMany({
-    where: { businessId },
+    where: {
+      businessId,
+      moderationStatus: "APPROVED", // Sadece onaylanmış review'lar gösterilir
+    },
     include: {
       reviewer: {
         select: {
