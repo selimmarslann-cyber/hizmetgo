@@ -1,15 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { FileText, MessageSquare, CheckCircle2, ArrowRight } from "lucide-react";
-
-// Safe dynamic import for MobileDemo to prevent webpack factory errors
-const MobileDemo = dynamic(() => import("./MobileDemo"), {
-  ssr: false, // Client-side only
-  loading: () => null, // Loading component kaldırıldı
-});
+import MobileDemo from "./MobileDemo";
 
 const benefits = [
   {
@@ -34,16 +28,13 @@ const benefits = [
 
 export function SearchExperienceShowcase() {
   return (
-    <section className="mt-12 md:mt-16 mb-16 md:mb-20">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        <div className="flex flex-col items-center mb-12 md:mb-16">
-          <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 md:mb-6 text-center"
-            style={{ lineHeight: 1.2, letterSpacing: "-0.02em" }}
-          >
+    <section className="py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="flex flex-col items-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-3 md:mb-4 text-center">
             Müşteriler neden Hizmetgo&apos;yu seviyor
           </h2>
-          <p className="text-base md:text-lg text-slate-600 text-center max-w-2xl leading-relaxed">
+          <p className="text-sm md:text-base text-slate-600 text-center max-w-2xl">
             Her gün onlarca müşteri gibi siz de evinize bakım için
             Hizmetgo&apos;ya güveniyorsunuz—ve işler planlandığı gibi gitmezse
             yanınızdayız.
@@ -66,7 +57,6 @@ export function SearchExperienceShowcase() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     className="relative bg-white border border-slate-200/80 rounded-xl p-5 md:p-6 transition-all duration-200 hover:shadow-lg hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer"
-                    suppressHydrationWarning
                   >
                     {/* Content */}
                     <div className="relative">

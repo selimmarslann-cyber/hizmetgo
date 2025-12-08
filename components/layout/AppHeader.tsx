@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -25,7 +26,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
 import SupportHelpButton from "@/components/support/SupportHelpButton";
 import NotificationBadge from "@/components/notifications/NotificationBadge";
-import CategoryBar from "@/components/layout/CategoryBar";
+import CategoryBar from "./CategoryBar";
 
 const CATEGORIES = [
   { name: "Elektrik", keyword: "elektrik" },
@@ -148,10 +149,10 @@ export default function AppHeader({
 
   return (
     <header
-      className={`w-full transition-all ${
+      className={`w-full transition-all sticky top-0 z-50 ${
         isPartnerPage
           ? "bg-slate-400/90 backdrop-blur-md shadow-md"
-          : "bg-white"
+          : "bg-white shadow-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -171,9 +172,9 @@ export default function AppHeader({
               }}
               suppressHydrationWarning
             >
-              <span className="text-slate-800">hizmet</span>
+              <span className="text-slate-900">hizmet</span>
               <span
-                className="bg-gradient-to-r from-brand-500 via-brand-600 to-brand-500 bg-clip-text text-transparent"
+                className="text-brand-500"
                 style={{
                   fontWeight: 900,
                 }}
@@ -212,12 +213,9 @@ export default function AppHeader({
 
           {/* Right Actions - Thumbtack Style */}
           <div className="flex items-center gap-3 flex-1 justify-end">
-            {/* Destek Butonu - Çevrimiçi Kulaklık */}
-            <SupportHelpButton />
-
             {/* Giriş yapmış kullanıcı için profil */}
             {!isLoading && isAuthenticated && user ? (
-              <div className="hidden lg:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-4">
                 <Link href="/account">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -231,31 +229,33 @@ export default function AppHeader({
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden xl:block">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-slate-900 whitespace-nowrap">
                         {user.name}
                       </p>
                     </div>
                   </motion.div>
                 </Link>
+                {/* Destek Butonu - En sağda */}
+                <SupportHelpButton />
               </div>
             ) : !isLoading && isPublic ? (
               /* Desktop CTAs - Thumbtack Style */
-              <div className="hidden lg:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-4">
                 <Link
                   href="/auth/login?redirect=/account"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-md transition-colors"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap px-3 py-2 rounded-md transition-colors"
                 >
                   Giriş Yap
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-md transition-colors"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap px-3 py-2 rounded-md transition-colors"
                 >
                   Kayıt Ol
                 </Link>
                 <Link
                   href="/business/register"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-md transition-colors"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap px-3 py-2 rounded-md transition-colors"
                 >
                   Esnaf Kayıt
                 </Link>
@@ -263,10 +263,12 @@ export default function AppHeader({
                   variant="default"
                   size="sm"
                   onClick={() => router.push("/partner")}
-                  className="px-4 py-2 text-sm font-semibold bg-brand-500 hover:bg-brand-600 text-white"
+                  className="whitespace-nowrap px-4 py-2 text-sm font-semibold bg-brand-500 hover:bg-brand-600 text-white"
                 >
                   Ortak Ol
                 </Button>
+                {/* Destek Butonu - En sağda */}
+                <SupportHelpButton />
               </div>
             ) : null}
 
@@ -412,9 +414,9 @@ export default function AppHeader({
           </motion.div>
         )}
       </div>
-
-      {/* Category Bar */}
-      <CategoryBar />
+      
+      {/* Category Bar - Header'a yapışık */}
+      {isPublic && <CategoryBar />}
     </header>
   );
 }

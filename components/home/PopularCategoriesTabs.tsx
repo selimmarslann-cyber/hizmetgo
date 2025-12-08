@@ -6,7 +6,7 @@ import { CategoryCard } from "@/components/home/CategoryCard";
 
 export function PopularCategoriesSection() {
   return (
-    <div>
+    <div className="w-full">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
         {HOME_POPULAR_CATEGORIES.map((category, index) => (
           <motion.div
@@ -16,6 +16,7 @@ export function PopularCategoriesSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             suppressHydrationWarning
+            className="w-full"
           >
             <CategoryCard category={category} />
           </motion.div>

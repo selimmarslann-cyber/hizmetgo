@@ -1,10 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Shield, CheckCircle2 } from "lucide-react";
 
 export default function AppFooter() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(2025);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   const footerLinks: {
     customers: Array<{ label: string; href: string; external?: boolean }>;
@@ -54,10 +59,11 @@ export default function AppFooter() {
           {/* Brand - Thumbtack Style */}
           <div className="col-span-2 md:col-span-1">
             <h3
-              className="text-slate-900 font-bold text-xl mb-3"
+              className="font-bold text-xl mb-3"
               style={{ letterSpacing: "-0.01em" }}
             >
-              Hizmetgo
+              <span className="text-slate-900">hizmet</span>
+              <span className="text-brand-500">go</span>
             </h3>
             <p className="text-sm text-slate-600 font-normal leading-relaxed mb-6 max-w-xs">
               İşini hallet.
@@ -224,7 +230,7 @@ export default function AppFooter() {
         {/* Copyright ve Garanti - Thumbtack Style */}
         <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500 font-normal">
-            © {currentYear} Hizmetgo, Inc.
+            © {currentYear} <span className="text-slate-900">hizmet</span><span className="text-brand-500">go</span>, Inc.
           </p>
           
           {/* Hizmetgo Garantisi Badge */}
@@ -233,8 +239,8 @@ export default function AppFooter() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all group"
           >
             <Shield className="w-4 h-4 text-brand-500" />
-            <span className="text-sm font-semibold text-slate-900">
-              Hizmetgo Garantisi
+            <span className="text-sm font-semibold">
+              <span className="text-slate-900">hizmet</span><span className="text-brand-500">go</span> Garantisi
             </span>
             <CheckCircle2 className="w-4 h-4 text-green-500" />
           </Link>

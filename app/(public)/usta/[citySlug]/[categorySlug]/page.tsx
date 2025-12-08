@@ -217,6 +217,3 @@ export default async function CategoryCityPage({ params }: PageProps) {
   );
 }
 
-// Force dynamic rendering to avoid useContext errors during prerendering
-// This page uses a client component layout (PublicLayout) which uses context
-export const dynamic = "force-dynamic";

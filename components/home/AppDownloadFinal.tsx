@@ -5,15 +5,15 @@ import { QrCode, Search, Star } from "lucide-react";
 
 export default function AppDownloadFinal() {
   return (
-    <section className="relative py-16 md:py-20 overflow-hidden">
+    <section className="relative py-12 md:py-16 overflow-hidden isolate" style={{ position: 'relative', minHeight: '400px', width: '100vw', left: '50%', right: '50%', marginLeft: '-50vw', marginRight: '-50vw' }}>
       {/* Yeşillikli Arka Plan Resmi - Blur efekti ile */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full z-0" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%' }}>
         <Image
           src="https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=1920"
           alt="Yeşillikli doğa arka planı"
           fill
-          className="object-cover scale-110"
-          style={{ filter: "blur(40px)" }}
+          className="object-cover"
+          style={{ filter: "blur(15px)", transform: "scale(1.1)" }}
           priority
           unoptimized
         />
@@ -158,7 +158,7 @@ export default function AppDownloadFinal() {
                             rating: 5.0,
                             reviews: 312,
                             price: "1.800 ₺",
-                            avatar: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                            avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
                             service: "Boya Badana",
                           },
                           {
@@ -166,7 +166,7 @@ export default function AppDownloadFinal() {
                             rating: 5.0,
                             reviews: 156,
                             price: "2.200 ₺",
-                            avatar: "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                            avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
                             service: "Tesisat",
                           },
                         ].map((pro, idx) => (
@@ -176,7 +176,7 @@ export default function AppDownloadFinal() {
                           >
                             <div className="flex items-start gap-2.5">
                               {/* Avatar */}
-                              <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-slate-200">
+                              <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-slate-200" style={{ position: 'relative' }}>
                                 <Image
                                   src={pro.avatar}
                                   alt={pro.name}

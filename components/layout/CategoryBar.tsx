@@ -34,7 +34,7 @@ export default function CategoryBar() {
   };
 
   return (
-    <div className="w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm sticky top-[72px] z-30 shadow-sm">
+    <div className="w-full border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="w-full">
         <div className="flex items-center gap-1.5 px-2 md:px-4 py-2 md:py-2.5">
           {CATEGORIES.map((category) => {

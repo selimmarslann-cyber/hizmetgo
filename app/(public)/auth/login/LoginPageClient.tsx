@@ -110,28 +110,24 @@ export default function LoginPageClient() {
           <CardHeader className="text-center pb-4">
             <div className="flex items-baseline gap-1 justify-center mx-auto mb-4">
               <span
-                className="text-2xl font-bold text-black lowercase"
+                className="text-2xl font-bold text-slate-900 lowercase"
                 style={{
                   fontFamily:
-                    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
-                  letterSpacing: "-0.02em",
+                    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif",
+                  letterSpacing: "-0.04em",
                   fontWeight: 700,
                 }}
               >
                 hizmet
               </span>
               <span
-                className="text-2xl font-bold lowercase"
-                style={
-                  {
-                    fontFamily:
-                      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
-                    letterSpacing: "-0.02em",
-                    fontWeight: 700,
-                    color: "#FF6000",
-                    WebkitTextStroke: "2px white",
-                  } as React.CSSProperties
-                }
+                className="text-2xl font-bold lowercase text-brand-500"
+                style={{
+                  fontFamily:
+                    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif",
+                  letterSpacing: "-0.04em",
+                  fontWeight: 900,
+                }}
               >
                 go
               </span>

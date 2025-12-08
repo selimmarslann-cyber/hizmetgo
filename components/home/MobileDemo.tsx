@@ -150,28 +150,28 @@ export default function MobileDemo() {
                 info: "5.0 • 312 yorum • 3 dk cevap",
                 price: "1.800 ₺",
                 avatar:
-                  "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                  "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
               },
               {
                 name: "Fatih D.",
                 info: "5.0 • 156 yorum • 7 dk cevap",
                 price: "2.200 ₺",
                 avatar:
-                  "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
               },
               {
                 name: "Mustafa E.",
                 info: "5.0 • 278 yorum • 4 dk cevap",
                 price: "1.600 ₺",
                 avatar:
-                  "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                  "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
               },
               {
                 name: "Emre F.",
                 info: "5.0 • 201 yorum • 6 dk cevap",
                 price: "1.900 ₺",
                 avatar:
-                  "https://images.pexels.com/photos/1043476/pexels-photo-1043476.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
+                  "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
               },
             ].map((u, i) => (
               <div
@@ -179,13 +179,14 @@ export default function MobileDemo() {
                 className="rounded-2xl bg-white border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2 shadow-sm"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <div className="h-8 w-8 rounded-full overflow-hidden relative bg-slate-200 flex-shrink-0">
+                  <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-slate-200" style={{ position: 'relative' }}>
                     <Image
                       src={u.avatar}
                       alt={u.name}
                       fill
                       className="object-cover"
                       sizes="32px"
+                      unoptimized
                     />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
@@ -325,7 +326,10 @@ export default function MobileDemo() {
                     </span>
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold text-slate-900 leading-tight">Hizmetgo</p>
+                    <p className="text-[9px] font-bold leading-tight">
+                      <span className="text-slate-900">hizmet</span>
+                      <span className="text-brand-500">go</span>
+                    </p>
                     <p className="text-[7px] text-slate-500">Mahallendeki esnaflar</p>
                   </div>
                 </div>

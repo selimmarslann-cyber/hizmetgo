@@ -71,7 +71,7 @@ export default function SmartSearchBar() {
         {/* Thumbtack style search bar */}
         <div className="flex items-stretch gap-2 bg-white rounded-2xl border border-slate-200/80 px-4 py-3 md:px-6 md:py-4">
           {/* Sol input - Thumbtack style */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative flex items-center">
             <input
               type="text"
               placeholder="İhtiyacını yaz: ev temizliği, boya, çilingir..."

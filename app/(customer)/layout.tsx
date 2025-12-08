@@ -1,18 +1,6 @@
-"use client";
-import { ReactNode, Suspense } from "react";
-import AppHeader from "@/components/layout/AppHeader";
-import AppFooter from "@/components/layout/AppFooter";
-import PromotionalBanner from "@/components/layout/PromotionalBanner";
+import type { ReactNode } from "react";
+import CustomerLayoutClient from "@/components/client/CustomerLayoutClient";
 
 export default function CustomerLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <PromotionalBanner />
-      <Suspense fallback={<div className="h-[170px] bg-white" />}>
-        <AppHeader  />
-      </Suspense>
-      <main className="flex-1 pt-4">{children}</main>
-      <AppFooter />
-    </div>
-  );
+  return <CustomerLayoutClient>{children}</CustomerLayoutClient>;
 }

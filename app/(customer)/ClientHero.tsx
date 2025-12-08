@@ -8,42 +8,45 @@ import AppDownloadFinal from "@/components/home/AppDownloadFinal";
 
 export default function ClientHero() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50/30 to-white">
-      {/* Hero Section */}
-      <section className="relative pt-2 md:pt-4 pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          {/* Rotating Headline */}
-          <div className="mb-8 md:mb-12">
-            <RotatingHeadline />
+    <div className="w-full bg-slate-50 relative">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 relative z-0">
+        {/* Hero Section */}
+        <section className="relative pb-12 md:pb-16">
+          <div className="w-full">
+            {/* Rotating Headline */}
+            <div className="mb-8 md:mb-12">
+              <RotatingHeadline />
+            </div>
+
+            {/* Search Bar */}
+            <div className="mb-8 md:mb-12">
+              <SmartSearchBar />
+            </div>
           </div>
+        </section>
 
-          {/* Search Bar */}
-          <div className="mb-12 md:mb-16">
-            <SmartSearchBar />
+        {/* Hero After Image */}
+        <HeroAfterImage />
+
+        {/* Popular Categories */}
+        <section className="relative py-12 md:py-16">
+          <div className="w-full">
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 md:mb-8 text-center">
+                Popüler Kategoriler
+              </h2>
+              <PopularCategoriesSection />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Hero After Image */}
-      <HeroAfterImage />
+        {/* Search Experience Showcase with MobileDemo */}
+        <SearchExperienceShowcase />
 
-      {/* Popular Categories */}
-      <section className="relative pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="mb-12 md:mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 md:mb-8 text-center">
-              Popüler Kategoriler
-            </h2>
-            <PopularCategoriesSection />
-          </div>
-        </div>
-      </section>
-
-      {/* Search Experience Showcase with MobileDemo */}
-      <SearchExperienceShowcase />
-
-      {/* App Download Section */}
-      <AppDownloadFinal />
+        {/* App Download Section */}
+        <AppDownloadFinal />
+      </div>
     </div>
   );
 }
+
