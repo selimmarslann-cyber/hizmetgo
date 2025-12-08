@@ -15,6 +15,11 @@ import { useHizmetgoStore } from "@/lib/store/useHizmetgoStore";
 import { getMatchingVendors } from "@/lib/utils/matching";
 import type { UserProfile, Job } from "@/lib/types/mahallem";
 
+// Leaflet CSS - client-side only
+if (typeof window !== "undefined") {
+  require("leaflet/dist/leaflet.css");
+}
+
 // Fix for default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({

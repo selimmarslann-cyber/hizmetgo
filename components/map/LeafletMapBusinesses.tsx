@@ -4,6 +4,11 @@ import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
+// Leaflet CSS - client-side only
+if (typeof window !== "undefined") {
+  require("leaflet/dist/leaflet.css");
+}
+
 // Fix for default marker icons in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
