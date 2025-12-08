@@ -90,7 +90,7 @@ export default function AdminLoginPageClient() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Kullanıcı Adı</Label>
+                <Label htmlFor="username">E-posta veya Kullanıcı Adı</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <Input
@@ -98,7 +98,7 @@ export default function AdminLoginPageClient() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Kullanıcı adınızı girin"
+                    placeholder="E-posta veya kullanıcı adınızı girin"
                     className="pl-10"
                     required
                     disabled={loading}
