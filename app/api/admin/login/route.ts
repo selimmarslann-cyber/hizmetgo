@@ -31,43 +31,32 @@ export async function POST(req: NextRequest) {
     // Admin credentials .env'den al
     const adminCredentials = getAdminCredentials();
 
-    // Admin kontrolü
+    // Admin kontrolü - sadece username ve password
     if (
       validated.username === adminCredentials.username &&
       validated.password === adminCredentials.password
     ) {
-      // Admin kullanıcıyı bul veya oluştur
+      // Admin kullanıcıyı bul veya oluştur - username ile arama yap
       let adminUser = await prisma.user.findFirst({
         where: {
-          email: adminCredentials.adminEmail,
+          name: adminCredentials.username,
           role: "ADMIN",
         },
       });
 
       if (!adminUser) {
-        // Admin kullanıcı yoksa oluştur - username ile arama yap
+        // Admin kullanıcı yoksa oluştur
         const bcrypt = require("bcryptjs");
         const passwordHash = await bcrypt.hash(adminCredentials.password, 10);
 
-        // Önce username ile kontrol et (email yerine)
-        adminUser = await prisma.user.findFirst({
-          where: {
+        adminUser = await prisma.user.create({
+          data: {
+            email: adminCredentials.adminEmail,
+            passwordHash,
             name: adminCredentials.username,
             role: "ADMIN",
           },
         });
-
-        if (!adminUser) {
-          // Admin kullanıcı yoksa oluştur
-          adminUser = await prisma.user.create({
-            data: {
-              email: adminCredentials.adminEmail,
-              passwordHash,
-              name: adminCredentials.username,
-              role: "ADMIN",
-            },
-          });
-        }
       }
 
       // JWT token oluştur
