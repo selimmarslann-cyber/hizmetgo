@@ -17,7 +17,7 @@ const getAdminCredentials = () => {
   // Default admin credentials
   const username = process.env.ADMIN_USERNAME || "selimarslan";
   const password = process.env.ADMIN_PASSWORD || "selimarslan";
-  const adminEmail = process.env.ADMIN_EMAIL || "selimmarslann@gmail.com";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@hizmetgo.com";
   const adminName = process.env.ADMIN_NAME || "Admin";
 
   return { username, password, adminEmail, adminName };
