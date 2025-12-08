@@ -4,8 +4,8 @@ import Image from "next/image";
 
 export default function HeroAfterImage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-8 lg:py-12">
-      <div className="relative w-full h-[250px] sm:h-[300px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-2 md:py-8 lg:py-12">
+      <div className="relative w-full h-[200px] sm:h-[250px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
         <Image
           src="https://images.pexels.com/photos/35049145/pexels-photo-35049145.jpeg?auto=compress&cs=tinysrgb&w=1800"
           alt="Hizmet sağlayıcı"

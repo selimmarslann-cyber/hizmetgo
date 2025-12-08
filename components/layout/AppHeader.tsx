@@ -186,29 +186,38 @@ export default function AppHeader({
 
           {/* Center Navigation - Desktop Menu */}
           <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-            {customerTabs.map((tab) => {
-              const isActive =
-                pathname === tab.href ||
-                (tab.href !== "/" && pathname.startsWith(tab.href + "/"));
-              const Icon = tab.icon;
-              return (
-                <Link key={tab.key} href={tab.href}>
-                  <span
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                      "hover:bg-slate-100",
-                      isActive
-                        ? "text-brand-600 bg-brand-50 font-semibold"
-                        : "text-slate-700 hover:text-slate-900",
-                    )}
-                    suppressHydrationWarning
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span suppressHydrationWarning>{tab.label}</span>
-                  </span>
-                </Link>
-              );
-            })}
+            {customerTabs
+              .filter((tab) => {
+                // Üyelik gerektiren öğeler sadece authenticated kullanıcılar için
+                if (tab.key === "wallet" || tab.key === "profile" || tab.key === "jobs") {
+                  return isAuthenticated;
+                }
+                // Ana sayfa ve harita herkese açık
+                return true;
+              })
+              .map((tab) => {
+                const isActive =
+                  pathname === tab.href ||
+                  (tab.href !== "/" && pathname.startsWith(tab.href + "/"));
+                const Icon = tab.icon;
+                return (
+                  <Link key={tab.key} href={tab.href}>
+                    <span
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+                        "hover:bg-slate-100",
+                        isActive
+                          ? "text-brand-600 bg-brand-50 font-semibold"
+                          : "text-slate-700 hover:text-slate-900",
+                      )}
+                      suppressHydrationWarning
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span suppressHydrationWarning>{tab.label}</span>
+                    </span>
+                  </Link>
+                );
+              })}
           </div>
 
           {/* Right Actions - Thumbtack Style */}
@@ -324,27 +333,36 @@ export default function AppHeader({
             className="md:hidden border-t border-slate-200 bg-white py-4 space-y-1"
           >
             {/* Main Tabs */}
-            {customerTabs.map((tab) => {
-              const isActive =
-                pathname === tab.href ||
-                (tab.href !== "/" && pathname.startsWith(tab.href + "/"));
+            {customerTabs
+              .filter((tab) => {
+                // Üyelik gerektiren öğeler sadece authenticated kullanıcılar için
+                if (tab.key === "wallet" || tab.key === "profile" || tab.key === "jobs") {
+                  return isAuthenticated;
+                }
+                // Ana sayfa ve harita herkese açık
+                return true;
+              })
+              .map((tab) => {
+                const isActive =
+                  pathname === tab.href ||
+                  (tab.href !== "/" && pathname.startsWith(tab.href + "/"));
 
-              return (
-                <Link key={tab.key} href={tab.href}>
-                  <span
-                    className={cn(
-                      "block w-full px-4 py-3 text-sm font-medium text-slate-700 rounded-md transition-all duration-200",
-                      "hover:bg-slate-50 hover:text-slate-900",
-                      isActive && "text-brand-600 bg-brand-50 font-semibold",
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                    suppressHydrationWarning
-                  >
-                    {tab.label}
-                  </span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link key={tab.key} href={tab.href}>
+                    <span
+                      className={cn(
+                        "block w-full px-4 py-3 text-sm font-medium text-slate-700 rounded-md transition-all duration-200",
+                        "hover:bg-slate-50 hover:text-slate-900",
+                        isActive && "text-brand-600 bg-brand-50 font-semibold",
+                      )}
+                      onClick={() => setMobileMenuOpen(false)}
+                      suppressHydrationWarning
+                    >
+                      {tab.label}
+                    </span>
+                  </Link>
+                );
+              })}
 
             {/* Mobile: Giriş yapmış kullanıcı */}
             {isAuthenticated && user ? (

@@ -5,9 +5,9 @@ import { QrCode, Search, Star } from "lucide-react";
 
 export default function AppDownloadFinal() {
   return (
-    <section className="relative py-12 md:py-16 overflow-hidden">
+    <section className="relative py-12 md:py-16 overflow-hidden" style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)' }}>
       {/* Yeşillikli Arka Plan Resmi - Blur efekti ile */}
-      <div className="absolute inset-0 w-full h-full z-0">
+      <div className="absolute inset-0 w-full h-full z-0" style={{ width: '100%' }}>
         <Image
           src="https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=1920"
           alt="Yeşillikli doğa arka planı"
