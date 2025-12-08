@@ -38,9 +38,16 @@ export async function createReview(data: {
 
   // Transaction ile review oluştur ve rating güncelle
   return prisma.$transaction(async (tx) => {
-    // Review oluştur
+    // Review oluştur - 1 saat sonra otomatik onaylanacak
+    const approvedAt = new Date();
+    approvedAt.setHours(approvedAt.getHours() + 1);
+
     const review = await tx.review.create({
-      data,
+      data: {
+        ...data,
+        moderationStatus: "PENDING",
+        approvedAt,
+      },
     });
 
     // İşletme rating'ini güncelle

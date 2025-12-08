@@ -69,6 +69,7 @@ export default function AdminLayout({
     { icon: Users, label: "Kullanıcılar", href: "/admin/users" },
     { icon: Store, label: "İşletmeler", href: "/admin/businesses" },
     { icon: ShoppingCart, label: "Siparişler", href: "/admin/orders" },
+    { icon: MessageSquare, label: "Yorumlar", href: "/admin/reviews" },
     { icon: MessageSquare, label: "Destek Talepleri", href: "/admin/tickets" },
     { icon: BarChart3, label: "İstatistikler", href: "/admin/stats" },
     { icon: Settings, label: "Ayarlar", href: "/admin/settings" },
