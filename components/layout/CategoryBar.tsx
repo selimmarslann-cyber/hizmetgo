@@ -34,9 +34,9 @@ export default function CategoryBar() {
   };
 
   return (
-    <div className="w-full border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm">
-      <div className="w-full">
-        <div className="flex items-center gap-1.5 px-2 md:px-4 py-2 md:py-2.5">
+    <div className="w-full border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm overflow-hidden">
+      <div className="w-full overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1.5 px-2 md:px-4 py-2 md:py-2.5 min-w-max md:min-w-0">
           {CATEGORIES.map((category) => {
             const isActive = activeCategory === category.keyword;
             return (
@@ -44,7 +44,7 @@ export default function CategoryBar() {
                 key={category.keyword}
                 onClick={() => handleCategoryClick(category.keyword)}
                 className={cn(
-                  "whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 flex-1 text-center",
+                  "whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 flex-shrink-0",
                   isActive
                     ? "bg-brand-500 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 bg-white border border-slate-200",
