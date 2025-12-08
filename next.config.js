@@ -22,6 +22,8 @@ const nextConfig = {
       },
     ],
   },
+  // Ensure CSS is properly processed in production
+  swcMinify: true,
 };
 
 module.exports = nextConfig;
