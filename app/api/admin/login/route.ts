@@ -12,20 +12,15 @@ const loginSchema = z.object({
   password: z.string().min(1, "Şifre gerekli"),
 });
 
-// Admin credentials .env'den alınır, default değer yok
+// Admin credentials - sadece username ve password kullanılıyor
 const getAdminCredentials = () => {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminName = process.env.ADMIN_NAME;
+  // Default admin credentials
+  const username = process.env.ADMIN_USERNAME || "selimarslan";
+  const password = process.env.ADMIN_PASSWORD || "selimarslan";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@hizmetgo.com";
+  const adminName = process.env.ADMIN_NAME || "Admin";
 
-  if (!username || !password || !adminEmail) {
-    throw new Error(
-      "ADMIN_USERNAME, ADMIN_PASSWORD, and ADMIN_EMAIL must be set in .env file",
-    );
-  }
-
-  return { username, password, adminEmail, adminName: adminName || "Admin" };
+  return { username, password, adminEmail, adminName };
 };
 
 export async function POST(req: NextRequest) {
@@ -50,18 +45,29 @@ export async function POST(req: NextRequest) {
       });
 
       if (!adminUser) {
-        // Admin kullanıcı yoksa oluştur
+        // Admin kullanıcı yoksa oluştur - username ile arama yap
         const bcrypt = require("bcryptjs");
         const passwordHash = await bcrypt.hash(adminCredentials.password, 10);
 
-        adminUser = await prisma.user.create({
-          data: {
-            email: adminCredentials.adminEmail,
-            passwordHash,
-            name: adminCredentials.adminName,
+        // Önce username ile kontrol et (email yerine)
+        adminUser = await prisma.user.findFirst({
+          where: {
+            name: adminCredentials.username,
             role: "ADMIN",
           },
         });
+
+        if (!adminUser) {
+          // Admin kullanıcı yoksa oluştur
+          adminUser = await prisma.user.create({
+            data: {
+              email: adminCredentials.adminEmail,
+              passwordHash,
+              name: adminCredentials.username,
+              role: "ADMIN",
+            },
+          });
+        }
       }
 
       // JWT token oluştur
