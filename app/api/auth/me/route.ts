@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         avatarUrl: true,
+        role: true,
       },
     });
 

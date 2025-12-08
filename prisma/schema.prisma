@@ -284,13 +284,15 @@ model Payment {
 // 7. REVIEWS (Puan & Yorum)
 // ============================================
 model Review {
-  id         String   @id @default(uuid())
-  orderId    String   @unique @map("order_id")
-  businessId String   @map("business_id")
-  reviewerId String   @map("reviewer_id")
-  rating     Int // 1-5
-  comment    String?
-  createdAt  DateTime @default(now()) @map("created_at")
+  id              String    @id @default(uuid())
+  orderId         String    @unique @map("order_id")
+  businessId      String    @map("business_id")
+  reviewerId      String    @map("reviewer_id")
+  rating          Int // 1-5
+  comment         String?
+  moderationStatus String  @default("PENDING") @map("moderation_status") // PENDING, APPROVED, REJECTED
+  approvedAt      DateTime? @map("approved_at") // 1 saat sonra otomatik onaylanacak
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   // Relations
   order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -300,6 +302,8 @@ model Review {
   @@index([businessId])
   @@index([reviewerId])
   @@index([rating])
+  @@index([moderationStatus])
+  @@index([approvedAt])
   @@map("reviews")
 }
 
