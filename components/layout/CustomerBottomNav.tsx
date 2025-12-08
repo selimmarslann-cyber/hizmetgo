@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils/cn";
 const customerNavItems = [
   {
     key: "home",
-    label: "Ana",
+    label: "Anasayfa",
     icon: Home,
     href: "/",
   },
