@@ -121,10 +121,18 @@ export default function EmailLoginPageClient() {
         return;
       }
 
-      console.log("Code sent successfully, switching to code step");
-      success("Doğrulama kodu e-posta adresinize gönderildi");
-      setStep("code");
-      setCountdown(300); // 5 dakika (300 saniye)
+      // Başarılı response kontrolü - success veya message varsa başarılı
+      if (data?.success !== false && (data?.success || data?.message)) {
+        console.log("Code sent successfully, switching to code step");
+        success("Doğrulama kodu e-posta adresinize gönderildi");
+        setStep("code");
+        setCountdown(300); // 5 dakika (300 saniye)
+      } else {
+        console.error("📧 Frontend: Unexpected response format:", data);
+        error(data?.error || "Beklenmeyen yanıt alındı. Lütfen tekrar deneyin.");
+        setSendingCode(false);
+        return;
+      }
 
       // Countdown timer başlat
       if (countdownIntervalRef.current) {

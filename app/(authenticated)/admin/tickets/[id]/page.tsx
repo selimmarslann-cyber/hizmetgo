@@ -10,3 +10,4 @@ export default function AdminTicketDetailPage({
   return <AdminTicketDetailPageClient ticketId={params.id} />;
 }
 
+

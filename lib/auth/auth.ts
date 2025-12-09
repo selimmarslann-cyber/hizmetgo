@@ -60,21 +60,67 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function verifyUser(email: string, password: string) {
-  // Supabase Auth ile doğrulama
+  // Önce Supabase Auth ile giriş yapmayı dene
   const { data: authData, error: authError } =
     await supabaseAdmin.auth.signInWithPassword({
       email,
       password,
     });
 
+  // Eğer Supabase'de giriş başarısız olursa
   if (authError || !authData.user) {
+    // Prisma'da kullanıcıyı kontrol et
+    const user = await getUserByEmail(email);
+    
+    // Eğer Prisma'da kullanıcı varsa ama Supabase'de yoksa, Supabase'de oluştur
+    if (user && authError?.message?.includes("Invalid login credentials")) {
+      try {
+        // Supabase'de kullanıcıyı oluştur (şifre ile)
+        const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: user.email,
+          password: password,
+          email_confirm: true, // Email'i otomatik onayla
+          user_metadata: {
+            name: user.name,
+          },
+        });
+        
+        if (createError || !createData.user) {
+          console.error("Supabase user creation error:", createError);
+          return null;
+        }
+        
+        // Supabase'de oluşturuldu, kullanıcıyı döndür
+        return user;
+      } catch (createError) {
+        console.error("Error creating Supabase user:", createError);
+        return null;
+      }
+    }
+    
+    // Giriş başarısız ve kullanıcı Prisma'da da yok
     return null;
   }
 
-  // Prisma'dan user bilgilerini al
-  const user = await getUserByEmail(email);
+  // Supabase'de giriş başarılı, Prisma'dan user bilgilerini al
+  let user = await getUserByEmail(email);
+  
   if (!user) {
-    return null;
+    // Prisma'da kullanıcı yok, Supabase'de var - Prisma'da oluştur
+    try {
+      user = await prisma.user.create({
+        data: {
+          id: authData.user.id,
+          email: authData.user.email || email,
+          name: authData.user.user_metadata?.name || email.split("@")[0],
+          passwordHash: null, // Supabase'de tutuluyor
+        },
+      });
+    } catch (createError: any) {
+      console.error("Error creating Prisma user:", createError);
+      // Kullanıcı oluşturulamadı, null döndür
+      return null;
+    }
   }
 
   return user;
