@@ -149,11 +149,7 @@ export default function AppHeader({
 
   return (
     <header
-      className={`w-full transition-all sticky top-0 z-50 ${
-        isPartnerPage
-          ? "bg-slate-400/90 backdrop-blur-md shadow-md"
-          : "bg-white shadow-sm"
-      }`}
+      className="w-full transition-all sticky top-0 z-50 bg-white shadow-sm"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Üst menü - Ortalanmış */}
