@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/lib/hooks/useToast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import CategoryAutocomplete from "@/components/forms/CategoryAutocomplete";
-import { AlertCircle, ArrowRight, Brain, CheckCircle2, Mail, MessageSquare, Phone, Sparkles, UserPlus, Zap } from "lucide-react";
 
 
 // Static generation'ı engelle
@@ -120,17 +118,9 @@ export default function RegisterPageClient() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="border-2 border-slate-200 shadow-xl">
+      <div className="w-full max-w-3xl">
+        <Card className="border border-slate-200">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 rounded-2xl bg-brand-500 flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="w-8 h-8 text-white" />
-            </div>
             <CardTitle className="text-2xl font-bold text-slate-900">
               Kayıt Ol
             </CardTitle>
@@ -146,19 +136,10 @@ export default function RegisterPageClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-4 text-slate-500">veya</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {errorMessage && (
-                <div className="p-4 text-sm text-red-700 bg-red-50 rounded-xl border-2 border-red-200">
-                  <div className="font-semibold mb-1">⚠️ Kayıt Başarısız</div>
+                <div className="p-4 text-sm text-red-700 bg-red-50 rounded border border-red-200">
+                  <div className="font-semibold mb-1">Kayıt Başarısız</div>
                   <div className="text-red-600">{errorMessage}</div>
                 </div>
               )}
@@ -173,7 +154,7 @@ export default function RegisterPageClient() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
+                  className="h-12 border border-slate-200 focus:border-brand-500"
                 />
               </div>
               <div className="space-y-2">
@@ -187,7 +168,7 @@ export default function RegisterPageClient() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
+                  className="h-12 border border-slate-200 focus:border-brand-500"
                 />
               </div>
               <div className="space-y-2">
@@ -205,231 +186,164 @@ export default function RegisterPageClient() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
+                  className="h-12 border border-slate-200 focus:border-brand-500"
                 />
               </div>
 
               {/* Bildirim Tercihleri */}
-              <div className="space-y-4 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-slate-900">
-                    Bildirim Tercihleri
-                  </h3>
-                </div>
+              <div className="space-y-6 p-6 border border-slate-200 rounded">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Bildirim Tercihleri
+                </h3>
 
                 {/* Anlık İşler Bildirimi */}
-                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-emerald-600" />
-                      <Label
-                        htmlFor="instantJobNotifications"
-                        className="text-sm font-medium text-slate-900 cursor-pointer"
-                      >
-                        Anlık işlerden bildirim almak ister misiniz?
-                      </Label>
-                    </div>
+                    <Label
+                      htmlFor="instantJobNotifications"
+                      className="text-base font-medium text-slate-900 cursor-pointer"
+                    >
+                      Anlık işlerden bildirim almak ister misiniz?
+                    </Label>
                     <Switch
                       id="instantJobNotifications"
                       checked={instantJobNotifications}
                       onCheckedChange={setInstantJobNotifications}
                     />
                   </div>
-                  <p className="text-xs text-slate-600">
-                    50 km çevredeki anlık işlerden bildirim al. Örnek: &quot;Ödevimi
-                    yapacak birini arıyorum&quot;
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    50 km çevredeki anlık işlerden bildirim alırsınız. Örnek: &quot;Ödevimi yapacak birini arıyorum&quot; gibi acil iş ilanlarından anında haberdar olursunuz. Bu bildirimler sayesinde yakınınızdaki anlık iş fırsatlarını kaçırmazsınız.
                   </p>
                 </div>
 
                 {/* Vasıfsız İşler Bildirimi */}
-                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-blue-600" />
-                      <Label
-                        htmlFor="unskilledJobNotifications"
-                        className="text-sm font-medium text-slate-900 cursor-pointer"
-                      >
-                        Vasıf gerektirmeyen işlerden bildirim alarak ek kazanç sağlamak istiyorum
-                      </Label>
-                    </div>
+                    <Label
+                      htmlFor="unskilledJobNotifications"
+                      className="text-base font-medium text-slate-900 cursor-pointer"
+                    >
+                      Vasıf gerektirmeyen işlerden bildirim alarak ek kazanç sağlamak istiyorum
+                    </Label>
                     <Switch
                       id="unskilledJobNotifications"
                       checked={unskilledJobNotifications}
                       onCheckedChange={setUnskilledJobNotifications}
                     />
                   </div>
-                  <p className="text-xs text-slate-600">
-                    Bulunduğunuz ilde yayınlanan vasıfsız iş ilanları için bildirim alırsınız. İsterseniz sonradan Profil &gt; Bildirimler bölümünden kapatabilirsiniz.
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Bulunduğunuz ilde yayınlanan vasıfsız iş ilanları için bildirim alırsınız. Bu tür işler özel bir yetenek veya eğitim gerektirmez ve ek gelir sağlamanıza yardımcı olur. İsterseniz sonradan Profil &gt; Bildirimler bölümünden bu bildirimleri kapatabilirsiniz.
                   </p>
                 </div>
 
                 {/* WhatsApp Bildirimi */}
-                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-green-600" />
-                      <Label
-                        htmlFor="whatsappNotifications"
-                        className="text-sm font-medium text-slate-900 cursor-pointer"
-                      >
-                        WhatsApp API&apos;den bildirim almak ister misiniz?
-                      </Label>
-                    </div>
+                    <Label
+                      htmlFor="whatsappNotifications"
+                      className="text-base font-medium text-slate-900 cursor-pointer"
+                    >
+                      WhatsApp API&apos;den bildirim almak ister misiniz?
+                    </Label>
                     <Switch
                       id="whatsappNotifications"
                       checked={whatsappNotifications}
                       onCheckedChange={setWhatsappNotifications}
                     />
                   </div>
-                  <p className="text-xs text-slate-600">
-                    Önemli bildirimleri WhatsApp üzerinden al
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Önemli bildirimleri WhatsApp üzerinden alırsınız. Sipariş durumları, mesajlar ve önemli güncellemeler WhatsApp üzerinden size ulaşır. Bu sayede telefonunuzu sürekli kontrol etmenize gerek kalmaz.
                   </p>
                 </div>
 
                 {/* SMS Bildirimi */}
-                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-purple-600" />
-                      <Label
-                        htmlFor="smsNotifications"
-                        className="text-sm font-medium text-slate-900 cursor-pointer"
-                      >
-                        SMS olarak bilgilendirme almak ister misiniz?
-                      </Label>
-                    </div>
+                    <Label
+                      htmlFor="smsNotifications"
+                      className="text-base font-medium text-slate-900 cursor-pointer"
+                    >
+                      SMS olarak bilgilendirme almak ister misiniz?
+                    </Label>
                     <Switch
                       id="smsNotifications"
                       checked={smsNotifications}
                       onCheckedChange={setSmsNotifications}
                     />
                   </div>
-                  <p className="text-xs text-slate-600">
-                    Sipariş durumu ve önemli bilgileri SMS olarak al
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Sipariş durumu ve önemli bilgileri SMS olarak alırsınız. Özellikle internet bağlantınız olmadığında veya uygulamayı açmadığınızda bile önemli güncellemelerden haberdar olursunuz.
                   </p>
                 </div>
 
                 {/* E-posta Marketing */}
-                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-orange-600" />
-                      <Label
-                        htmlFor="emailMarketing"
-                        className="text-sm font-medium text-slate-900 cursor-pointer"
-                      >
-                        E-posta reklam/tanıtım almak ister misiniz?
-                      </Label>
-                    </div>
+                    <Label
+                      htmlFor="emailMarketing"
+                      className="text-base font-medium text-slate-900 cursor-pointer"
+                    >
+                      E-posta reklam/tanıtım almak ister misiniz?
+                    </Label>
                     <Switch
                       id="emailMarketing"
                       checked={emailMarketing}
                       onCheckedChange={setEmailMarketing}
                     />
                   </div>
-                  <p className="text-xs text-slate-600">
-                    Kampanyalar, özel fırsatlar ve tanıtımları e-posta ile al
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Kampanyalar, özel fırsatlar ve tanıtımları e-posta ile alırsınız. Yeni özellikler, özel indirimler ve platformdaki gelişmeler hakkında bilgilendirilirsiniz. İstediğiniz zaman bu e-postaları durdurabilirsiniz.
                   </p>
                 </div>
               </div>
 
               {/* Yetenek/Kategori Seçimi */}
-              <div className="space-y-3 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-2">
-                        Yeteneklerinizi Seçin
-                      </h3>
-                      <p className="text-sm text-slate-700 mb-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <strong>Önemli:</strong> Bu platformda her üye hem{" "}
-                        <strong>işveren</strong> hem <strong>işyapan</strong>{" "}
-                        rolündedir. Yapabileceğiniz işlerin anahtar kelimelerini
-                        seçtiğinizde, bu kelimelerle ilgili ilanlar size
-                        bildirim olarak gelecektir.
-                      </p>
-                      <Label
-                        htmlFor="skillCategories"
-                        className="text-base font-semibold text-slate-900"
-                      >
-                        Hangi kategoride yeteneklisiniz veya hizmet vermeyi
-                        düşünürsünüz?
-                      </Label>
-                      <p className="text-sm text-slate-600 mt-1 mb-3">
-                        Örnek: Elektrik, Temizlik, Tesisat, Boya, vb. (Ana
-                        kategoriler seçilir, seçtiğiniz kategorinin tüm alt
-                        hizmetlerinden bildirim alırsınız)
-                      </p>
-                      <CategoryAutocomplete
-                        value={skillCategories}
-                        onChange={setSkillCategories}
-                        placeholder="Ana kategori ara ve seç... (örn: elektrik, temizlik)"
-                        maxCategories={10}
-                      />
-                      <div className="mt-3 flex items-start gap-2 text-xs text-amber-700 bg-amber-50 p-2 rounded-lg">
-                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>
-                          <strong>Önemli:</strong> Bu kısım çok önemlidir!
-                          Bildirimler seçeceğiniz kategorilerden gelecektir.
-                          Örneğin &quot;Elektrik&quot; seçerseniz, elektrik ile ilgili tüm
-                          işlerden bildirim alırsınız. Yetenekli olduğunuz veya
-                          hizmet vermek istediğiniz ana kategorileri seçin.
-                        </span>
-                      </div>
+              <div className="space-y-6 p-6 border border-slate-200 rounded">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Yeteneklerinizi Seçin
+                </h3>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  <strong>Önemli:</strong> Bu platformda her üye hem <strong>işveren</strong> hem <strong>işyapan</strong> rolündedir. Yapabileceğiniz işlerin anahtar kelimelerini seçtiğinizde, bu kelimelerle ilgili ilanlar size bildirim olarak gelecektir. Bu sayede size uygun iş fırsatlarını kaçırmazsınız.
+                </p>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="skillCategories"
+                    className="text-base font-semibold text-slate-900"
+                  >
+                    Hangi kategoride yeteneklisiniz veya hizmet vermeyi düşünürsünüz?
+                  </Label>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Örnek: Elektrik, Temizlik, Tesisat, Boya, vb. Ana kategoriler seçilir, seçtiğiniz kategorinin tüm alt hizmetlerinden bildirim alırsınız. Örneğin &quot;Elektrik&quot; seçerseniz, elektrik ile ilgili tüm işlerden bildirim alırsınız. Yetenekli olduğunuz veya hizmet vermek istediğiniz ana kategorileri seçin.
+                  </p>
+                  <CategoryAutocomplete
+                    value={skillCategories}
+                    onChange={setSkillCategories}
+                    placeholder="Ana kategori ara ve seç... (örn: elektrik, temizlik)"
+                    maxCategories={10}
+                  />
+                </div>
 
-                      {/* Anahtar Kelime Bulunamazsa Seçeneği */}
-                      <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-300">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            id="publishWithoutKeyword"
-                            checked={publishWithoutKeyword}
-                            onCheckedChange={(checked) =>
-                              setPublishWithoutKeyword(checked === true)
-                            }
-                            className="mt-1"
-                          />
-                          <div className="flex-1">
-                            <Label
-                              htmlFor="publishWithoutKeyword"
-                              className="text-sm font-semibold text-slate-900 cursor-pointer flex items-start gap-2"
-                            >
-                              <Brain className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                              <span>
-                                Girdiğin mesleğe dair bir anahtar kelime
-                                bulamadıysan bu kısma tik koy ve yeteneğini öyle
-                                yayınla
-                              </span>
-                            </Label>
-                            <p className="text-xs text-slate-700 mt-2 ml-7 leading-relaxed">
-                              <strong className="text-purple-700">
-                                Yapay zeka
-                              </strong>{" "}
-                              yakın kategorilerle eşleştirsin ve{" "}
-                              <strong className="text-purple-700">
-                                ilk işleri alma fırsatı senin olsun
-                              </strong>
-                              . Sistem otomatik olarak yeteneğinizi en uygun
-                              kategorilerle eşleştirecek ve size özel iş
-                              fırsatları sunacaktır.
-                            </p>
-                            <div className="mt-2 ml-7 flex items-center gap-1 text-xs text-purple-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>
-                                Yapay zeka destekli kategori eşleştirme
-                              </span>
-                            </div>
-                            <div className="mt-1 ml-7 flex items-center gap-1 text-xs text-purple-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>İlk iş fırsatlarından haberdar ol</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                {/* Anahtar Kelime Bulunamazsa Seçeneği */}
+                <div className="space-y-3 p-4 border border-slate-200 rounded">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="publishWithoutKeyword"
+                      checked={publishWithoutKeyword}
+                      onCheckedChange={(checked) =>
+                        setPublishWithoutKeyword(checked === true)
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1 space-y-2">
+                      <Label
+                        htmlFor="publishWithoutKeyword"
+                        className="text-base font-semibold text-slate-900 cursor-pointer"
+                      >
+                        Girdiğin mesleğe dair bir anahtar kelime bulamadıysan bu kısma tik koy ve yeteneğini öyle yayınla
+                      </Label>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        <strong>Yapay zeka</strong> yakın kategorilerle eşleştirsin ve <strong>ilk işleri alma fırsatı senin olsun</strong>. Sistem otomatik olarak yeteneğinizi en uygun kategorilerle eşleştirecek ve size özel iş fırsatları sunacaktır. Yapay zeka destekli kategori eşleştirme sayesinde yeteneğiniz en doğru şekilde kategorize edilecek ve ilk iş fırsatlarından haberdar olacaksınız.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -440,14 +354,7 @@ export default function RegisterPageClient() {
                 className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
                 disabled={loading}
               >
-                {loading ? (
-                  "Kayıt yapılıyor..."
-                ) : (
-                  <>
-                    Kayıt Ol
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
-                )}
+                {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
               </Button>
             </form>
 
@@ -456,14 +363,14 @@ export default function RegisterPageClient() {
                 Kayıt olarak{" "}
                 <Link
                   href="/legal/terms"
-                  className="text-[#FF6000] hover:underline"
+                  className="text-brand-500 hover:underline"
                 >
                   Kullanıcı Sözleşmesi
                 </Link>{" "}
                 ve{" "}
                 <Link
                   href="/legal/privacy"
-                  className="text-[#FF6000] hover:underline"
+                  className="text-brand-500 hover:underline"
                 >
                   Gizlilik Politikası
                 </Link>
@@ -472,7 +379,7 @@ export default function RegisterPageClient() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }
