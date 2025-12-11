@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/lib/hooks/useToast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import CategoryAutocomplete from "@/components/forms/CategoryAutocomplete";
 
 
 // Static generation'ı engelle
@@ -28,8 +27,6 @@ export default function RegisterPageClient() {
   const [whatsappNotifications, setWhatsappNotifications] = useState(false);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [emailMarketing, setEmailMarketing] = useState(false);
-  const [skillCategories, setSkillCategories] = useState<string[]>([]);
-  const [publishWithoutKeyword, setPublishWithoutKeyword] = useState(false);
 
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -60,8 +57,6 @@ export default function RegisterPageClient() {
           whatsappNotifications,
           smsNotifications,
           emailMarketing,
-          skillCategories,
-          publishWithoutKeyword,
         }),
         credentials: "include",
       });
@@ -106,8 +101,8 @@ export default function RegisterPageClient() {
         return;
       }
 
-      success("Kayıt başarılı! Hoş geldiniz!");
-      router.push("/account/profile");
+      success("Kayıt başarılı! Yeteneklerinizi seçin.");
+      router.push("/auth/register/skills");
       router.refresh();
     } catch (err: any) {
       console.error("Register error:", err);
@@ -294,58 +289,6 @@ export default function RegisterPageClient() {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Kampanyalar, özel fırsatlar ve tanıtımları e-posta ile alırsınız. Yeni özellikler, özel indirimler ve platformdaki gelişmeler hakkında bilgilendirilirsiniz. İstediğiniz zaman bu e-postaları durdurabilirsiniz.
                   </p>
-                </div>
-              </div>
-
-              {/* Yetenek/Kategori Seçimi */}
-              <div className="space-y-6 p-6 border border-slate-200 rounded">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Yeteneklerinizi Seçin
-                </h3>
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  <strong>Önemli:</strong> Bu platformda her üye hem <strong>işveren</strong> hem <strong>işyapan</strong> rolündedir. Yapabileceğiniz işlerin anahtar kelimelerini seçtiğinizde, bu kelimelerle ilgili ilanlar size bildirim olarak gelecektir. Bu sayede size uygun iş fırsatlarını kaçırmazsınız.
-                </p>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="skillCategories"
-                    className="text-base font-semibold text-slate-900"
-                  >
-                    Hangi kategoride yeteneklisiniz veya hizmet vermeyi düşünürsünüz?
-                  </Label>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    Örnek: Elektrik, Temizlik, Tesisat, Boya, vb. Ana kategoriler seçilir, seçtiğiniz kategorinin tüm alt hizmetlerinden bildirim alırsınız. Örneğin &quot;Elektrik&quot; seçerseniz, elektrik ile ilgili tüm işlerden bildirim alırsınız. Yetenekli olduğunuz veya hizmet vermek istediğiniz ana kategorileri seçin.
-                  </p>
-                  <CategoryAutocomplete
-                    value={skillCategories}
-                    onChange={setSkillCategories}
-                    placeholder="Ana kategori ara ve seç... (örn: elektrik, temizlik)"
-                    maxCategories={10}
-                  />
-                </div>
-
-                {/* Anahtar Kelime Bulunamazsa Seçeneği */}
-                <div className="space-y-3 p-4 border border-slate-200 rounded">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="publishWithoutKeyword"
-                      checked={publishWithoutKeyword}
-                      onCheckedChange={(checked) =>
-                        setPublishWithoutKeyword(checked === true)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1 space-y-2">
-                      <Label
-                        htmlFor="publishWithoutKeyword"
-                        className="text-base font-semibold text-slate-900 cursor-pointer"
-                      >
-                        Girdiğin mesleğe dair bir anahtar kelime bulamadıysan bu kısma tik koy ve yeteneğini öyle yayınla
-                      </Label>
-                      <p className="text-sm text-slate-700 leading-relaxed">
-                        <strong>Yapay zeka</strong> yakın kategorilerle eşleştirsin ve <strong>ilk işleri alma fırsatı senin olsun</strong>. Sistem otomatik olarak yeteneğinizi en uygun kategorilerle eşleştirecek ve size özel iş fırsatları sunacaktır. Yapay zeka destekli kategori eşleştirme sayesinde yeteneğiniz en doğru şekilde kategorize edilecek ve ilk iş fırsatlarından haberdar olacaksınız.
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
