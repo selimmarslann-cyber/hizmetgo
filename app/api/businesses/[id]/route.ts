@@ -12,6 +12,9 @@ const updateBusinessSchema = z.object({
   addressText: z.string().optional(),
   coverImageUrl: z.string().url().optional().nullable(),
   workingHoursJson: z.any().optional(), // JSON object for working hours
+  minOrderAmount: z.number().min(0).optional().nullable(),
+  deliveryRadius: z.number().min(0).optional().nullable(),
+  hasDelivery: z.boolean().optional(),
 });
 
 

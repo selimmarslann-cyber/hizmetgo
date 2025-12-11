@@ -6,11 +6,10 @@
  * - Kendisine uygun işleri görür
  * - Her işe teklif verebilir
  */
-
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,9 +19,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Building2, CheckCircle2, Clock, DollarSign, MapPin, MessageSquare, Send, User } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 import { motion } from "framer-motion";
-
-
-
 // Static generation'ı engelle - client component olduğu için
 interface Job {
   id: string;
@@ -55,7 +51,6 @@ interface Job {
     status: string;
   };
 }
-
 export default function AvailableJobsPageClient() {
   const router = useRouter();
   const { success, error } = useToast();
@@ -66,7 +61,6 @@ export default function AvailableJobsPageClient() {
   const [offerAmount, setOfferAmount] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
   const loadAvailableJobs = useCallback(async () => {
     try {
       const res = await fetch("/api/jobs/available", {
@@ -87,30 +81,25 @@ export default function AvailableJobsPageClient() {
       setLoading(false);
     }
   }, [router, error]);
-
   useEffect(() => {
     loadAvailableJobs();
   }, [loadAvailableJobs]);
-
   const handleOpenOfferDialog = (job: Job) => {
     setSelectedJob(job);
     setOfferAmount("");
     setOfferMessage("");
     setOfferDialogOpen(true);
   };
-
   const handleSubmitOffer = async () => {
     if (!selectedJob || !offerAmount) {
       error("Lütfen teklif fiyatı girin");
       return;
     }
-
     const amount = parseFloat(offerAmount);
     if (isNaN(amount) || amount <= 0) {
       error("Geçerli bir fiyat girin");
       return;
     }
-
     setSubmitting(true);
     try {
       const res = await fetch(`/api/jobs/${selectedJob.id}/offers`, {
@@ -122,7 +111,6 @@ export default function AvailableJobsPageClient() {
         }),
         credentials: "include",
       });
-
       if (res.ok) {
         success("Teklifiniz başarıyla gönderildi!");
         setOfferDialogOpen(false);
@@ -138,13 +126,11 @@ export default function AvailableJobsPageClient() {
       setSubmitting(false);
     }
   };
-
   const hasOffered = (job: Job) => {
     return job.offers?.some(
       (o) => o.status === "PENDING" || o.status === "ACCEPTED",
     );
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -155,7 +141,6 @@ export default function AvailableJobsPageClient() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -166,7 +151,6 @@ export default function AvailableJobsPageClient() {
             Size uygun iş taleplerini görüntüleyin ve teklif verin
           </p>
         </div>
-
         {/* Jobs List */}
         {jobs.length === 0 ? (
           <Card className="border-2 border-dashed">
@@ -214,14 +198,12 @@ export default function AvailableJobsPageClient() {
                               )}
                             </span>
                           </div>
-
                           <h3 className="font-semibold text-lg mb-2">
                             İş Talebi
                           </h3>
                           <p className="text-sm text-gray-700 mb-4 line-clamp-3">
                             {job.description}
                           </p>
-
                           {/* Teklif sayısı */}
                           {job.offerCount !== undefined &&
                             job.offerCount > 0 && (
@@ -234,7 +216,6 @@ export default function AvailableJobsPageClient() {
                                 </Badge>
                               </div>
                             )}
-
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-center gap-2 text-gray-600">
                               <MapPin className="w-4 h-4" />
@@ -265,7 +246,6 @@ export default function AvailableJobsPageClient() {
                           </div>
                         </div>
                       </div>
-
                       <div className="flex gap-3 pt-4 border-t">
                         {!alreadyOffered ? (
                           <Button
@@ -296,7 +276,6 @@ export default function AvailableJobsPageClient() {
           </div>
         )}
       </div>
-
       {/* Offer Dialog */}
       <Dialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
         <DialogContent>

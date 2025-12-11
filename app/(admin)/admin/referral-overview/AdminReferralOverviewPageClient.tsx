@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, MapPin, TrendingUp, Users } from "lucide-react";
+import { DollarSign, MapPin, TrendingUp } from "lucide-react";
 
 
 
@@ -171,7 +171,7 @@ export default function AdminReferralOverviewPageClient() {
             <div className="text-center text-gray-500 py-8">Henüz veri yok</div>
           ) : (
             <div className="space-y-2">
-              {regionStats.map((stat, idx) => (
+              {regionStats.map((stat) => (
                 <div
                   key={`${stat.region_type}-${stat.region_code}`}
                   className="flex items-center justify-between p-3 border rounded-lg"

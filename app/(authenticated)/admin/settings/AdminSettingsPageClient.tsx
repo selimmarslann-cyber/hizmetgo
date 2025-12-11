@@ -12,7 +12,6 @@ import {
   Settings,
   Shield,
   Save,
-  RefreshCw,
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
@@ -92,7 +91,7 @@ export default function AdminSettingsPageClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -107,7 +106,7 @@ export default function AdminSettingsPageClient() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#FF6000] hover:bg-[#FF7000]"
+          className="bg-brand-500 hover:bg-brand-600"
         >
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Kaydediliyor..." : "Kaydet"}
@@ -119,7 +118,7 @@ export default function AdminSettingsPageClient() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-[#FF6000]" />
+              <Shield className="w-5 h-5 text-brand-500" />
               <CardTitle>Güvenlik Ayarları</CardTitle>
             </div>
           </CardHeader>
@@ -204,7 +203,7 @@ export default function AdminSettingsPageClient() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Bell className="w-5 h-5 text-[#FF6000]" />
+              <Bell className="w-5 h-5 text-brand-500" />
               <CardTitle>Bildirim Ayarları</CardTitle>
             </div>
           </CardHeader>
@@ -289,7 +288,7 @@ export default function AdminSettingsPageClient() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Settings className="w-5 h-5 text-[#FF6000]" />
+              <Settings className="w-5 h-5 text-brand-500" />
               <CardTitle>Genel Ayarlar</CardTitle>
             </div>
           </CardHeader>
@@ -357,7 +356,7 @@ export default function AdminSettingsPageClient() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Database className="w-5 h-5 text-[#FF6000]" />
+              <Database className="w-5 h-5 text-brand-500" />
               <CardTitle>Veritabanı Yönetimi</CardTitle>
             </div>
           </CardHeader>

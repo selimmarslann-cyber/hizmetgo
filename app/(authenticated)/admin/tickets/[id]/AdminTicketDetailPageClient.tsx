@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,7 @@ export default function AdminTicketDetailPageClient({
 }: {
   ticketId: string;
 }) {
-  const router = useRouter();
+  // router removed - not used
   const { success, error } = useToast();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,7 +161,7 @@ export default function AdminTicketDetailPageClient({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -368,7 +367,7 @@ export default function AdminTicketDetailPageClient({
               <Button
                 onClick={handleReply}
                 disabled={sending || !replyContent.trim()}
-                className="bg-[#FF6000] hover:bg-[#FF7000]"
+                className="bg-brand-500 hover:bg-brand-600"
               >
                 <Send className="w-4 h-4 mr-2" />
                 {sending ? "Gönderiliyor..." : "Yanıt Gönder"}

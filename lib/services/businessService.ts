@@ -42,6 +42,9 @@ export async function updateBusiness(
     addressText?: string;
     coverImageUrl?: string;
     workingHoursJson?: any;
+    minOrderAmount?: number | null;
+    deliveryRadius?: number | null;
+    hasDelivery?: boolean;
   },
 ) {
   return prisma.business.update({

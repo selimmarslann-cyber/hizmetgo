@@ -139,7 +139,7 @@ export default function PhoneLoginPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export default function PhoneLoginPageClient() {
       >
         <Card className="border-2 border-slate-200 shadow-xl">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#FF6000] flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-brand-500 flex items-center justify-center mx-auto mb-4">
               <Phone className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-900">
@@ -192,13 +192,13 @@ export default function PhoneLoginPageClient() {
                           }
                         }}
                         required
-                        className="pl-10 h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                        className="pl-10 h-12 border-2 border-slate-200 focus:border-brand-500"
                       />
                     </div>
                   </div>
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-[#FF6000] hover:bg-[#FF5500] text-white font-semibold"
+                    className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
                     disabled={isSending}
                   >
                     {isSending ? (
@@ -237,7 +237,7 @@ export default function PhoneLoginPageClient() {
                             handleCodeChange(index, e.target.value)
                           }
                           onKeyDown={(e) => handleCodeKeyDown(index, e)}
-                          className="w-12 h-14 text-center text-2xl font-bold border-2 border-slate-200 focus:border-[#FF6000] focus:ring-2 focus:ring-[#FF6000]/20"
+                          className="w-12 h-14 text-center text-2xl font-bold border-2 border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                         />
                       ))}
                     </div>
@@ -264,7 +264,7 @@ export default function PhoneLoginPageClient() {
                     </Button>
                     <Button
                       type="submit"
-                      className="flex-1 h-12 bg-[#FF6000] hover:bg-[#FF5500] text-white font-semibold"
+                      className="flex-1 h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
                       disabled={isVerifying || verificationCode.some((d) => !d)}
                     >
                       {isVerifying ? (
@@ -284,7 +284,7 @@ export default function PhoneLoginPageClient() {
             <div className="mt-6 text-center">
               <Link
                 href="/auth/login"
-                className="text-sm text-[#FF6000] hover:underline font-semibold"
+                className="text-sm text-brand-500 hover:underline font-semibold"
               >
                 E-posta ile giriş yap
               </Link>

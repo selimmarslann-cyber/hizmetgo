@@ -40,24 +40,34 @@ export default function SmartSearchBar() {
     }
   }, [userId, showAIChat, serviceQuery]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Önerileri kapat
     setShowSuggestions(false);
 
     if (serviceQuery.trim()) {
-      // Kategori araması - AI chat modal'ını aç
-      if (userId) {
-        // Kullanıcı giriş yapmış, AI chat modal'ını aç
-        console.log("Opening AI chat with category:", serviceQuery.trim());
-        setShowAIChat(true);
-      } else {
-        // Giriş yapılmamış, login sayfasına yönlendir
-        // ai=true parametresi ile AI chat'in açılması gerektiğini belirt
-        router.push(
-          `/auth/login?redirect=/request?ai=true&q=${encodeURIComponent(serviceQuery.trim())}`,
-        );
+      // Önce kategori eşleşmesi kontrol et
+      try {
+        const { searchServiceCategories } = await import("@/lib/services/serviceSearchService");
+        const results = await searchServiceCategories(serviceQuery.trim(), 1, false);
+        
+        if (results.length > 0 && results[0].matchScore > 0) {
+          // Eşleşme var - AI chat modal'ını aç veya kategori sayfasına git
+          if (userId) {
+            setShowAIChat(true);
+          } else {
+            router.push(
+              `/auth/login?redirect=/request?ai=true&q=${encodeURIComponent(serviceQuery.trim())}`,
+            );
+          }
+        } else {
+          // Eşleşme yok - Vasıfsız iş sayfasına yönlendir
+          router.push(`/search/no-match?q=${encodeURIComponent(serviceQuery.trim())}`);
+        }
+      } catch (err) {
+        // Hata durumunda da vasıfsız iş sayfasına yönlendir
+        router.push(`/search/no-match?q=${encodeURIComponent(serviceQuery.trim())}`);
       }
     } else {
       // Boş arama - genel request sayfasına yönlendir

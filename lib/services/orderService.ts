@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { haversineDistanceKm } from "@/lib/utils/matching";
 
 /**
  * Sipariş oluşturma (PENDING_CONFIRMATION)
@@ -49,14 +50,51 @@ export async function createOrder(data: {
   const commissionFee = totalAmount.mul(COMMISSION_RATE);
   const vendorAmount = totalAmount.sub(commissionFee); // Vendor'ın alacağı pay
 
-  // Business owner'ı bul (vendorId için)
+  // Business bilgisini al (minOrderAmount, deliveryRadius, hasDelivery kontrolü için)
   const business = await prisma.business.findUnique({
     where: { id: data.businessId },
-    select: { ownerUserId: true },
+    select: {
+      ownerUserId: true,
+      minOrderAmount: true,
+      deliveryRadius: true,
+      hasDelivery: true,
+      lat: true,
+      lng: true,
+    },
   });
 
   if (!business) {
     throw new Error("İşletme bulunamadı");
+  }
+
+  // Minimum sipariş tutarı kontrolü
+  if (business.minOrderAmount) {
+    const minAmount = new Decimal(business.minOrderAmount.toString());
+    if (totalAmount.lessThan(minAmount)) {
+      throw new Error(
+        `Minimum sipariş tutarı ${minAmount.toFixed(2)} ₺. Sepetiniz ${totalAmount.toFixed(2)} ₺.`,
+      );
+    }
+  }
+
+  // Teslimat yarıçapı kontrolü (eğer teslimat varsa ve konum bilgisi varsa)
+  if (
+    business.hasDelivery &&
+    business.deliveryRadius &&
+    data.locationLat &&
+    data.locationLng &&
+    business.lat &&
+    business.lng
+  ) {
+    const distance = haversineDistanceKm(
+      { lat: data.locationLat, lng: data.locationLng },
+      { lat: business.lat, lng: business.lng },
+    );
+    if (distance > business.deliveryRadius) {
+      throw new Error(
+        `Bu adres teslimat yarıçapının (${business.deliveryRadius} km) dışında. Mesafe: ${distance.toFixed(2)} km.`,
+      );
+    }
   }
 
   // Transaction ile sipariş ve ödeme kaydı oluştur
@@ -503,6 +541,23 @@ export async function updateOrderStatus(
           await distributeReferralRewards(orderId);
         } catch (refError) {
           console.error("Referral reward dağıtım hatası:", refError);
+        }
+      });
+
+      // Invoice ve Ledger Entry oluşturma (async olarak çalıştır)
+      Promise.resolve().then(async () => {
+        try {
+          const { createInvoiceAndLedgerEntries } =
+            await import("@/lib/services/invoiceLedgerService");
+          await createInvoiceAndLedgerEntries(
+            orderId,
+            business.ownerUserId,
+            updatedOrder.totalAmount,
+            updatedOrder.commissionFee,
+          );
+        } catch (invoiceError) {
+          console.error("Invoice ve ledger entry oluşturma hatası:", invoiceError);
+          // Hata durumunda sipariş tamamlanmış olarak kalır, invoice sonradan manuel oluşturulabilir
         }
       });
 

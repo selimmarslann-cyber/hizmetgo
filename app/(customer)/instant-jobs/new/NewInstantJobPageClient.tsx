@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { ArrowLeft, Calendar, DollarSign, MapPin } from "lucide-react";
 // Static generation'ı engelle
 export default function NewInstantJobPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { success, error } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,26 @@ export default function NewInstantJobPageClient() {
     budget: "",
     requiresSkills: false,
   });
+
+  // URL'den query parametresini al ve description'a yaz
+  useEffect(() => {
+    const query = searchParams.get("q");
+    const unskilled = searchParams.get("unskilled") === "true";
+    
+    if (query && !formData.description) {
+      setFormData((prev) => ({
+        ...prev,
+        description: query,
+        requiresSkills: !unskilled, // Vasıfsız iş ise requiresSkills false
+      }));
+    }
+
+    // AI ile şehir/ilçe çıkarımı (opsiyonel)
+    if (query && query.length > 10) {
+      // AI ile şehir/ilçe çıkarımı yapılabilir (ileride eklenebilir)
+      // Şimdilik manuel giriş
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

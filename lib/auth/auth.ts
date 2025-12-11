@@ -73,32 +73,90 @@ export async function verifyUser(email: string, password: string) {
     const user = await getUserByEmail(email);
     
     // Eğer Prisma'da kullanıcı varsa ama Supabase'de yoksa, Supabase'de oluştur
-    if (user && authError?.message?.includes("Invalid login credentials")) {
+    if (user && (authError?.message?.includes("Invalid login credentials") || authError?.message?.includes("User not found"))) {
+      // Önce Prisma'da password hash varsa bcrypt ile kontrol et (hızlı fallback)
+      if (user.passwordHash) {
+        const bcrypt = require("bcryptjs");
+        const isValid = await bcrypt.compare(password, user.passwordHash);
+        if (isValid) {
+          // Şifre doğru, Supabase'de oluşturmayı dene ama başarısız olursa da kullanıcıyı döndür
+          try {
+            const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+              email: user.email,
+              password: password,
+              email_confirm: true,
+              user_metadata: { name: user.name },
+            });
+            
+            if (!createError && createData.user && user.id !== createData.user.id) {
+              // Supabase'de oluşturuldu, ID'yi güncelle
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { id: createData.user.id },
+              });
+              user.id = createData.user.id;
+            }
+          } catch (supabaseError) {
+            // Supabase hatası önemli değil, Prisma'da şifre doğru olduğu için kullanıcıyı döndür
+            console.warn("Supabase user creation failed, but password is valid in Prisma:", supabaseError);
+          }
+          return user;
+        }
+      }
+      
+      // Prisma'da şifre yoksa veya yanlışsa, Supabase'de oluşturmayı dene
       try {
-        // Supabase'de kullanıcıyı oluştur (şifre ile)
         const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
           password: password,
-          email_confirm: true, // Email'i otomatik onayla
-          user_metadata: {
-            name: user.name,
-          },
+          email_confirm: true,
+          user_metadata: { name: user.name },
         });
         
-        if (createError || !createData.user) {
-          console.error("Supabase user creation error:", createError);
+        if (createError) {
+          // Eğer kullanıcı zaten varsa, tekrar giriş yapmayı dene
+          if (createError.message?.includes("already registered") || createError.message?.includes("already exists")) {
+            const { data: retryAuthData, error: retryAuthError } = await supabaseAdmin.auth.signInWithPassword({
+              email,
+              password,
+            });
+            if (!retryAuthError && retryAuthData.user) {
+              return user;
+            }
+          }
           return null;
         }
         
-        // Supabase'de oluşturuldu, kullanıcıyı döndür
+        if (!createData.user) {
+          return null;
+        }
+        
+        // Supabase'de oluşturuldu, Prisma'da user ID'yi güncelle
+        if (user.id !== createData.user.id) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { id: createData.user.id },
+          });
+          user.id = createData.user.id;
+        }
+        
         return user;
-      } catch (createError) {
-        console.error("Error creating Supabase user:", createError);
+      } catch (createError: any) {
+        console.error("Error creating Supabase user:", createError.message);
         return null;
       }
     }
     
     // Giriş başarısız ve kullanıcı Prisma'da da yok
+    // Eğer Prisma'da kullanıcı varsa ama şifre yanlışsa, bcrypt ile kontrol et
+    if (user && user.passwordHash) {
+      const bcrypt = require("bcryptjs");
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (isValid) {
+        return user;
+      }
+    }
+    
     return null;
   }
 

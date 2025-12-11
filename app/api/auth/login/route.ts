@@ -4,6 +4,8 @@ import { signToken } from "@/lib/auth/jwt";
 import { createMobileToken } from "@/lib/auth/mobileTokens";
 import { z } from "zod";
 import { withRateLimit } from "@/lib/middleware/rateLimit";
+import { sanitizeEmail } from "@/lib/utils/sanitize";
+import { getIpAddress, getUserAgent, createAuditLog, AuditEventType } from "@/lib/utils/auditLog";
 
 const loginSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi girin"),
@@ -25,10 +27,17 @@ async function loginHandler(request: NextRequest) {
 
     const validated = loginSchema.parse(body);
 
+    // Sanitize email
+    const sanitizedEmail = sanitizeEmail(validated.email);
+
+    // Get request metadata for audit logging
+    const ipAddress = getIpAddress(request);
+    const userAgent = getUserAgent(request);
+
     // Kullanıcıyı bul
     let user;
     try {
-      user = await verifyUser(validated.email, validated.password);
+      user = await verifyUser(sanitizedEmail, validated.password);
     } catch (dbError: any) {
       console.error("Database error during login:", dbError);
       // Daha detaylı hata mesajı
@@ -45,6 +54,15 @@ async function loginHandler(request: NextRequest) {
     }
 
     if (!user) {
+      // Audit log failed login attempt
+      await createAuditLog({
+        eventType: AuditEventType.LOGIN_FAILED,
+        description: `Failed login attempt for email: ${sanitizedEmail}`,
+        ipAddress,
+        userAgent,
+        metadata: { email: sanitizedEmail },
+      });
+
       return NextResponse.json(
         {
           error:
@@ -53,6 +71,16 @@ async function loginHandler(request: NextRequest) {
         { status: 401 },
       );
     }
+
+    // Audit log successful login
+    await createAuditLog({
+      userId: user.id,
+      eventType: AuditEventType.LOGIN,
+      description: `User logged in: ${user.email}`,
+      ipAddress,
+      userAgent,
+      metadata: { email: user.email, name: user.name },
+    });
 
     // JWT token oluştur (web cookie için)
     let token;

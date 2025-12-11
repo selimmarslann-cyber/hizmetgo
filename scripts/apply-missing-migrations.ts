@@ -1,0 +1,199 @@
+/**
+ * Apply Missing Migrations Script
+ * 
+ * Supabase'e eksik migration'ları uygular.
+ */
+
+import { config } from "dotenv";
+import { Client } from "pg";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// Load .env file
+const envPaths = [
+  join(process.cwd(), ".env"),
+  join(process.cwd(), "mahallem-main", ".env"),
+  join(process.cwd(), "mahallem-main", "mahallem-main", ".env"),
+];
+
+for (const envPath of envPaths) {
+  try {
+    const result = config({ path: envPath, override: false });
+    if (!result.error) {
+      console.log(`📄 Loaded .env from: ${envPath}\n`);
+      break;
+    }
+  } catch (e) {
+    // Continue
+  }
+}
+
+async function applyMigrations() {
+  console.log("🚀 Applying missing migrations to Supabase...\n");
+
+  const databaseUrl =
+    process.env.DIRECT_URL ||
+    process.env.DATABASE_URL ||
+    (process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? `postgresql://postgres.${process.env.NEXT_PUBLIC_SUPABASE_URL.match(/https:\/\/(.+)\.supabase\.co/)?.[1]}:${process.env.SUPABASE_SERVICE_ROLE_KEY}@aws-0.eu-central-1.pooler.supabase.com:5432/postgres`
+      : null);
+
+  if (!databaseUrl) {
+    console.error("❌ DATABASE_URL, DIRECT_URL or Supabase credentials not found");
+    console.error("💡 Set DATABASE_URL, DIRECT_URL, or NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env file");
+    process.exit(1);
+  }
+
+  console.log(`📡 Connecting to database...\n`);
+
+  const client = new Client({
+    connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  try {
+    await client.connect();
+    console.log("✅ Connected to database\n");
+
+    // Migration dosyaları (sırayla)
+    const migrationFiles = [
+      "15_fix_missing_tables.sql",
+    ];
+
+    for (const file of migrationFiles) {
+      // Try multiple paths
+      const possiblePaths = [
+        join(process.cwd(), "supabase", "migrations", file),
+        join(process.cwd(), "mahallem-main", "supabase", "migrations", file),
+        join(process.cwd(), "mahallem-main", "mahallem-main", "supabase", "migrations", file),
+      ];
+      
+      let filePath = possiblePaths.find(p => {
+        try {
+          require("fs").accessSync(p);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      
+      if (!filePath) {
+        filePath = possiblePaths[0]; // Fallback to first path
+      }
+      
+      console.log(`📝 Applying: ${file}...\n`);
+
+      try {
+        const sql = readFileSync(filePath, "utf-8");
+
+        // SQL'i statement'lara böl
+        const statements = sql
+          .split(";")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && !s.startsWith("--"));
+
+        for (const statement of statements) {
+          if (statement.length > 0) {
+            try {
+              await client.query(statement + ";");
+            } catch (err: any) {
+              // "already exists" hatalarını yoksay
+              if (
+                err.message.includes("already exists") ||
+                err.message.includes("duplicate") ||
+                err.code === "42710" || // duplicate_object
+                err.code === "42P07" || // duplicate_table
+                err.code === "42723" // duplicate_function
+              ) {
+                // Skip, already exists
+              } else {
+                console.error(`   ⚠️  Warning: ${err.message}`);
+              }
+            }
+          }
+        }
+
+        console.log(`   ✅ Success: ${file}\n`);
+      } catch (error: any) {
+        console.error(`   ❌ Error: ${error.message}\n`);
+        // Continue with next migration
+      }
+    }
+
+    // Verify tables were created
+    console.log("🔍 Verifying created tables...\n");
+
+    const result = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_type = 'BASE TABLE'
+      ORDER BY table_name;
+    `);
+
+    const existingTables = result.rows.map((row) => row.table_name);
+
+    const expectedTables = [
+      "accounts",
+      "invoices",
+      "ledger_entries",
+      "user_referral_profiles",
+      "user_billing_profiles",
+    ];
+
+    const missingTables = expectedTables.filter(
+      (table) => !existingTables.includes(table),
+    );
+
+    if (missingTables.length === 0) {
+      console.log("✅ All expected tables now exist!\n");
+    } else {
+      console.log(`⚠️  Still missing ${missingTables.length} tables:`);
+      missingTables.forEach((table) => console.log(`   - ${table}`));
+    }
+
+    // Verify enums
+    const enumResult = await client.query(`
+      SELECT typname 
+      FROM pg_type 
+      WHERE typtype = 'e' 
+      AND typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+      ORDER BY typname;
+    `);
+
+    const existingEnums = enumResult.rows.map((row) => row.typname);
+
+    const expectedEnums = ["ledger_entry_type", "wallet_transaction_type"];
+
+    const missingEnums = expectedEnums.filter(
+      (enumName) => !existingEnums.includes(enumName),
+    );
+
+    if (missingEnums.length === 0) {
+      console.log("✅ All expected enums now exist!\n");
+    } else {
+      console.log(`⚠️  Still missing ${missingEnums.length} enums:`);
+      missingEnums.forEach((enumName) => console.log(`   - ${enumName}`));
+    }
+  } catch (error: any) {
+    console.error("❌ Error:", error.message);
+    throw error;
+  } finally {
+    await client.end();
+    console.log("🔌 Database connection closed\n");
+  }
+}
+
+applyMigrations()
+  .then(() => {
+    console.log("🎉 Migration process completed!");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("❌ Process failed:", error);
+    process.exit(1);
+  });
+

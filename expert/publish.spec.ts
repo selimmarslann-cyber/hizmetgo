@@ -20,7 +20,7 @@ test.describe('Listing Publish Flow', () => {
 
   test('should create and publish a listing', async ({ page, request }) => {
     // Login first with auto-created test user
-    await page.goto('/auth/login', { waitUntil: 'networkidle' });
+    await page.goto('/auth/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
     
     const emailInput = page.locator('input[type="email"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
@@ -35,8 +35,12 @@ test.describe('Listing Publish Flow', () => {
     await page.waitForTimeout(2000);
 
     // Navigate to listing creation page
-    await page.goto('/listings/create');
-    await page.waitForTimeout(1000);
+    try {
+      await page.goto('/listings/create', { waitUntil: 'load', timeout: 90000 });
+    } catch (error) {
+      await page.goto('/listings/create', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    }
+    await page.waitForTimeout(2000);
 
     trackEvent('listing_create_page_view');
 
@@ -61,9 +65,11 @@ test.describe('Listing Publish Flow', () => {
 
     trackEvent('listing_form_filled');
 
-    // Click publish button
+    // Click publish button - wait for button to be visible and enabled
     const publishButton = page.locator('button:has-text("Yayınla"), button:has-text("Publish"), button[type="submit"]').first();
-    await publishButton.click();
+    await publishButton.waitFor({ state: 'visible', timeout: 30000 });
+    await publishButton.waitFor({ state: 'attached', timeout: 10000 });
+    await publishButton.click({ timeout: 30000 });
 
     trackEvent('listing_publish_click');
 

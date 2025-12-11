@@ -266,7 +266,7 @@ export default function EmailLoginPageClient() {
       >
         <Card className="border-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
           <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-16 h-16 bg-[#FF6000] rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 bg-brand-500 rounded-full flex items-center justify-center mb-4">
               <Mail className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold">
@@ -304,7 +304,7 @@ export default function EmailLoginPageClient() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-[#FF6000] hover:bg-[#FF5500] text-white h-12"
+                  className="w-full bg-brand-500 hover:bg-brand-600 text-white h-12"
                   disabled={sendingCode || !email}
                 >
                   {sendingCode ? (
@@ -376,7 +376,7 @@ export default function EmailLoginPageClient() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-[#FF6000] hover:bg-[#FF5500] text-white h-12"
+                  className="w-full bg-brand-500 hover:bg-brand-600 text-white h-12"
                   disabled={loading || code.length !== 6}
                 >
                   {loading ? "Doğrulanıyor..." : "Kodu Doğrula"}
@@ -393,7 +393,7 @@ export default function EmailLoginPageClient() {
                         clearInterval(countdownIntervalRef.current);
                       }
                     }}
-                    className="text-sm text-slate-600 hover:text-[#FF6000]"
+                    className="text-sm text-slate-600 hover:text-brand-500"
                   >
                     Farklı e-posta kullan
                   </button>
@@ -458,7 +458,7 @@ export default function EmailLoginPageClient() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-[#FF6000] hover:bg-[#FF5500] text-white h-12"
+                  className="w-full bg-brand-500 hover:bg-brand-600 text-white h-12"
                   disabled={
                     loading ||
                     password.length < 6 ||
@@ -476,7 +476,7 @@ export default function EmailLoginPageClient() {
                       setPassword("");
                       setConfirmPassword("");
                     }}
-                    className="text-sm text-slate-600 hover:text-[#FF6000]"
+                    className="text-sm text-slate-600 hover:text-brand-500"
                   >
                     ← Geri
                   </button>

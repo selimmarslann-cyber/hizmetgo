@@ -4,11 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, MessageCircle, Star } from "lucide-react";
+import { MessageCircle, Star, X } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
-
-
-
 // Static generation'ı engelle
 export default function OrderDetailPageClient() {
   const params = useParams();
@@ -19,7 +16,7 @@ export default function OrderDetailPageClient() {
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false);
-
+  const [cancelling, setCancelling] = useState(false);
   const loadOrder = useCallback(async () => {
     try {
       const res = await fetch(`/api/orders/${params.id}`, {
@@ -35,17 +32,14 @@ export default function OrderDetailPageClient() {
       setLoading(false);
     }
   }, [params.id]);
-
   useEffect(() => {
     loadOrder();
   }, [loadOrder]);
-
   const handleReviewSubmit = async () => {
     if (!rating) {
       error("Lütfen puan verin");
       return;
     }
-
     setSubmittingReview(true);
     try {
       const res = await fetch(`/api/reviews`, {
@@ -58,7 +52,6 @@ export default function OrderDetailPageClient() {
         }),
         credentials: "include",
       });
-
       if (res.ok) {
         loadOrder(); // Review'i yükle
         success("Değerlendirme gönderildi");
@@ -72,7 +65,33 @@ export default function OrderDetailPageClient() {
       setSubmittingReview(false);
     }
   };
-
+  const handleCancel = async () => {
+    if (!confirm("Siparişi iptal etmek istediğinize emin misiniz?")) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason: "Müşteri tarafından iptal edildi",
+        }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        loadOrder(); // Sipariş durumunu güncelle
+        success("Sipariş iptal edildi");
+      } else {
+        const data = await res.json();
+        error(data.error || "Sipariş iptal edilemedi");
+      }
+    } catch (err) {
+      error("Bir hata oluştu");
+    } finally {
+      setCancelling(false);
+    }
+  };
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -80,7 +99,6 @@ export default function OrderDetailPageClient() {
       </div>
     );
   }
-
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -88,9 +106,8 @@ export default function OrderDetailPageClient() {
       </div>
     );
   }
-
   const canReview = order.status === "COMPLETED" && !order.review;
-
+  const canCancel = ["PENDING_CONFIRMATION", "ACCEPTED"].includes(order.status);
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
       PENDING_CONFIRMATION: "Beklemede",
@@ -102,7 +119,6 @@ export default function OrderDetailPageClient() {
     };
     return statusMap[status] || status;
   };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -113,7 +129,6 @@ export default function OrderDetailPageClient() {
         >
           ← Siparişlerime Dön
         </Button>
-
         <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -153,23 +168,94 @@ export default function OrderDetailPageClient() {
             </div>
           </CardContent>
         </Card>
-
+        {/* Order Timeline */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Durum Geçmişi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                  ✓
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="text-sm font-medium">Sipariş Oluşturuldu</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(order.createdAt).toLocaleString("tr-TR")}
+                  </p>
+                </div>
+              </div>
+              {["ACCEPTED", "IN_PROGRESS", "COMPLETED"].includes(
+                order.status,
+              ) && (
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                    ✓
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-sm font-medium">Sipariş Kabul Edildi</p>
+                  </div>
+                </div>
+              )}
+              {["IN_PROGRESS", "COMPLETED"].includes(order.status) && (
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                    ✓
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-sm font-medium">Hazırlanıyor</p>
+                  </div>
+                </div>
+              )}
+              {order.status === "COMPLETED" && order.completedAt && (
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">
+                    ✓
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-sm font-medium">Sipariş Tamamlandı</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.completedAt).toLocaleString("tr-TR")}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {(order.status === "CANCELLED_BY_CUSTOMER" ||
+                order.status === "CANCELLED_BY_PROVIDER") && (
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center flex-shrink-0">
+                    ✕
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-sm font-medium text-red-600">
+                      Sipariş İptal Edildi
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
         {/* Action Buttons */}
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/orders/${params.id}`)}
-                className="flex-1"
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Sipariş Detayına Git
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {canCancel && (
+                <Button
+                  variant="destructive"
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="flex-1"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  {cancelling ? "İptal Ediliyor..." : "Siparişi İptal Et"}
+                </Button>
+              )}
               <Button
                 onClick={() => router.push(`/orders/${params.id}/chat`)}
                 className="flex-1"
+                variant={canCancel ? "outline" : "default"}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Esnaf ile Yazış
@@ -177,7 +263,6 @@ export default function OrderDetailPageClient() {
             </div>
           </CardContent>
         </Card>
-
         {canReview && (
           <Card>
             <CardHeader>
@@ -223,7 +308,6 @@ export default function OrderDetailPageClient() {
             </CardContent>
           </Card>
         )}
-
         {order.review && (
           <Card>
             <CardHeader>

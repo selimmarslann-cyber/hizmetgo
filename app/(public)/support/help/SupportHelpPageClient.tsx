@@ -93,6 +93,11 @@ export default function SupportHelpPageClient() {
   };
 
   const handleSubCategorySelect = (subCategoryId: string) => {
+    // Hesap silme için direkt hesap silme sayfasına yönlendir
+    if (subCategoryId === "hesap-silme") {
+      router.push("/account/delete");
+      return;
+    }
     setSelectedSubCategory(subCategoryId);
     setStep("message");
   };

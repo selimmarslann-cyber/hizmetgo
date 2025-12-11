@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { cachedResponse } from "@/lib/utils/apiCache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,7 +21,9 @@ export async function GET(request: NextRequest) {
       | null;
     const city = searchParams.get("city");
     const requiresSkills = searchParams.get("requiresSkills");
-    const limit = parseInt(searchParams.get("limit") || "100");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100); // Max 100
+    const skip = (page - 1) * limit;
 
     const where: any = {};
 
@@ -54,8 +57,12 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
+      skip,
       take: limit,
     });
+
+    // Total count for pagination
+    const total = await prisma.instantJob.count({ where });
 
     // Offer count'u hesapla
     const jobsWithOfferCount = jobs.map((job) => ({
@@ -70,10 +77,18 @@ export async function GET(request: NextRequest) {
         : null,
     }));
 
-    return NextResponse.json({
-      jobs: jobsWithOfferCount,
-      count: jobsWithOfferCount.length,
-    });
+    return cachedResponse(
+      {
+        jobs: jobsWithOfferCount,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      { maxAge: 30, swr: 60 } // Cache for 30 seconds, stale-while-revalidate for 60
+    );
   } catch (error: any) {
     console.error("Instant jobs fetch error:", error);
     return NextResponse.json(

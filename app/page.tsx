@@ -43,7 +43,7 @@ export default function HomePage() {
         <div className="w-full bg-white relative">
           <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 relative z-0">
             {/* Hero Section */}
-            <section className="relative pb-12 md:pb-16">
+            <section className="relative pb-12 md:pb-16" aria-label="Ana başlık ve arama">
               <div className="w-full">
                 {/* Rotating Headline */}
                 <ErrorBoundary>
@@ -76,10 +76,10 @@ export default function HomePage() {
             </ErrorBoundary>
 
             {/* Popular Categories */}
-            <section className="relative py-12 md:py-16">
+            <section className="relative py-12 md:py-16" aria-labelledby="popular-categories-heading">
               <div className="w-full">
                 <div className="mb-8 md:mb-12">
-                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 md:mb-8 text-center">
+                  <h2 id="popular-categories-heading" className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 md:mb-8 text-center">
                     Popüler Kategoriler
                   </h2>
                   <ErrorBoundary>
@@ -112,4 +112,3 @@ export default function HomePage() {
     </div>
   );
 }
-

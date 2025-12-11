@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
+import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
 
 
 export default function AdminStatsPage() {
@@ -31,7 +31,7 @@ export default function AdminStatsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

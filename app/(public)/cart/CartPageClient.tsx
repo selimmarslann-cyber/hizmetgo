@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,12 +24,68 @@ export default function CartPageClient() {
   const [address, setAddress] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [deliveryType, setDeliveryType] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
+  const [businessInfo, setBusinessInfo] = useState<{
+    minOrderAmount?: number | null;
+    deliveryRadius?: number | null;
+    hasDelivery?: boolean;
+    lat?: number;
+    lng?: number;
+  } | null>(null);
 
   const total = getTotal();
+
+  // Auth kontrolü
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        setIsAuthenticated(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // Business bilgisini yükle
+  useEffect(() => {
+    if (cart.length > 0) {
+      const businessId = cart[0].businessId;
+      fetch(`/api/businesses/${businessId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setBusinessInfo({
+              minOrderAmount: data.minOrderAmount,
+              deliveryRadius: data.deliveryRadius,
+              hasDelivery: data.hasDelivery,
+              lat: data.lat,
+              lng: data.lng,
+            });
+          }
+        })
+        .catch((err) => console.error("Business bilgisi yüklenemedi:", err));
+    }
+  }, [cart]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
+
+    // Login kontrolü
+    if (!isAuthenticated) {
+      router.push(`/auth/login?redirect=${encodeURIComponent("/cart")}`);
+      return;
+    }
 
     setLoading(true);
 
@@ -46,7 +102,7 @@ export default function CartPageClient() {
             productId: item.productId,
             quantity: item.quantity,
           })),
-          addressText: address,
+          addressText: deliveryType === "DELIVERY" ? address : (address || "Gel-al"),
           scheduledAt: scheduledAt || undefined,
         }),
         credentials: "include",
@@ -55,6 +111,11 @@ export default function CartPageClient() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 401) {
+          // Unauthorized - login sayfasına yönlendir
+          router.push(`/auth/login?redirect=${encodeURIComponent("/cart")}`);
+          return;
+        }
         error(data.error || "Sipariş oluşturulamadı");
         return;
       }
@@ -69,6 +130,14 @@ export default function CartPageClient() {
     }
   };
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>Yükleniyor...</div>
+      </div>
+    );
+  }
+
   if (cart.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -78,6 +147,28 @@ export default function CartPageClient() {
             <Link href="/map">
               <Button>İşletmelere Göz At</Button>
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="py-12 text-center space-y-4">
+            <p className="text-gray-500 mb-4">
+              Sipariş vermek için giriş yapmalısınız
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Link href={`/auth/login?redirect=${encodeURIComponent("/cart")}`}>
+                <Button>Giriş Yap</Button>
+              </Link>
+              <Link href={`/auth/register?redirect=${encodeURIComponent("/cart")}`}>
+                <Button variant="outline">Kayıt Ol</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -149,14 +240,39 @@ export default function CartPageClient() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {businessInfo?.hasDelivery && (
+                    <div className="space-y-2">
+                      <Label>Teslimat Tipi</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={deliveryType === "DELIVERY" ? "default" : "outline"}
+                          onClick={() => setDeliveryType("DELIVERY")}
+                          className="flex-1"
+                        >
+                          Eve Teslim
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={deliveryType === "PICKUP" ? "default" : "outline"}
+                          onClick={() => setDeliveryType("PICKUP")}
+                          className="flex-1"
+                        >
+                          Gel-Al
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
-                    <Label htmlFor="address">Adres</Label>
+                    <Label htmlFor="address">
+                      {deliveryType === "DELIVERY" ? "Teslimat Adresi" : "Adres (Opsiyonel)"}
+                    </Label>
                     <Input
                       id="address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      required
-                      placeholder="Teslimat adresi"
+                      required={deliveryType === "DELIVERY"}
+                      placeholder={deliveryType === "DELIVERY" ? "Teslimat adresi" : "Adres (opsiyonel)"}
                     />
                   </div>
                   <div className="space-y-2">
@@ -171,13 +287,41 @@ export default function CartPageClient() {
                     />
                   </div>
                   <div className="pt-4 border-t">
+                    {businessInfo?.minOrderAmount &&
+                      total < businessInfo.minOrderAmount && (
+                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <p className="text-sm text-yellow-800">
+                            Minimum sipariş tutarı:{" "}
+                            <strong>
+                              {businessInfo.minOrderAmount.toFixed(2)} ₺
+                            </strong>
+                          </p>
+                          <p className="text-xs text-yellow-700 mt-1">
+                            Sepetinize{" "}
+                            <strong>
+                              {(businessInfo.minOrderAmount - total).toFixed(2)}{" "}
+                              ₺
+                            </strong>{" "}
+                            daha eklemelisiniz.
+                          </p>
+                        </div>
+                      )}
                     <div className="flex justify-between mb-4">
                       <span className="font-semibold">Toplam</span>
                       <span className="text-xl font-bold">
                         {total.toFixed(2)} ₺
                       </span>
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={
+                        loading ||
+                        (businessInfo?.minOrderAmount
+                          ? total < businessInfo.minOrderAmount
+                          : false)
+                      }
+                    >
                       {loading ? "Gönderiliyor..." : "Sipariş İste"}
                     </Button>
                   </div>

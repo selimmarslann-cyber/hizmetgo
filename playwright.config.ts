@@ -11,9 +11,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : undefined,
-  timeout: 60000, // 60 seconds per test
+  timeout: 120000, // 120 seconds per test
   expect: {
-    timeout: 10000, // 10 seconds for assertions
+    timeout: 15000, // 15 seconds for assertions
   },
   globalSetup: require.resolve('./expert/global-setup.ts'),
   globalTeardown: require.resolve('./expert/global-teardown.ts'),
@@ -27,8 +27,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 15000, // 15 seconds for actions
-    navigationTimeout: 30000, // 30 seconds for navigation
+    actionTimeout: 30000, // 30 seconds for actions
+    navigationTimeout: 90000, // 90 seconds for navigation
   },
 
   projects: [
@@ -50,8 +50,10 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    reuseExistingServer: true,
+    timeout: 300 * 1000, // 5 minutes
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });
 

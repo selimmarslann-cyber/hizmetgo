@@ -1,31 +1,24 @@
 import OpenAI from "openai";
 import { config } from "dotenv";
 import { resolve } from "path";
-import { readFileSync } from "fs";
 
 // .env dosyasını manuel yükle (Next.js bazen yüklemez)
 if (typeof window === "undefined") {
   const envPath = resolve(process.cwd(), ".env");
   config({ path: envPath, override: true });
-
-  // Ekstra güvenlik: .env dosyasından direkt oku
-  try {
-    const envContent = readFileSync(envPath, "utf8");
-    const envLines = envContent.split("\n");
-    for (const line of envLines) {
-      if (line.startsWith("OPENAI_API_KEY=")) {
-        const keyValue = line.replace("OPENAI_API_KEY=", "").trim();
-        if (keyValue && !process.env.OPENAI_API_KEY) {
-          process.env.OPENAI_API_KEY = keyValue;
-        } else if (keyValue) {
-          // Eğer zaten varsa ama farklıysa, .env'deki değeri kullan
-          process.env.OPENAI_API_KEY = keyValue;
-        }
-        break;
-      }
+  
+  // Alternatif env path'leri dene
+  const altPaths = [
+    resolve(process.cwd(), "mahallem-main", ".env"),
+    resolve(process.cwd(), ".env.local"),
+  ];
+  
+  for (const altPath of altPaths) {
+    try {
+      config({ path: altPath, override: false });
+    } catch (e) {
+      // Sessizce devam et
     }
-  } catch (e) {
-    // .env okunamazsa sessizce devam et
   }
 }
 

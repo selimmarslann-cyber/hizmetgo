@@ -7,12 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Package, Power, ShoppingBag, Star } from "lucide-react";
 
-
-
 // Static generation'ı engelle
 export default function BusinessDashboardPageClient() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [business, setBusiness] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +54,6 @@ export default function BusinessDashboardPageClient() {
         return;
       }
       const data = await res.json();
-      setUser(data.user);
       loadBusiness(data.user.id);
     } catch (err) {
       router.push("/auth/login");
@@ -122,7 +118,6 @@ export default function BusinessDashboardPageClient() {
   const activeOrders = orders.filter((o) =>
     ["ACCEPTED", "IN_PROGRESS"].includes(o.status),
   );
-  const completedOrders = orders.filter((o) => o.status === "COMPLETED");
 
   // Online durumu badge rengi
   const getStatusBadgeVariant = () => {

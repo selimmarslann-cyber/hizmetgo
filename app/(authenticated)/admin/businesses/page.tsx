@@ -49,7 +49,7 @@ export default function AdminBusinessesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export default function AdminBusinessesPage() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-[#FF6000] flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold">
                     <Store className="w-6 h-6" />
                   </div>
                   <div>

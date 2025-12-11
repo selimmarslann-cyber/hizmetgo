@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Bell, Building2, CheckCircle2, Clock, MapPin, MessageSquare, Phone, User, XCircle } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
@@ -21,9 +21,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
-
-
-
 // Static generation'ı engelle
 export default function BusinessJobsPageClient() {
   const router = useRouter();
@@ -35,7 +32,6 @@ export default function BusinessJobsPageClient() {
   const [activeTab, setActiveTab] = useState<"new" | "active" | "past">("new");
   const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-
   const loadOrders = useCallback(async () => {
     try {
       const userRes = await fetch("/api/auth/me", { credentials: "include" });
@@ -44,7 +40,6 @@ export default function BusinessJobsPageClient() {
         return;
       }
       const userData = await userRes.json();
-
       const businessRes = await fetch(
         `/api/businesses/owner/${userData.user.id}`,
         {
@@ -56,7 +51,6 @@ export default function BusinessJobsPageClient() {
         return;
       }
       const businessData = await businessRes.json();
-
       const ordersRes = await fetch(`/api/orders/business/${businessData.id}`, {
         credentials: "include",
       });
@@ -70,20 +64,16 @@ export default function BusinessJobsPageClient() {
       setLoading(false);
     }
   }, [router]);
-
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
-
   const handleAccept = async () => {
     if (!selectedOrder) return;
-
     try {
       const res = await fetch(`/api/orders/${selectedOrder.id}/accept`, {
         method: "POST",
         credentials: "include",
       });
-
       if (res.ok) {
         setAcceptDialogOpen(false);
         setSelectedOrder(null);
@@ -97,7 +87,6 @@ export default function BusinessJobsPageClient() {
       error("Bir hata oluştu");
     }
   };
-
   const handleReject = async (orderId: string) => {
     const confirmed = await confirmDialog({
       description: "Bu işi reddetmek istediğine emin misin?",
@@ -108,13 +97,11 @@ export default function BusinessJobsPageClient() {
     if (!confirmed) {
       return;
     }
-
     try {
       const res = await fetch(`/api/orders/${orderId}/reject`, {
         method: "POST",
         credentials: "include",
       });
-
       if (res.ok) {
         loadOrders();
         success("Sipariş reddedildi");
@@ -126,7 +113,6 @@ export default function BusinessJobsPageClient() {
       error("Bir hata oluştu");
     }
   };
-
   const getStatusText = (status: string) => {
     const statusMap: Record<string, { text: string; variant: any; icon: any }> =
       {
@@ -161,7 +147,6 @@ export default function BusinessJobsPageClient() {
       statusMap[status] || { text: status, variant: "outline", icon: Clock }
     );
   };
-
   const newOrders = orders.filter((o) => o.status === "PENDING_CONFIRMATION");
   const activeOrders = orders.filter((o) =>
     ["ACCEPTED", "IN_PROGRESS"].includes(o.status),
@@ -171,14 +156,12 @@ export default function BusinessJobsPageClient() {
       o.status,
     ),
   );
-
   const displayOrders =
     activeTab === "new"
       ? newOrders
       : activeTab === "active"
         ? activeOrders
         : pastOrders;
-
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -213,7 +196,6 @@ export default function BusinessJobsPageClient() {
             </div>
           </div>
         </div>
-
         {/* Tabs */}
         <Tabs
           value={activeTab}
@@ -233,7 +215,6 @@ export default function BusinessJobsPageClient() {
             <TabsTrigger value="past">Geçmiş</TabsTrigger>
           </TabsList>
         </Tabs>
-
         {/* Uyarı - Yeni İstekler */}
         {activeTab === "new" && newOrders.length > 0 && (
           <Alert className="mb-6 border-orange-200 bg-orange-50">
@@ -244,7 +225,6 @@ export default function BusinessJobsPageClient() {
             </AlertDescription>
           </Alert>
         )}
-
         {/* Orders List */}
         {loading ? (
           <div className="flex items-center justify-center py-12 min-h-[400px]">
@@ -305,7 +285,6 @@ export default function BusinessJobsPageClient() {
                               )}
                             </span>
                           </div>
-
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4 text-gray-400" />
@@ -343,7 +322,6 @@ export default function BusinessJobsPageClient() {
                           </div>
                         </div>
                       </div>
-
                       {/* Actions */}
                       <div className="flex gap-3 pt-4 border-t">
                         {order.status === "PENDING_CONFIRMATION" && (
@@ -392,7 +370,6 @@ export default function BusinessJobsPageClient() {
           </div>
         )}
       </div>
-
       {/* Accept Dialog */}
       <Dialog open={acceptDialogOpen} onOpenChange={setAcceptDialogOpen}>
         <DialogContent>

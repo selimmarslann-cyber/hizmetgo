@@ -66,7 +66,7 @@ export default function AdminLoginPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -76,7 +76,7 @@ export default function AdminLoginPageClient() {
         <Card className="border-2 border-slate-200 shadow-xl">
           <CardHeader className="text-center pb-4">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-[#FF6000] flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-brand-500 flex items-center justify-center">
                 <Shield className="w-8 h-8 text-white" />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function AdminLoginPageClient() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-[#FF6000] hover:bg-[#FF7000]"
+                className="w-full bg-brand-500 hover:bg-brand-600"
                 disabled={loading}
               >
                 {loading ? "Giriş yapılıyor..." : "Giriş Yap"}

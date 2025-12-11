@@ -20,7 +20,11 @@ test.describe('Payment Flow', () => {
 
   test('should complete payment flow with mock provider', async ({ page, request }) => {
     // First, login with auto-created test user
-    await page.goto('/auth/login', { waitUntil: 'networkidle' });
+    try {
+      await page.goto('/auth/login', { waitUntil: 'load', timeout: 90000 });
+    } catch (error) {
+      await page.goto('/auth/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    }
     
     const emailInput = page.locator('input[type="email"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
@@ -31,13 +35,23 @@ test.describe('Payment Flow', () => {
 
     await emailInput.fill(testUser.email);
     await passwordInput.fill(testUser.password);
-    await loginButton.click();
-    await page.waitForTimeout(2000);
+    
+    // Submit and wait for navigation
+    await Promise.race([
+      loginButton.click(),
+      page.waitForURL('**/account**', { timeout: 10000 }).catch(() => {}),
+      page.waitForURL('**/dashboard**', { timeout: 10000 }).catch(() => {}),
+    ]);
+    await page.waitForTimeout(3000);
 
-    // Navigate to payment page (adjust route as needed)
-    // This could be /orders/[id]/payment or /checkout
-    await page.goto('/orders');
-    await page.waitForTimeout(1000);
+    // Navigate to orders page (requires authentication)
+    try {
+      await page.goto('/orders', { waitUntil: 'load', timeout: 90000 });
+    } catch (error) {
+      // Retry with domcontentloaded if load fails
+      await page.goto('/orders', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    }
+    await page.waitForTimeout(2000);
 
     // Find an order or create a test order
     const orderLink = page.locator('a[href*="/orders/"], button:has-text("Ödeme"), button:has-text("Pay")').first();

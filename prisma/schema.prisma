@@ -67,6 +67,13 @@ model User {
   // OAuth Accounts
   accounts      Account[]
 
+  // FAZ 4: Fee & Invoice System
+  referralProfile UserReferralProfile? @relation("UserReferralProfile")
+  invoices        Invoice[]            @relation("InvoicePartner")
+  ledgerEntries   LedgerEntry[]        @relation("LedgerEntryUser")
+  walletTransactions WalletTransaction[] @relation("WalletTransactionUser")
+  billingProfile  UserBillingProfile?
+
   @@index([role])
   @@map("users")
 }
@@ -93,6 +100,9 @@ model Business {
   isActive                 Boolean          @default(true) @map("is_active")
   onlineStatus             OnlineStatus     @default(OFFLINE) @map("online_status")
   workingHoursJson         Json?            @map("working_hours_json") // { mon: {open:"09:00", close:"19:00"}, ... }
+  minOrderAmount           Decimal?         @map("min_order_amount") @db.Decimal(10, 2) // Minimum sipariş tutarı
+  deliveryRadius           Float?           @map("delivery_radius") // Teslimat yarıçapı (km)
+  hasDelivery              Boolean          @default(false) @map("has_delivery") // Teslimat var mı?
   avgRating                Float            @default(0) @map("avg_rating")
   reviewCount              Int              @default(0) @map("review_count")
   consecutiveCancellations Int              @default(0) @map("consecutive_cancellations")
@@ -205,6 +215,7 @@ model Order {
   messages        Message[]
   referralRewards ReferralReward[]
   deliveryReminder DeliveryReminder? // Teslime 5 dakika kala hatırlatma
+  invoices        Invoice[] // Fatura ilişkisi
 
   @@index([customerId])
   @@index([businessId])
@@ -842,4 +853,152 @@ model Account {
   @@index([userId])
   @@index([provider])
   @@map("accounts")
+}
+
+// ============================================
+// 22. INVOICE (HizmetGo → Partner Komisyon Faturaları)
+// ============================================
+model Invoice {
+  id                  String   @id @default(cuid())
+  partnerId           String   @map("partner_id") // Esnaf/Usta userId
+  orderId             String   @unique @map("order_id") // İlgili sipariş
+  commissionGross     Decimal  @map("commission_gross") @db.Decimal(10, 2) // KDV dahil komisyon (ör: 100.00)
+  referralFee         Decimal  @map("referral_fee") @db.Decimal(10, 2) // TL olarak indirilen referans fee
+  paymentFee          Decimal  @map("payment_fee") @db.Decimal(10, 2) // TL olarak ödeme sistemi kesintisi (%4 of orderAmount)
+  platformNet         Decimal  @map("platform_net") @db.Decimal(10, 2) // KDV hariç net platform geliri
+  vatAmount           Decimal  @map("vat_amount") @db.Decimal(10, 2) // Platform net üzerinden KDV
+  totalAmount         Decimal  @map("total_amount") @db.Decimal(10, 2) // Faturanın genel toplamı (platformNet + vatAmount)
+  currency            String   @default("TRY")
+  pdfUrl              String?  @map("pdf_url") // PDF dosya URL'i
+  externalAccountingId String?  @map("external_accounting_id") // Paraşüt/Logo/Mikro vs entegrasyon referansı
+  issuedAt            DateTime @default(now()) @map("issued_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  partner User  @relation("InvoicePartner", fields: [partnerId], references: [id], onDelete: Cascade)
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ledgerEntries LedgerEntry[]
+
+  @@index([partnerId])
+  @@index([orderId])
+  @@index([issuedAt])
+  @@index([createdAt])
+  @@map("invoices")
+}
+
+// ============================================
+// 23. LEDGER_ENTRY (Muhasebe Kayıtları)
+// ============================================
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  invoiceId   String?  @map("invoice_id") // İlgili komisyon faturası
+  orderId     String?  @map("order_id")
+  userId      String?  @map("user_id") // Referral kazancı, partner, vs
+  type        LedgerEntryType // "PLATFORM_NET_REVENUE" | "REFERRAL_FEE_EXPENSE" | "PAYMENT_FEE_EXPENSE" | "VAT_LIABILITY" | "PARTNER_PAYOUT"
+  description String?
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("TRY")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  user    User?    @relation("LedgerEntryUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([orderId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("ledger_entries")
+}
+
+enum LedgerEntryType {
+  PLATFORM_NET_REVENUE // Platform net geliri
+  REFERRAL_FEE_EXPENSE // Referans fee gideri
+  PAYMENT_FEE_EXPENSE // Ödeme sistemi fee gideri
+  VAT_LIABILITY // KDV yükümlülüğü
+  PARTNER_PAYOUT // Partner ödemesi
+}
+
+// ============================================
+// 24. WALLET_TRANSACTION (Kullanıcı Cüzdan Hareketleri)
+// ============================================
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  orderId     String?  @map("order_id")
+  type        WalletTransactionType // "REFERRAL_INCOME" | "PARTNER_INCOME" | "WITHDRAWAL" vs.
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("TRY")
+  description String? // İşlem açıklaması
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation("WalletTransactionUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("wallet_transactions")
+}
+
+enum WalletTransactionType {
+  REFERRAL_INCOME // Referans geliri
+  PARTNER_INCOME // Partner geliri (esnaf/usta kazancı)
+  WITHDRAWAL // Çekim
+  DEPOSIT // Yatırma
+  REFUND // İade
+}
+
+// ============================================
+// 25. USER_REFERRAL_PROFILE (Kullanıcı Referral Ayarları)
+// ============================================
+model UserReferralProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  level        Int      @default(0) // L1, L2, L3, L4, L5
+  rank         Int      @default(0) // Rank 0..4
+  customRate   Decimal? @map("custom_rate") @db.Decimal(5, 4) // Kullanıcıya özel fee oranı (opsiyonel, 0.0000 - 1.0000)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation("UserReferralProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([level])
+  @@index([rank])
+  @@map("user_referral_profiles")
+}
+
+// ============================================
+// 26. USER_BILLING_PROFILE (Kullanıcı Fatura Profili)
+// ============================================
+model UserBillingProfile {
+  id                    String   @id @default(cuid())
+  userId                 String   @unique @map("user_id")
+  billingType            String   @map("billing_type") // "PERSONAL" | "COMPANY"
+  fullName               String?  @map("full_name") // Şahıs için: ad soyad
+  tckn                   String?  // Şahıs için: TCKN
+  companyName            String?  @map("company_name") // Şirket için: ünvan
+  taxNumber              String?  @map("tax_number") // Şirket için: vergi no
+  taxOffice              String?  @map("tax_office") // Vergi Dairesi
+  country                String?  @default("Türkiye")
+  city                   String?
+  district               String?
+  addressLine            String?  @map("address_line")
+  iban                   String?
+  invoiceDeliveryMethod  String   @default("PDF_ONLY") @map("invoice_delivery_method") // "PDF_ONLY" | "E_ARCHIVE" | "MANUAL_UPLOAD"
+  isComplete             Boolean  @default(false) @map("is_complete") // Fatura profili tamamlanmış mı
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isComplete])
+  @@map("user_billing_profiles")
 }

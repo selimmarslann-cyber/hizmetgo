@@ -8,7 +8,6 @@
  * - Sipariş durumunu güncelleyebilir
  * - Müşteri ile mesajlaşabilir (yakında)
  */
-
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,10 +24,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
-import { motion } from "framer-motion";
-
-
-
 // Static generation'ı engelle
 export default function BusinessOrderDetailPageClient() {
   const params = useParams();
@@ -37,7 +32,6 @@ export default function BusinessOrderDetailPageClient() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-
   const loadOrder = useCallback(async () => {
     try {
       const res = await fetch(`/api/orders/${params.id}`, {
@@ -56,11 +50,9 @@ export default function BusinessOrderDetailPageClient() {
       setLoading(false);
     }
   }, [params.id, error]);
-
   useEffect(() => {
     loadOrder();
   }, [loadOrder]);
-
   const handleCompleteOrder = async () => {
     if (
       !confirm(
@@ -69,14 +61,12 @@ export default function BusinessOrderDetailPageClient() {
     ) {
       return;
     }
-
     setUpdating(true);
     try {
       const res = await fetch(`/api/orders/${params.id}/complete`, {
         method: "POST",
         credentials: "include",
       });
-
       if (res.ok) {
         success("Sipariş tamamlandı olarak işaretlendi");
         loadOrder();
@@ -90,7 +80,6 @@ export default function BusinessOrderDetailPageClient() {
       setUpdating(false);
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -101,7 +90,6 @@ export default function BusinessOrderDetailPageClient() {
       </div>
     );
   }
-
   if (!order) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -118,7 +106,6 @@ export default function BusinessOrderDetailPageClient() {
       </div>
     );
   }
-
   const getStatusText = (status: string) => {
     const statusMap: Record<string, { text: string; variant: any; icon: any }> =
       {
@@ -157,11 +144,9 @@ export default function BusinessOrderDetailPageClient() {
       statusMap[status] || { text: status, variant: "outline", icon: Clock }
     );
   };
-
   const statusInfo = getStatusText(order.status);
   const StatusIcon = statusInfo.icon;
   const canComplete = ["ACCEPTED", "IN_PROGRESS"].includes(order.status);
-
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -193,7 +178,6 @@ export default function BusinessOrderDetailPageClient() {
             </Badge>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -233,7 +217,6 @@ export default function BusinessOrderDetailPageClient() {
                 )}
               </CardContent>
             </Card>
-
             {/* Customer Info */}
             <Card>
               <CardHeader>
@@ -261,7 +244,6 @@ export default function BusinessOrderDetailPageClient() {
                     )}
                   </div>
                 </div>
-
                 <div className="pt-4 border-t space-y-3">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">
@@ -272,7 +254,6 @@ export default function BusinessOrderDetailPageClient() {
                       <p className="font-medium">{order.addressText}</p>
                     </div>
                   </div>
-
                   {order.scheduledAt && (
                     <div>
                       <p className="text-sm text-gray-500 mb-1">
@@ -296,7 +277,6 @@ export default function BusinessOrderDetailPageClient() {
               </CardContent>
             </Card>
           </div>
-
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Order Summary */}
@@ -337,7 +317,6 @@ export default function BusinessOrderDetailPageClient() {
                 </div>
               </CardContent>
             </Card>
-
             {/* Actions */}
             <Card>
               <CardHeader>
@@ -354,7 +333,6 @@ export default function BusinessOrderDetailPageClient() {
                     {updating ? "Tamamlanıyor..." : "Siparişi Tamamla"}
                   </Button>
                 )}
-
                 <Button
                   variant="outline"
                   className="w-full"
@@ -365,7 +343,6 @@ export default function BusinessOrderDetailPageClient() {
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Müşteriye Mesaj Gönder
                 </Button>
-
                 {order.customer?.phone && (
                   <Button variant="outline" className="w-full" asChild>
                     <a href={`tel:${order.customer.phone}`}>
@@ -376,7 +353,6 @@ export default function BusinessOrderDetailPageClient() {
                 )}
               </CardContent>
             </Card>
-
             {/* Order Timeline */}
             <Card>
               <CardHeader>
@@ -395,7 +371,6 @@ export default function BusinessOrderDetailPageClient() {
                       </p>
                     </div>
                   </div>
-
                   {["ACCEPTED", "IN_PROGRESS", "COMPLETED"].includes(
                     order.status,
                   ) && (
@@ -410,7 +385,6 @@ export default function BusinessOrderDetailPageClient() {
                       </div>
                     </div>
                   )}
-
                   {["IN_PROGRESS", "COMPLETED"].includes(order.status) && (
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
@@ -421,7 +395,6 @@ export default function BusinessOrderDetailPageClient() {
                       </div>
                     </div>
                   )}
-
                   {order.status === "COMPLETED" && order.completedAt && (
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">

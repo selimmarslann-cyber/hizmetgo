@@ -39,18 +39,18 @@ test.describe('API Health Check', () => {
         // Add minimal payload for POST requests
         if (endpoint.method === 'POST') {
           if (endpoint.path.includes('/register')) {
-            options.data = {
+            options.body = JSON.stringify({
               email: `test-${Date.now()}@example.com`,
               password: 'TestPassword123!',
               name: 'Test User',
-            };
+            });
           } else if (endpoint.path.includes('/login')) {
-            options.data = {
+            options.body = JSON.stringify({
               email: 'test@example.com',
               password: 'test123',
-            };
+            });
           } else {
-            options.data = {};
+            options.body = JSON.stringify({});
           }
         }
 

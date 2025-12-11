@@ -4,45 +4,35 @@
  *
  * Interactive charts, trend analysis, customer insights, performance metrics
  */
-
 import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  AlertCircle,
   BarChart3,
-  Clock,
   DollarSign,
   Package,
   RefreshCw,
   ShoppingBag,
   Star,
-  Target,
   TrendingDown,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 import RevenueChart from "@/components/analytics/RevenueChart";
 import OrderStatusChart from "@/components/analytics/OrderStatusChart";
 import RatingDistributionChart from "@/components/analytics/RatingDistributionChart";
 import type { AnalyticsDashboardData } from "@/lib/analytics/types";
-
 // Static generation'ı engelle - client component olduğu için
 export default function BusinessAnalyticsPageClient() {
   const { error } = useToast();
   const [data, setData] = useState<AnalyticsDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d">("30d");
-
   const loadAnalytics = useCallback(async () => {
     try {
       setLoading(true);
-
       const now = new Date();
       const startDate = new Date(now);
-
       if (dateRange === "7d") {
         startDate.setDate(startDate.getDate() - 7);
       } else if (dateRange === "30d") {
@@ -50,16 +40,13 @@ export default function BusinessAnalyticsPageClient() {
       } else {
         startDate.setDate(startDate.getDate() - 90);
       }
-
       const params = new URLSearchParams({
         startDate: startDate.toISOString(),
         endDate: now.toISOString(),
       });
-
       const res = await fetch(`/api/business/analytics?${params.toString()}`, {
         credentials: "include",
       });
-
       if (res.ok) {
         const analyticsData = await res.json();
         setData(analyticsData);
@@ -73,11 +60,9 @@ export default function BusinessAnalyticsPageClient() {
       setLoading(false);
     }
   }, [error, dateRange]);
-
   useEffect(() => {
     loadAnalytics();
   }, [loadAnalytics]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -88,7 +73,6 @@ export default function BusinessAnalyticsPageClient() {
       </div>
     );
   }
-
   if (!data) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -99,7 +83,6 @@ export default function BusinessAnalyticsPageClient() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -134,7 +117,6 @@ export default function BusinessAnalyticsPageClient() {
             </button>
           </div>
         </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {/* Today's Revenue */}
@@ -169,7 +151,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           {/* This Month Revenue */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -187,7 +168,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           {/* Orders */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -218,7 +198,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           {/* Rating */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -242,7 +221,6 @@ export default function BusinessAnalyticsPageClient() {
             </CardContent>
           </Card>
         </div>
-
         {/* Additional Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <Card>
@@ -258,7 +236,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-gray-600">
@@ -274,7 +251,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-gray-600">
@@ -289,7 +265,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-gray-600">
@@ -302,7 +277,6 @@ export default function BusinessAnalyticsPageClient() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-gray-600">
@@ -316,7 +290,6 @@ export default function BusinessAnalyticsPageClient() {
             </CardContent>
           </Card>
         </div>
-
         {/* Charts & Details */}
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
@@ -325,7 +298,6 @@ export default function BusinessAnalyticsPageClient() {
             <TabsTrigger value="products">En Çok Satan Ürünler</TabsTrigger>
             <TabsTrigger value="performance">Performans Metrikleri</TabsTrigger>
           </TabsList>
-
           <TabsContent value="overview" className="space-y-6">
             {/* Revenue Chart */}
             <Card>
@@ -338,7 +310,6 @@ export default function BusinessAnalyticsPageClient() {
                 <RevenueChart data={data.timeSeries} />
               </CardContent>
             </Card>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Order Status Chart */}
               <Card>
@@ -353,7 +324,6 @@ export default function BusinessAnalyticsPageClient() {
                   />
                 </CardContent>
               </Card>
-
               {/* Rating Distribution */}
               <Card>
                 <CardHeader>
@@ -369,7 +339,6 @@ export default function BusinessAnalyticsPageClient() {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="revenue" className="space-y-6">
             <Card>
               <CardHeader>
@@ -406,7 +375,6 @@ export default function BusinessAnalyticsPageClient() {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="products" className="space-y-6">
             <Card>
               <CardHeader>
@@ -448,7 +416,6 @@ export default function BusinessAnalyticsPageClient() {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="performance" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -484,7 +451,6 @@ export default function BusinessAnalyticsPageClient() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">

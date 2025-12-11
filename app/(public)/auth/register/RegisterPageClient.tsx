@@ -26,6 +26,7 @@ export default function RegisterPageClient() {
   const [loading, setLoading] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
   const [instantJobNotifications, setInstantJobNotifications] = useState(false);
+  const [unskilledJobNotifications, setUnskilledJobNotifications] = useState(false);
   const [whatsappNotifications, setWhatsappNotifications] = useState(false);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [emailMarketing, setEmailMarketing] = useState(false);
@@ -57,6 +58,7 @@ export default function RegisterPageClient() {
           email,
           password,
           instantJobNotifications,
+          unskilledJobNotifications,
           whatsappNotifications,
           smsNotifications,
           emailMarketing,
@@ -117,7 +119,7 @@ export default function RegisterPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,7 +128,7 @@ export default function RegisterPageClient() {
       >
         <Card className="border-2 border-slate-200 shadow-xl">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#FF6000] flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-brand-500 flex items-center justify-center mx-auto mb-4">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-900">
@@ -137,7 +139,7 @@ export default function RegisterPageClient() {
               hesabınız var mı?{" "}
               <Link
                 href="/auth/login"
-                className="text-[#FF6000] hover:underline font-semibold"
+                className="text-brand-500 hover:underline font-semibold"
               >
                 Giriş yapın
               </Link>
@@ -171,7 +173,7 @@ export default function RegisterPageClient() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
                 />
               </div>
               <div className="space-y-2">
@@ -185,7 +187,7 @@ export default function RegisterPageClient() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
                 />
               </div>
               <div className="space-y-2">
@@ -203,7 +205,7 @@ export default function RegisterPageClient() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
                 />
               </div>
 
@@ -225,8 +227,7 @@ export default function RegisterPageClient() {
                         htmlFor="instantJobNotifications"
                         className="text-sm font-medium text-slate-900 cursor-pointer"
                       >
-                        Vasıf aranmayan işlerden (ek gelir) bildirim almak ister
-                        misiniz?
+                        Anlık işlerden bildirim almak ister misiniz?
                       </Label>
                     </div>
                     <Switch
@@ -238,6 +239,29 @@ export default function RegisterPageClient() {
                   <p className="text-xs text-slate-600">
                     50 km çevredeki anlık işlerden bildirim al. Örnek: &quot;Ödevimi
                     yapacak birini arıyorum&quot;
+                  </p>
+                </div>
+
+                {/* Vasıfsız İşler Bildirimi */}
+                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-blue-600" />
+                      <Label
+                        htmlFor="unskilledJobNotifications"
+                        className="text-sm font-medium text-slate-900 cursor-pointer"
+                      >
+                        Vasıf gerektirmeyen işlerden bildirim alarak ek kazanç sağlamak istiyorum
+                      </Label>
+                    </div>
+                    <Switch
+                      id="unskilledJobNotifications"
+                      checked={unskilledJobNotifications}
+                      onCheckedChange={setUnskilledJobNotifications}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Bulunduğunuz ilde yayınlanan vasıfsız iş ilanları için bildirim alırsınız. İsterseniz sonradan Profil &gt; Bildirimler bölümünden kapatabilirsiniz.
                   </p>
                 </div>
 
@@ -413,7 +437,7 @@ export default function RegisterPageClient() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-[#FF6000] hover:bg-[#FF5500] text-white font-semibold"
+                className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
                 disabled={loading}
               >
                 {loading ? (

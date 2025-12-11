@@ -99,7 +99,7 @@ export default function LoginPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -143,7 +143,7 @@ export default function LoginPageClient() {
                   Hesabınıza giriş yapın veya{" "}
                   <Link
                     href="/auth/register"
-                    className="text-[#FF6000] hover:underline font-semibold"
+                    className="text-brand-500 hover:underline font-semibold"
                   >
                     yeni hesap oluşturun
                   </Link>
@@ -172,7 +172,7 @@ export default function LoginPageClient() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                    className="pl-10 h-12 border-2 border-slate-200 focus:border-brand-500"
                   />
                 </div>
               </div>
@@ -190,12 +190,12 @@ export default function LoginPageClient() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 border-2 border-slate-200 focus:border-[#FF6000]"
+                  className="h-12 border-2 border-slate-200 focus:border-brand-500"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full h-12 bg-[#FF6000] hover:bg-[#FF5500] text-white font-semibold"
+                className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
                 disabled={loading}
               >
                 {loading ? (
@@ -237,7 +237,7 @@ export default function LoginPageClient() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12 border-2 border-[#FF6000] text-[#FF6000] hover:bg-[#FF6000] hover:text-white font-semibold"
+                    className="w-full h-12 border-2 border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white font-semibold"
                   >
                     <UserPlus className="w-4 h-4 mr-2" />
                     Kayıt Ol
@@ -246,7 +246,7 @@ export default function LoginPageClient() {
                 <div className="text-center">
                   <Link
                     href="/auth/register"
-                    className="text-sm text-[#FF6000] hover:underline font-semibold"
+                    className="text-sm text-brand-500 hover:underline font-semibold"
                   >
                     Hesabınız yok mu? Kayıt olun
                   </Link>

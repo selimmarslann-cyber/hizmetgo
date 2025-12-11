@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Trash2, CheckCircle2, XCircle, Clock, Star } from "lucide-react";
+import { Search, Trash2, CheckCircle2, Star } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 
 export default function AdminReviewsPageClient() {
@@ -92,7 +92,7 @@ export default function AdminReviewsPageClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

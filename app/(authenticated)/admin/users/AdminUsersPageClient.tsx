@@ -1,24 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Mail, Search, Shield, User } from "lucide-react";
-
-
+import { Search } from "lucide-react";
 // Static generation'ı engelle
 export default function AdminUsersPageClient() {
-  const router = useRouter();
+
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
   useEffect(() => {
     loadUsers();
   }, []);
-
   const loadUsers = async () => {
     try {
       const res = await fetch("/api/admin/users", {
@@ -34,21 +30,18 @@ export default function AdminUsersPageClient() {
       setLoading(false);
     }
   };
-
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#FF6000] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -59,7 +52,6 @@ export default function AdminUsersPageClient() {
           </p>
         </div>
       </div>
-
       {/* Search */}
       <Card>
         <CardContent className="pt-6">
@@ -74,7 +66,6 @@ export default function AdminUsersPageClient() {
           </div>
         </CardContent>
       </Card>
-
       {/* Users Table */}
       <Card>
         <CardHeader>
@@ -110,7 +101,7 @@ export default function AdminUsersPageClient() {
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FF6000] flex items-center justify-center text-white font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white font-semibold">
                           {user.name?.charAt(0)?.toUpperCase() || "U"}
                         </div>
                         <span className="font-medium">

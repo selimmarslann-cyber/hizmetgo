@@ -7,6 +7,9 @@ import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
 import { trackSignup } from "@/lib/analytics/trackEvent";
 import { cookies } from "next/headers";
+import { validatePassword } from "@/lib/utils/passwordPolicy";
+import { createAuditLog, AuditEventType, getIpAddress, getUserAgent } from "@/lib/utils/auditLog";
+import { sanitizeEmail, sanitizeString } from "@/lib/utils/sanitize";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,6 +19,7 @@ const registerSchema = z.object({
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
   instantJobNotifications: z.boolean().optional().default(false), // Anlık işlerden bildirim almak ister mi?
+  unskilledJobNotifications: z.boolean().optional().default(false), // Vasıf gerektirmeyen işlerden bildirim almak ister mi?
   whatsappNotifications: z.boolean().optional().default(false), // WhatsApp bildirimleri
   smsNotifications: z.boolean().optional().default(false), // SMS bildirimleri
   emailMarketing: z.boolean().optional().default(false), // E-posta reklam/tanıtım
@@ -39,12 +43,28 @@ export async function POST(request: NextRequest) {
     
     const validated = registerSchema.parse(body);
 
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(validated.email);
+    const sanitizedName = sanitizeString(validated.name);
+
+    // Password policy validation
+    const passwordValidation = validatePassword(validated.password);
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { 
+          error: "Şifre gereksinimlerini karşılamıyor",
+          details: passwordValidation.errors 
+        },
+        { status: 400 }
+      );
+    }
+
     // Referral kodu query param'dan al
     const searchParams = request.nextUrl.searchParams;
     const refCode = searchParams.get("ref") || validated.ref;
 
     // E-posta kontrolü
-    const existingUser = await getUserByEmail(validated.email);
+    const existingUser = await getUserByEmail(sanitizedEmail);
     if (existingUser) {
       return NextResponse.json(
         { error: "Bu e-posta adresi zaten kullanılıyor" },
@@ -65,10 +85,11 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await createUser({
-      email: validated.email,
+      email: sanitizedEmail,
       password: validated.password,
-      name: validated.name,
+      name: sanitizedName,
       instantJobNotifications: validated.instantJobNotifications || false,
+      unskilledJobNotifications: validated.unskilledJobNotifications || false,
       whatsappNotifications: validated.whatsappNotifications || false,
       smsNotifications: validated.smsNotifications || false,
       emailMarketing: validated.emailMarketing || false,
@@ -178,6 +199,18 @@ export async function POST(request: NextRequest) {
     if (mobileToken) {
       responseData.sessionToken = mobileToken;
     }
+
+    // Audit log user creation
+    const ipAddress = getIpAddress(request);
+    const userAgent = getUserAgent(request);
+    await createAuditLog({
+      userId: user.id,
+      eventType: AuditEventType.USER_CREATE,
+      description: `New user registered: ${user.email}`,
+      ipAddress,
+      userAgent,
+      metadata: { email: user.email, name: user.name, hasReferralCode: !!refCode },
+    });
 
     const response = NextResponse.json(responseData, { status: 201 });
 
