@@ -7538,61 +7538,108 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
 
   {
     id: "real-estate",
-    name: "Emlak Danışmanlığı",
+    name: "Gayrimenkul / Emlak",
     keywords: [
+      "gayrimenkul",
       "emlak",
-
       "emlakçı",
-
+      "gayrimenkul danışmanlığı",
       "emlak danışmanlığı",
-
+      "gayrimenkul uzmanı",
+      "emlak uzmanı",
+      "gayrimenkul değerleme",
+      "emlak değerleme",
+      "gayrimenkul expertizi",
+      "emlak expertizi",
+      "gayrimenkul yatırım",
+      "emlak yatırım",
+      "gayrimenkul alım satım",
+      "emlak alım satım",
+      "gayrimenkul kiralama",
+      "emlak kiralama",
+      "gayrimenkul lazım",
       "emlak lazım",
-
       "emlakçı lazım",
-
+      "gayrimenkul danışmanlığı lazım",
       "emlak danışmanlığı lazım",
-
+      "gayrimenkul işi",
       "emlak işi",
-
       "emlakçı işi",
     ],
     subServices: [
       {
         id: "real-estate-consulting",
-        name: "Emlak danışmanlığı",
+        name: "Gayrimenkul / Emlak danışmanlığı",
         keywords: [
+          "gayrimenkul danışmanlığı",
           "emlak danışmanlığı",
-
+          "gayrimenkul danışmanı",
           "emlak danışmanı",
-
+          "gayrimenkul uzmanı",
+          "emlak uzmanı",
+          "gayrimenkul danışmanlığı işi",
           "emlak danışmanlığı işi",
-
+          "gayrimenkul danışmanı işi",
           "emlak danışmanı işi",
-
+          "gayrimenkul danışmanlığı lazım",
           "emlak danışmanlığı lazım",
         ],
       },
       {
+        id: "real-estate-valuation",
+        name: "Gayrimenkul değerleme ve expertiz",
+        keywords: [
+          "gayrimenkul değerleme",
+          "emlak değerleme",
+          "gayrimenkul expertizi",
+          "emlak expertizi",
+          "gayrimenkul değer tespiti",
+          "emlak değer tespiti",
+          "gayrimenkul ekspertiz",
+          "emlak ekspertiz",
+          "gayrimenkul değerleme işi",
+          "emlak değerleme işi",
+          "gayrimenkul expertiz işi",
+          "emlak expertiz işi",
+          "gayrimenkul değerleme lazım",
+          "emlak değerleme lazım",
+        ],
+      },
+      {
+        id: "real-estate-investment",
+        name: "Gayrimenkul yatırım danışmanlığı",
+        keywords: [
+          "gayrimenkul yatırım",
+          "emlak yatırım",
+          "gayrimenkul yatırım danışmanlığı",
+          "emlak yatırım danışmanlığı",
+          "gayrimenkul yatırım uzmanı",
+          "emlak yatırım uzmanı",
+          "gayrimenkul yatırım işi",
+          "emlak yatırım işi",
+          "gayrimenkul yatırım lazım",
+          "emlak yatırım lazım",
+        ],
+      },
+      {
         id: "other-real-estate",
-        name: "Diğer (emlak danışmanlığı ile ilgili, listede yok)",
+        name: "Diğer (gayrimenkul / emlak ile ilgili, listede yok)",
         isOther: true,
         keywords: [
+          "gayrimenkul",
           "emlak",
-
           "emlakçı",
-
+          "gayrimenkul danışmanlığı",
           "emlak danışmanlığı",
-
+          "gayrimenkul lazım",
           "emlak lazım",
-
           "emlakçı lazım",
-
+          "gayrimenkul danışmanlığı lazım",
           "emlak danışmanlığı lazım",
-
+          "gayrimenkul işi",
           "emlak işi",
-
           "emlakçı işi",
-
+          "gayrimenkul hizmeti",
           "emlak hizmeti",
         ],
       },
