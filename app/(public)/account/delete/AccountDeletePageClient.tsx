@@ -240,9 +240,7 @@ export default function AccountDeletePageClient() {
         </div>
       </div>
     );
-  }
-
-  if (step === "processing") {
+  } else if (step === "processing") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="max-w-md w-full">
@@ -256,7 +254,6 @@ export default function AccountDeletePageClient() {
     );
   }
 
-  // Default: confirm step
   return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-2xl mx-auto">
