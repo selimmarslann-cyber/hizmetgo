@@ -84,8 +84,9 @@ export default function AccountDeletePageClient() {
     }
   };
 
-  if (step === "info") {
-    return (
+  const renderContent = () => {
+    if (step === "info") {
+      return (
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -239,24 +240,24 @@ export default function AccountDeletePageClient() {
           </div>
         </div>
       </div>
-    );
-  }
+      );
+    }
 
-  if (step === "processing") {
+    if (step === "processing") {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center px-4">
+          <Card className="max-w-md w-full">
+            <CardContent className="py-12 text-center">
+              <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-lg font-semibold mb-2">Hesap Silme İşlemi</p>
+              <p className="text-slate-600">İşleminiz gerçekleştiriliyor...</p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="py-12 text-center">
-            <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-lg font-semibold mb-2">Hesap Silme İşlemi</p>
-            <p className="text-slate-600">İşleminiz gerçekleştiriliyor...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
@@ -370,6 +371,8 @@ export default function AccountDeletePageClient() {
         </Card>
       </div>
     );
-  }
+  };
+
+  return renderContent();
 }
 
