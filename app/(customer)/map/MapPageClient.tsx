@@ -186,6 +186,7 @@ export default function MapPageClient() {
     }
   };
 
+  const removeFromCartHandler = (productId: string) => {
     if (!selectedBusiness) return;
     const itemId = `${selectedBusiness.id}_${productId}`;
     const existing = cartItems.find((i) => i.id === itemId);
