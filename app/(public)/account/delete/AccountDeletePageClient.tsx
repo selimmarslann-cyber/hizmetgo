@@ -84,180 +84,175 @@ export default function AccountDeletePageClient() {
     }
   };
 
-  const renderContent = () => {
-    if (step === "info") {
-      return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-100 mb-4">
-              <Trash2 className="w-8 h-8 text-red-600" />
+  const infoStep = (
+    <div className="min-h-screen bg-background py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-100 mb-4">
+            <Trash2 className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            Hesap Silme
+          </h1>
+          <p className="text-xl text-slate-600">
+            Hesabınızı ve tüm verilerinizi kalıcı olarak silmek istediğinizden emin misiniz?
+          </p>
+        </div>
+
+        <Alert className="mb-6 border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Uyarı:</strong> Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.
+          </AlertDescription>
+        </Alert>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Silinecek Veriler</CardTitle>
+            <CardDescription>
+              Hesabınız silindiğinde aşağıdaki veriler kalıcı olarak silinir:
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-slate-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Hesap Bilgileri</p>
+                  <p className="text-sm text-slate-600">
+                    E-posta, telefon, ad soyad, profil fotoğrafı
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-slate-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Adres Bilgileri</p>
+                  <p className="text-sm text-slate-600">
+                    Kayıtlı adresler ve konum verileri
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Database className="w-5 h-5 text-slate-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">İş Geçmişi</p>
+                  <p className="text-sm text-slate-600">
+                    Siparişler, işler, teklifler, mesajlaşma geçmişi
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CreditCard className="w-5 h-5 text-slate-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Ödeme Bilgileri</p>
+                  <p className="text-sm text-slate-600">
+                    Cüzdan bakiyesi, ödeme geçmişi (yasal saklama süresi dolana kadar saklanabilir)
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <FileText className="w-5 h-5 text-slate-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Esnaf Bilgileri</p>
+                  <p className="text-sm text-slate-600">
+                    İşletme bilgileri, hizmetler, yorumlar ve puanlar
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">
-              Hesap Silme
-            </h1>
-            <p className="text-xl text-slate-600">
-              Hesabınızı ve tüm verilerinizi kalıcı olarak silmek istediğinizden emin misiniz?
-            </p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <Alert className="mb-6 border-red-200 bg-red-50">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              <strong>Uyarı:</strong> Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.
-            </AlertDescription>
-          </Alert>
-
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Silinecek Veriler</CardTitle>
-              <CardDescription>
-                Hesabınız silindiğinde aşağıdaki veriler kalıcı olarak silinir:
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-slate-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Hesap Bilgileri</p>
-                    <p className="text-sm text-slate-600">
-                      E-posta, telefon, ad soyad, profil fotoğrafı
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-slate-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Adres Bilgileri</p>
-                    <p className="text-sm text-slate-600">
-                      Kayıtlı adresler ve konum verileri
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Database className="w-5 h-5 text-slate-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">İş Geçmişi</p>
-                    <p className="text-sm text-slate-600">
-                      Siparişler, işler, teklifler, mesajlaşma geçmişi
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CreditCard className="w-5 h-5 text-slate-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Ödeme Bilgileri</p>
-                    <p className="text-sm text-slate-600">
-                      Cüzdan bakiyesi, ödeme geçmişi (yasal saklama süresi dolana kadar saklanabilir)
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-slate-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Esnaf Bilgileri</p>
-                    <p className="text-sm text-slate-600">
-                      İşletme bilgileri, hizmetler, yorumlar ve puanlar
-                    </p>
-                  </div>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Saklanacak Veriler</CardTitle>
+            <CardDescription>
+              Yasal yükümlülükler gereği aşağıdaki veriler belirli süreler boyunca saklanır:
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Fatura ve Ödeme Kayıtları</p>
+                  <p className="text-sm text-slate-600">
+                    Vergi mevzuatı gereği 10 yıl süreyle saklanır
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Saklanacak Veriler</CardTitle>
-              <CardDescription>
-                Yasal yükümlülükler gereği aşağıdaki veriler belirli süreler boyunca saklanır:
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Fatura ve Ödeme Kayıtları</p>
-                    <p className="text-sm text-slate-600">
-                      Vergi mevzuatı gereği 10 yıl süreyle saklanır
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Güvenlik ve Yasal Kayıtlar</p>
-                    <p className="text-sm text-slate-600">
-                      Dolandırıcılık önleme ve yasal uyumluluk için gerekli süre boyunca saklanır
-                    </p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Güvenlik ve Yasal Kayıtlar</p>
+                  <p className="text-sm text-slate-600">
+                    Dolandırıcılık önleme ve yasal uyumluluk için gerekli süre boyunca saklanır
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Hesap Silme Süreci</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-3 list-decimal list-inside text-slate-700">
-                <li>Hesap silme talebinizi bu sayfadan oluşturun</li>
-                <li>E-posta ve şifrenizi doğrulayın</li>
-                <li>Hesap silme işlemi 30 gün içinde tamamlanır</li>
-                <li>Bu süre içinde hesabınızı geri alabilirsiniz</li>
-                <li>30 gün sonra hesabınız ve verileriniz kalıcı olarak silinir</li>
-              </ol>
-            </CardContent>
-          </Card>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Hesap Silme Süreci</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-3 list-decimal list-inside text-slate-700">
+              <li>Hesap silme talebinizi bu sayfadan oluşturun</li>
+              <li>E-posta ve şifrenizi doğrulayın</li>
+              <li>Hesap silme işlemi 30 gün içinde tamamlanır</li>
+              <li>Bu süre içinde hesabınızı geri alabilirsiniz</li>
+              <li>30 gün sonra hesabınız ve verileriniz kalıcı olarak silinir</li>
+            </ol>
+          </CardContent>
+        </Card>
 
-          <div className="flex gap-4 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => router.back()}
-              className="px-8"
-            >
-              İptal
-            </Button>
-            <Button
-              onClick={() => setStep("confirm")}
-              variant="destructive"
-              className="px-8"
-            >
-              Devam Et
-            </Button>
-          </div>
+        <div className="flex gap-4 justify-center">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="px-8"
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={() => setStep("confirm")}
+            variant="destructive"
+            className="px-8"
+          >
+            Devam Et
+          </Button>
+        </div>
 
-          <div className="mt-8 text-center text-sm text-slate-600">
-            <p>
-              Sorularınız için{" "}
-              <Link href="/support/help" className="text-brand-500 hover:underline">
-                destek merkezimiz
-              </Link>{" "}
-              ile iletişime geçebilirsiniz.
-            </p>
-          </div>
+        <div className="mt-8 text-center text-sm text-slate-600">
+          <p>
+            Sorularınız için{" "}
+            <Link href="/support/help" className="text-brand-500 hover:underline">
+              destek merkezimiz
+            </Link>{" "}
+            ile iletişime geçebilirsiniz.
+          </p>
         </div>
       </div>
-      );
-    }
+    </div>
+  );
 
-    if (step === "processing") {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center px-4">
-          <Card className="max-w-md w-full">
-            <CardContent className="py-12 text-center">
-              <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-lg font-semibold mb-2">Hesap Silme İşlemi</p>
-              <p className="text-slate-600">İşleminiz gerçekleştiriliyor...</p>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
+  const processingStep = (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <Card className="max-w-md w-full">
+        <CardContent className="py-12 text-center">
+          <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold mb-2">Hesap Silme İşlemi</p>
+          <p className="text-slate-600">İşleminiz gerçekleştiriliyor...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
-    return (
+  const confirmStep = (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
@@ -370,9 +365,15 @@ export default function AccountDeletePageClient() {
           </CardContent>
         </Card>
       </div>
-    );
-  };
+    </div>
+  );
 
-  return renderContent();
+  return (
+    <>
+      {step === "info" && infoStep}
+      {step === "processing" && processingStep}
+      {step === "confirm" && confirmStep}
+    </>
+  );
 }
 
