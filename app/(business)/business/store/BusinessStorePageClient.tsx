@@ -447,7 +447,6 @@ export default function BusinessStorePageClient() {
 
   const isBanned =
     business.bannedUntil && new Date(business.bannedUntil) > new Date();
-  const isOnline = business.onlineStatus === "ONLINE";
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
