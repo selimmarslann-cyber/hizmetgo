@@ -13,10 +13,21 @@ import {
   Store,
   XCircle,
 } from "lucide-react";
+import { Business } from "@/lib/types/domain";
 
+interface BusinessWithOwner extends Business {
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  city?: string;
+  district?: string;
+  phone?: string;
+}
 
 export default function AdminBusinessesPage() {
-  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessWithOwner[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 

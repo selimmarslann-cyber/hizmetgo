@@ -65,8 +65,10 @@ export default function AnalyticsPageClient() {
 
         const data = await res.json();
         setAnalytics(data);
-      } catch (err: any) {
-        setError(err.message || "Analytics yüklenemedi");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Analytics yüklenemedi",
+        );
       } finally {
         setLoading(false);
       }
@@ -167,7 +169,7 @@ export default function AnalyticsPageClient() {
                 {analytics.overview.completionRate}%
               </div>
               <p className="text-xs text-muted-foreground">
-                İş tamamlanan lead'ler
+                İş tamamlanan lead&apos;ler
               </p>
             </CardContent>
           </Card>

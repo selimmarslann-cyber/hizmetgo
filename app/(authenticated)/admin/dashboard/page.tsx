@@ -3,10 +3,17 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, MessageSquare, ShoppingCart, Store, TrendingUp, Users } from "lucide-react";
 
-
+interface DashboardStats {
+  totalUsers: number;
+  totalBusinesses: number;
+  totalOrders: number;
+  openTickets: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+}
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,8 +26,10 @@ export default function AdminDashboardPage() {
         credentials: "include",
       });
       if (res.ok) {
-        const data = await res.json();
-        setStats(data);
+        const response = await res.json();
+        if (response.ok && response.data) {
+          setStats(response.data);
+        }
       }
     } catch (err) {
       console.error("Stats load error:", err);

@@ -40,18 +40,27 @@ export default function AdminInvoicesPageClient() {
 
   useEffect(() => {
     loadInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadInvoices = async () => {
     try {
       const queryParams = new URLSearchParams();
-      if (filters.fromDate) queryParams.append("fromDate", filters.fromDate);
-      if (filters.toDate) queryParams.append("toDate", filters.toDate);
-      if (filters.partnerId) queryParams.append("partnerId", filters.partnerId);
-      if (filters.minAmount)
+      if (filters.fromDate) {
+        queryParams.append("fromDate", filters.fromDate);
+      }
+      if (filters.toDate) {
+        queryParams.append("toDate", filters.toDate);
+      }
+      if (filters.partnerId) {
+        queryParams.append("partnerId", filters.partnerId);
+      }
+      if (filters.minAmount) {
         queryParams.append("minAmount", filters.minAmount);
-      if (filters.maxAmount)
+      }
+      if (filters.maxAmount) {
         queryParams.append("maxAmount", filters.maxAmount);
+      }
 
       const res = await fetch(`/api/admin/invoices?${queryParams}`, {
         credentials: "include",
