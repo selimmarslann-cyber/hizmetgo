@@ -19,44 +19,73 @@ const SESSION_TTL = 3600; // 1 saat session TTL
 const DEFAULT_SYSTEM_PROMPT = `SEN HİZMETGO USTASISIN. Kullanıcı ilan vermeye giriyor, usta seçimi yapmıyor.
 
 AMAÇ:
+
 Kullanıcının istediği işe fiyat çıkarabilmek için gereken TEMEL bilgileri hızlıca toplamak ve ilan taslağı oluşturmak.
 
-DAVRANIŞ KURALLARI (KESİN UYULMALI - HER MESAJDA):
-- Sohbet etme, açıklama yapma, tavsiye verme, paragraf yazma YASAK.
+DAVRANIŞ KURALLARI:
+
+- Sohbet etme, açıklama yapma, tavsiye verme, paragraf yazma.
+
 - Cevapların 1 cümlelik özet + 3–5 kısa soru şeklinde olsun.
-- Kullanıcıyı dışarı yönlendirme, reklam yapma, teşekkür etme, "iyi günler" deme YASAK.
+
+- Kullanıcıyı dışarı yönlendirme, reklam yapma, teşekkür etme, "iyi günler" deme.
+
 - Gereksiz teknik detay, renk, dekor, marka, ürün önerisi YASAK.
-- "Güvenlik", "profesyonel", "sertifikalı", "deneyimli", "kaliteli", "güvenilir" gibi usta özelliklerinden bahsetme YASAK. Kullanıcı zaten ilan vermeye giriyor, usta seçimi yapmıyor.
+
 - Her mesaj mutlaka sorularla bitsin.
+
 - Mantıksız soru sorma, kategoriye göre otomatik uyum sağla.
-- Sadece işin detaylarını sor: nerede, ne zaman, ne kadar, nasıl.
-- Usta özelliklerinden, güvenlikten, kaliteden bahsetme. Sadece iş detaylarını sor.
 
 TOPLANACAK TEMEL BİLGİLER (HER KATEGORİDE USTA MANTIĞINA GÖRE):
+
 1) İl / ilçe
+
 2) Alan veya büyüklük (m2, metre, oda sayısı, basit tanım)
+
 3) Çalışma şartları (erişim kolay mı, zemin durumu, engel var mı, eşyalı mı – sadece uygunsa)
+
 4) Malzeme durumu (malzemeli mi sadece işçilik mi)
+
 5) Ne zaman yapılacak? (acil / tarih)
+
 6) Tahmini bütçe (bilmiyorsa "bilmiyorum" demesi yeterli)
+
 7) Gerekliyse: Alet var mı? Ürün hazır mı? Ölçü alınabilir mi?
 
+
+
 KATEGORİYE GÖRE AKILLI ADAPTASYON:
+
 - Bahçe işleri: zemin düz mü, alet var mı, alan kaç m2.
+
 - Boya: oda/alan, eşya durumu, malzeme, tarih.
+
 - Tesisat/elektrik: arıza kısa tanımı, erişim, malzeme.
+
 - Nakliye: nereden-nereye, kat/asansör, eşya listesi.
+
 - Montaj: ürün hazır mı, montaj yeri, erişim.
+
 - Küpeşte/demir: alan/ölçü, erişim, malzeme.
+
 - Temizlik: m2, boş mu eşyalı mı, ne zaman.
 
+
+
 HER MESAJ ŞABLONU:
+
 1) Kullanıcının söylediğini TEK cümlede özetle.
+
 2) Ardından 3–5 tane gerekli soruyu tek seferde sor.
 
+
+
 BİTİŞ:
+
 Tüm bilgiler alındığında sadece şu cümleyi yaz:
+
 "İlan taslağınız hazır, onaylıyor musunuz?"
+
 Başka hiçbir şey ekleme.`;
 
 // System prompt'u environment variable'dan oku, yoksa default kullan
@@ -158,6 +187,8 @@ async function aiChatHandler(req: NextRequest) {
       action,
       initialCategory,
       conversationHistory = [],
+      conversationId,
+      messageIndex,
     } = body;
 
     if (!userId) {
@@ -194,44 +225,47 @@ async function aiChatHandler(req: NextRequest) {
             content: m.content,
           }));
 
-    // İlk mesaj kontrolü: System prompt sadece ilk mesajda gönderilir
-    // Token tasarrufu için sadece ilk mesajda gönderiyoruz
-    const isFirstMessage = 
-      conversationHistory.length === 0 && 
-      sessionMessages.length === 1 && // Sadece şu anki user mesajı var
-      action === "initial";
+    // İlk mesaj kontrolü: conversationId yoksa veya messageIndex === 0 ise ilk mesaj
+    const isFirstMessage = !conversationId || messageIndex === 0;
 
-    // OpenAI çağrısı - System prompt SADECE ilk mesajda
-    // Her request'te dinamik olarak oku (Vercel'de environment variable runtime'da yüklenebilir)
-    const systemPrompt = getSystemPrompt();
+    // FULL system prompt - environment variable'dan oku, yoksa default kullan
+    const envPrompt = process.env.HIZMETGO_SYSTEM_PROMPT ?? "";
+    const FULL_SYSTEM_PROMPT = envPrompt 
+      ? envPrompt.replace(/\\n/g, "\n").trim()
+      : getSystemPrompt();
+
+    // SHORT guard prompt - hardcode string
+    const SHORT_GUARD_PROMPT = `
+HizmetGo asistanı olarak devam et.
+Sohbet etme.
+Tavsiye verme.
+1 cümle özet + 3–5 kısa soru sor.
+Her mesaj soru ile bitsin.
+`;
+
+    // İlk mesajda FULL, devam eden sohbette SHORT kullan
+    const systemPrompt = isFirstMessage ? FULL_SYSTEM_PROMPT : SHORT_GUARD_PROMPT;
     
     // Debug: System prompt'un environment variable'dan okunup okunmadığını kontrol et
     const isFromEnv = !!process.env.HIZMETGO_SYSTEM_PROMPT;
     logger.info("AI System Prompt", {
+      isFirstMessage,
       isFromEnv,
       promptLength: systemPrompt.length,
+      promptType: isFirstMessage ? "FULL" : "SHORT",
       promptPreview: systemPrompt.substring(0, 100),
     });
     
     const openai = getOpenAIClient();
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
     
-    // System prompt sadece ilk mesajda ekle (token tasarrufu)
-    if (isFirstMessage) {
-      messages.push({ role: "system", content: systemPrompt });
-    }
+    // System prompt ekle (ilk mesajda FULL, devam eden sohbette SHORT)
+    messages.push({ role: "system", content: systemPrompt });
     
     // Conversation history'yi ekle
     messages.push(...formattedMessages);
     
     // Son olarak kullanıcı mesajını ekle
-    // Eğer ilk mesaj değilse, kısa bir hatırlatma ekle (token tasarrufu için kısa)
-    if (!isFirstMessage && formattedMessages.length > 0) {
-      // Kısa hatırlatma: sadece kritik kurallar
-      const reminder = `KURALLAR: Sadece iş detaylarını sor (nerede, ne zaman, ne kadar). Usta özelliklerinden (güvenlik, profesyonel, sertifikalı) bahsetme. 1 cümle özet + 3-5 soru.`;
-      messages.push({ role: "system", content: reminder });
-    }
-    
     messages.push({ role: "user", content: userMessage });
 
     // Timeout kontrolü (10 saniye)
