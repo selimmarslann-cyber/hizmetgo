@@ -60,13 +60,27 @@ Tüm bilgiler alındığında sadece şu cümleyi yaz:
 Başka hiçbir şey ekleme.`;
 
 // System prompt'u environment variable'dan oku, yoksa default kullan
+// Her request'te dinamik olarak oku (Vercel'de environment variable runtime'da yüklenebilir)
 function getSystemPrompt(): string {
-  // Önce environment variable'dan oku
-  if (process.env.HIZMETGO_SYSTEM_PROMPT) {
-    return process.env.HIZMETGO_SYSTEM_PROMPT;
+  // Önce environment variable'dan oku (Vercel'de bu çalışır)
+  const envPrompt = process.env.HIZMETGO_SYSTEM_PROMPT;
+  if (envPrompt && envPrompt.trim()) {
+    // Tırnak işaretlerini kaldır (Vercel bazen tırnak içinde saklar)
+    let cleaned = envPrompt.trim();
+    if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || 
+        (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+      cleaned = cleaned.slice(1, -1);
+    }
+    // Çok satırlı değerler için \n karakterlerini decode et
+    cleaned = cleaned.replace(/\\n/g, "\n");
+    // Başta ve sonda boşlukları temizle
+    cleaned = cleaned.trim();
+    if (cleaned) {
+      return cleaned;
+    }
   }
   
-  // .env dosyasından manuel oku (Next.js bazen yüklemez)
+  // .env dosyasından manuel oku (local development için)
   if (typeof window === "undefined") {
     try {
       const envPath = resolve(process.cwd(), ".env");
@@ -89,8 +103,6 @@ function getSystemPrompt(): string {
   // Fallback: default prompt
   return DEFAULT_SYSTEM_PROMPT;
 }
-
-const HIZMETGO_SYSTEM_PROMPT = getSystemPrompt();
 
 // .env dosyasını manuel yükle
 if (typeof window === "undefined") {
@@ -190,12 +202,23 @@ async function aiChatHandler(req: NextRequest) {
       action === "initial";
 
     // OpenAI çağrısı - System prompt SADECE ilk mesajda
+    // Her request'te dinamik olarak oku (Vercel'de environment variable runtime'da yüklenebilir)
+    const systemPrompt = getSystemPrompt();
+    
+    // Debug: System prompt'un environment variable'dan okunup okunmadığını kontrol et
+    const isFromEnv = !!process.env.HIZMETGO_SYSTEM_PROMPT;
+    logger.info("AI System Prompt", {
+      isFromEnv,
+      promptLength: systemPrompt.length,
+      promptPreview: systemPrompt.substring(0, 100),
+    });
+    
     const openai = getOpenAIClient();
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
     
     // System prompt sadece ilk mesajda ekle (token tasarrufu)
     if (isFirstMessage) {
-      messages.push({ role: "system", content: HIZMETGO_SYSTEM_PROMPT });
+      messages.push({ role: "system", content: systemPrompt });
     }
     
     // Conversation history'yi ekle
