@@ -6,8 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+
 import { useToast } from "@/lib/hooks/useToast";
 import { haversineDistanceKm } from "@/lib/utils/matching";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
@@ -31,8 +30,6 @@ import {
   Zap,
   Search,
 } from "lucide-react";
-
-
 
 // Static generation'ı engelle
 interface InstantJob {
@@ -69,7 +66,7 @@ export default function EarnPageClient() {
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [maxDistance, setMaxDistance] = useState(10);
-  const [statusFilter, setStatusFilter] = useState<"all" | "open">("open");
+  const [statusFilter] = useState<"all" | "open">("open");
 
   // URL'den query parametresini al
   useEffect(() => {
@@ -169,7 +166,6 @@ export default function EarnPageClient() {
         return distance <= maxDistance;
       });
     }
-
 
     setFilteredJobs(filtered);
   }, [

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +64,7 @@ const RANK_BONUSES = [0, 0.5, 1.0, 1.5, 2.0];
 const LEVEL_BASE_PERCENTAGES = [0, 10, 6, 5, 3, 1]; // L0 (yok), L1, L2, L3, L4, L5
 
 export default function AccountReferralPage() {
-  const router = useRouter();
+
   const [overview, setOverview] = useState<ReferralOverview | null>(null);
   const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,16 +142,6 @@ export default function AccountReferralPage() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(2) + "M";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
-    return num.toFixed(0);
   };
 
   if (loading) {

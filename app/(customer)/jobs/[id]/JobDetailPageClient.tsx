@@ -92,7 +92,7 @@ interface MatchedVendor {
 export default function JobDetailPageClient() {
   const params = useParams();
   const router = useRouter();
-  const { success, error } = useToast();
+  const { error } = useToast();
   const [job, setJob] = useState<Job | null>(null);
   const [matchedVendors, setMatchedVendors] = useState<MatchedVendor[]>([]);
   const [loading, setLoading] = useState(true);

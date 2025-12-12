@@ -17,7 +17,8 @@
     "perf:test": "node scripts/performance-test.js",
     "expert": "playwright test expert --reporter=list",
     "expert:ui": "playwright test expert --ui",
-    "expert:report": "playwright test expert --reporter=html"
+    "expert:report": "playwright test expert --reporter=html",
+    "cleanup:unused": "node scripts/cleanup-unused-imports.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

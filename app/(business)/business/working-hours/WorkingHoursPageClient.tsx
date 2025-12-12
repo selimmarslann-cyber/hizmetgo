@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Plus, Save } from "lucide-react";
+import { Calendar, Clock, Save } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 
 // Static generation'ı engelle

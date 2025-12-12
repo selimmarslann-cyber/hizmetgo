@@ -36,7 +36,7 @@ interface Transaction {
 
 export default function AccountWalletPageClient() {
   const router = useRouter();
-  const { currentUser, earnings, jobs } = useHizmetgoStore();
+  const { currentUser, earnings } = useHizmetgoStore();
   const { success, error } = useToast();
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +8,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Briefcase, Gift, Plus, TrendingUp, Wallet } from "lucide-react";
 import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
 
-
 // Static generation'ı engelle
 export default function AccountDashboardPageClient() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+
   const [stats, setStats] = useState({
     balance: 0,
     totalJobs: 0,
@@ -23,12 +21,12 @@ export default function AccountDashboardPageClient() {
 
   const loadData = useCallback(async () => {
     try {
-      // Kullanıcı bilgisi
-      const userRes = await fetch("/api/auth/me", { credentials: "include" });
-      if (userRes.ok) {
-        const userData = await userRes.json();
-        setUser(userData.user);
-      }
+      // Kullanıcı bilgisi (şu an kullanılmıyor)
+      // const userRes = await fetch("/api/auth/me", { credentials: "include" });
+      // if (userRes.ok) {
+      //   const userData = await userRes.json();
+      //   setUser(userData.user);
+      // }
 
       // Referral overview
       const referralRes = await fetch("/api/referral/overview", {

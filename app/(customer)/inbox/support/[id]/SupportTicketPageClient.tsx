@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/lib/hooks/useToast";
 import { ArrowLeft, Bot, Loader2, Send, Shield } from "lucide-react";
 
-
 // Static generation'ı engelle
 interface Message {
   id: string;
@@ -205,7 +204,6 @@ export default function SupportTicketPageClient() {
             {ticket.messages.map((message) => {
               const isUser = message.type === "USER";
               const isBot = message.type === "BOT";
-              const isAdmin = message.type === "ADMIN";
 
               return (
                 <div

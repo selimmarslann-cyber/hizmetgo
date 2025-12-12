@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import { Switch } from "@/components/ui/switch";
 import { Bell, Camera, LinkIcon, Lock, LogOut, MapPin, Save, Store, User, X, Zap } from "lucide-react";
 import { getSectors, getSkillsBySector } from "@/lib/data/skills";
@@ -26,11 +26,10 @@ import {
 import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
 import type { SkillKeyword } from "@/lib/types/mahallem";
 
-
 // Static generation'ı engelle
 export default function AccountProfilePageClient() {
   const router = useRouter();
-  const { currentUser, updateUserSkills, setCurrentUser } = useHizmetgoStore();
+  const { currentUser, updateUserSkills } = useHizmetgoStore();
   const { success, error } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);

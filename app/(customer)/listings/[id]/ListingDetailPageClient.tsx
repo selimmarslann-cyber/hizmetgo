@@ -2,12 +2,11 @@
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/lib/hooks/useToast";
 import ListingImageUpload from "@/components/listings/ListingImageUpload";
 import { AlertCircle, Calendar, CheckCircle2, DollarSign, Home, Loader2, MapPin, Sparkles } from "lucide-react";
-
 
 // Static generation'ı engelle
 interface Listing {

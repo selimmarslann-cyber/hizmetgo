@@ -13,9 +13,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+
 import { Building2, CheckCircle2, Clock, MapPin, Star, TrendingDown } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 import { motion } from "framer-motion";
@@ -45,7 +43,7 @@ interface JobOffer {
 export default function JobDetailPageClient() {
   const params = useParams();
   const router = useRouter();
-  const { success, error, info } = useToast();
+  const { success, error } = useToast();
   const [job, setJob] = useState<any>(null);
   const [offers, setOffers] = useState<JobOffer[]>([]);
   const [loading, setLoading] = useState(true);
