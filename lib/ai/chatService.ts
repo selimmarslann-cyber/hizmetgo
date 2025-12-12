@@ -64,30 +64,32 @@ export async function sendChatMessage(
 
     const data = await response.json();
 
-    if (response.status === 403) {
-      return {
-        reply: "",
-        sessionId: sessionId || "",
-        isComplete: false,
-        error:
-          data.message ||
-          "Bu alan sohbet için değildir. 30 dakika sonra tekrar deneyin.",
-      };
+    // Handle error responses (ok: false format)
+    if (!response.ok || (data.ok === false)) {
+      const errorMessage = data.message || data.error || "Bir hata oluştu. Lütfen tekrar deneyin.";
+      
+      if (response.status === 403) {
+        return {
+          reply: "",
+          sessionId: sessionId || "",
+          isComplete: false,
+          error: errorMessage,
+        };
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    if (!response.ok) {
-      throw new Error(
-        data.message || data.error || "Bir hata oluştu. Lütfen tekrar deneyin.",
-      );
-    }
+    // Handle success responses (ok: true, data: {...} format)
+    const responseData = data.ok === true ? data.data : data;
 
     // Extract AI response text from various possible fields
     const aiText =
-      data.reply ??
-      data.message ??
-      data.content ??
-      data.text ??
-      data.aiResponse ??
+      responseData?.reply ??
+      responseData?.message ??
+      responseData?.content ??
+      responseData?.text ??
+      responseData?.aiResponse ??
       "";
 
     if (!aiText || aiText.trim().length === 0) {
@@ -96,14 +98,14 @@ export async function sendChatMessage(
 
     return {
       reply: aiText,
-      message: data.message,
-      content: data.content,
-      text: data.text,
-      aiResponse: data.aiResponse,
-      sessionId: data.sessionId || sessionId || "",
-      isComplete: data.isComplete || false,
-      localMessage: data.localMessage,
-      shouldSwitchToManual: data.shouldSwitchToManual,
+      message: responseData?.message,
+      content: responseData?.content,
+      text: responseData?.text,
+      aiResponse: responseData?.aiResponse,
+      sessionId: responseData?.sessionId || sessionId || "",
+      isComplete: responseData?.isComplete || false,
+      localMessage: responseData?.localMessage,
+      shouldSwitchToManual: responseData?.shouldSwitchToManual,
     };
   } catch (error: any) {
     clearTimeout(timeoutId);

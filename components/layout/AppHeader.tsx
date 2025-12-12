@@ -196,8 +196,8 @@ export default function AppHeader({
             </span>
           </Link>
 
-          {/* Center Navigation - Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
+          {/* Center Navigation - Desktop Menu - Logo'ya yakın */}
+          <div className="hidden lg:flex items-center gap-1 ml-6">
             {customerTabs
               .filter((tab) => {
                 // Üyelik gerektiren öğeler sadece authenticated kullanıcılar için
