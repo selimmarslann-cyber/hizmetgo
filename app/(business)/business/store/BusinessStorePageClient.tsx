@@ -62,7 +62,7 @@ const BUSINESS_TYPE_OPTIONS = [
 
 export default function BusinessStorePageClient() {
   const router = useRouter();
-  const { success, error, info } = useToast();
+  const { success, error } = useToast();
   const { confirm: confirmDialog, ConfirmDialog } = useConfirmDialog();
   const [business, setBusiness] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
