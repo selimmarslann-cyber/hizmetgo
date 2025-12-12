@@ -16,18 +16,21 @@ import {
 const SESSION_TTL = 3600; // 1 saat session TTL
 
 // System prompt - Environment variable'dan oku, yoksa default kullan
-const DEFAULT_SYSTEM_PROMPT = `SEN HİZMETGO USTASISIN.
+const DEFAULT_SYSTEM_PROMPT = `SEN HİZMETGO USTASISIN. Kullanıcı ilan vermeye giriyor, usta seçimi yapmıyor.
 
 AMAÇ:
 Kullanıcının istediği işe fiyat çıkarabilmek için gereken TEMEL bilgileri hızlıca toplamak ve ilan taslağı oluşturmak.
 
-DAVRANIŞ KURALLARI:
-- Sohbet etme, açıklama yapma, tavsiye verme, paragraf yazma.
+DAVRANIŞ KURALLARI (KESİN UYULMALI - HER MESAJDA):
+- Sohbet etme, açıklama yapma, tavsiye verme, paragraf yazma YASAK.
 - Cevapların 1 cümlelik özet + 3–5 kısa soru şeklinde olsun.
-- Kullanıcıyı dışarı yönlendirme, reklam yapma, teşekkür etme, "iyi günler" deme.
+- Kullanıcıyı dışarı yönlendirme, reklam yapma, teşekkür etme, "iyi günler" deme YASAK.
 - Gereksiz teknik detay, renk, dekor, marka, ürün önerisi YASAK.
+- "Güvenlik", "profesyonel", "sertifikalı", "deneyimli", "kaliteli", "güvenilir" gibi usta özelliklerinden bahsetme YASAK. Kullanıcı zaten ilan vermeye giriyor, usta seçimi yapmıyor.
 - Her mesaj mutlaka sorularla bitsin.
 - Mantıksız soru sorma, kategoriye göre otomatik uyum sağla.
+- Sadece işin detaylarını sor: nerede, ne zaman, ne kadar, nasıl.
+- Usta özelliklerinden, güvenlikten, kaliteden bahsetme. Sadece iş detaylarını sor.
 
 TOPLANACAK TEMEL BİLGİLER (HER KATEGORİDE USTA MANTIĞINA GÖRE):
 1) İl / ilçe
@@ -180,7 +183,7 @@ async function aiChatHandler(req: NextRequest) {
           }));
 
     // İlk mesaj kontrolü: System prompt sadece ilk mesajda gönderilir
-    // Bu sayede token tasarrufu yapılır ve sohbet bağlamı korunur
+    // Token tasarrufu için sadece ilk mesajda gönderiyoruz
     const isFirstMessage = 
       conversationHistory.length === 0 && 
       sessionMessages.length === 1 && // Sadece şu anki user mesajı var
@@ -190,7 +193,7 @@ async function aiChatHandler(req: NextRequest) {
     const openai = getOpenAIClient();
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
     
-    // System prompt sadece ilk mesajda ekle
+    // System prompt sadece ilk mesajda ekle (token tasarrufu)
     if (isFirstMessage) {
       messages.push({ role: "system", content: HIZMETGO_SYSTEM_PROMPT });
     }
@@ -199,6 +202,13 @@ async function aiChatHandler(req: NextRequest) {
     messages.push(...formattedMessages);
     
     // Son olarak kullanıcı mesajını ekle
+    // Eğer ilk mesaj değilse, kısa bir hatırlatma ekle (token tasarrufu için kısa)
+    if (!isFirstMessage && formattedMessages.length > 0) {
+      // Kısa hatırlatma: sadece kritik kurallar
+      const reminder = `KURALLAR: Sadece iş detaylarını sor (nerede, ne zaman, ne kadar). Usta özelliklerinden (güvenlik, profesyonel, sertifikalı) bahsetme. 1 cümle özet + 3-5 soru.`;
+      messages.push({ role: "system", content: reminder });
+    }
+    
     messages.push({ role: "user", content: userMessage });
 
     // Timeout kontrolü (10 saniye)

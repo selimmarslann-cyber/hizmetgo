@@ -84,10 +84,14 @@ export default function AIChatModal({
       messages.length === 0 &&
       userName !== null
     ) {
-      const userNameDisplay = userName || "Değerli";
+      // Remove "Bey" or "Bayan" from user name if present
+      const cleanUserName = (userName || "Değerli")
+        .replace(/\s+(Bey|Bayan)$/i, "")
+        .trim();
+      const userNameDisplay = cleanUserName || "Değerli";
       const welcomeMessage: ChatMessage = {
         role: "assistant",
-        content: `Merhaba ${userNameDisplay} bey, platformumuza hoşgeldiniz! Yapay zeka asistanımız size yardımcı olacak. Unutmayınız ki bu bir sohbet aracı değildir, olabildiğince kısa ve anlaşılır şekilde ilerleyerek ilanınızı birlikte oluşturacağız. ${initialCategory} kategorisiyle ilgili ne tür bir hizmete ihtiyacınız var? Lütfen detaylarıyla belirtin.`,
+        content: `Merhaba ${userNameDisplay}, platformumuza hoşgeldiniz! Yapay zeka asistanımız size yardımcı olacak. Unutmayınız ki bu bir sohbet aracı değildir, olabildiğince kısa ve anlaşılır şekilde ilerleyerek ilanınızı birlikte oluşturacağız. ${initialCategory} kategorisiyle ilgili ne tür bir hizmete ihtiyacınız var? Lütfen detaylarıyla belirtin.`,
       };
 
       setMessages([welcomeMessage]);

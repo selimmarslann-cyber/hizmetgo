@@ -15,11 +15,6 @@ const AppHeader = dynamic(
   { ssr: false }
 );
 
-const CategoryBar = dynamic(
-  () => import("@/components/layout/CategoryBar"),
-  { ssr: false }
-);
-
 const AppFooter = dynamic(
   () => import("@/components/layout/AppFooter"),
   { ssr: false }
@@ -36,11 +31,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <ErrorBoundary>
         <Suspense fallback={<div className="h-[70px] bg-white border-b border-slate-200" />}>
           <AppHeader isPublic={true} />
-        </Suspense>
-      </ErrorBoundary>
-      <ErrorBoundary>
-        <Suspense fallback={<div className="h-[50px] bg-white border-b border-slate-200" />}>
-          <CategoryBar />
         </Suspense>
       </ErrorBoundary>
       <main className="flex-1">
