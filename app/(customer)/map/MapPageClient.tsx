@@ -1,41 +1,11 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 
 // ❗ HATA ÇÖZÜMÜ: dynamic import'un adı değiştirildi
 import NextDynamic from "next/dynamic";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { haversineDistanceKm } from "@/lib/utils/matching";
-import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-} from "@/components/ui/select";
-import MapFilters from "@/components/map/MapFilters";
-import BusinessCard from "@/components/home/BusinessCard";
-import EmptyState from "@/components/ui/empty-state";
-import {
-  Filter,
-  List,
-  MapIcon,
-  MapPin,
-  Minus,
-  Plus,
-  Search,
-  ShoppingCart,
-  Star,
-  Store,
-  X,
-  Zap,
-} from "lucide-react";
 
 // ✔ Leaflet map dinamik import - adı değiştirildi
 const LeafletMap = NextDynamic(
@@ -69,19 +39,7 @@ interface Product {
   active: boolean;
 }
 
-const CATEGORIES = [
-  "Temizlik",
-  "Elektrik",
-  "Tesisat",
-  "Boya / Badana",
-  "Nakliyat",
-  "Beyaz Eşya",
-  "Özel Ders",
-  "Evcil Hayvan",
-];
-
 export default function MapPageClient() {
-  const router = useRouter();
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
@@ -97,11 +55,8 @@ export default function MapPageClient() {
 
   const {
     items: cartItems,
-    addItem,
     removeItem,
     updateQuantity,
-    getTotal,
-    getItemCount,
   } = useCartStore();
 
   const [loading, setLoading] = useState(true);
@@ -115,9 +70,6 @@ export default function MapPageClient() {
   );
   const [openNow, setOpenNow] = useState(false);
   const [highRated, setHighRated] = useState(false);
-
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
-  const [showFilters, setShowFilters] = useState(false);
 
   const loadBusinesses = useCallback(async (lat: number, lng: number) => {
     try {
@@ -234,20 +186,6 @@ export default function MapPageClient() {
     }
   };
 
-  const addToCartHandler = (product: Product) => {
-    if (!selectedBusiness) return;
-    addItem({
-      productId: product.id,
-      businessId: selectedBusiness.id,
-      businessName: selectedBusiness.name,
-      productName: product.name,
-      price: product.price,
-      imageUrl: product.imageUrl,
-      quantity: 1,
-    });
-  };
-
-  const removeFromCartHandler = (productId: string) => {
     if (!selectedBusiness) return;
     const itemId = `${selectedBusiness.id}_${productId}`;
     const existing = cartItems.find((i) => i.id === itemId);

@@ -32,6 +32,20 @@ function findUnusedImports() {
           }
         }
       }
+      
+      // Type error: All imports in import declaration are unused.
+      const allImportsMatch = line.match(/Type error: All imports in import declaration are unused/);
+      if (allImportsMatch) {
+        // Önceki satırda dosya yolu var mı kontrol et
+        if (i > 0) {
+          const fileMatch = lines[i - 1].match(/\.\/(.+\.tsx?):(\d+):(\d+)/);
+          if (fileMatch) {
+            const filePath = fileMatch[1];
+            const lineNum = parseInt(fileMatch[2]);
+            errors.push({ filePath, lineNum, unusedName: 'ALL_IMPORTS' });
+          }
+        }
+      }
     }
     
     return errors;
@@ -54,6 +68,20 @@ function findUnusedImports() {
             const filePath = fileMatch[1];
             const lineNum = parseInt(fileMatch[2]);
             errors.push({ filePath, lineNum, unusedName });
+          }
+        }
+      }
+      
+      // Type error: All imports in import declaration are unused.
+      const allImportsMatch = line.match(/Type error: All imports in import declaration are unused/);
+      if (allImportsMatch) {
+        // Önceki satırda dosya yolu var mı kontrol et
+        if (i > 0) {
+          const fileMatch = lines[i - 1].match(/\.\/(.+\.tsx?):(\d+):(\d+)/);
+          if (fileMatch) {
+            const filePath = fileMatch[1];
+            const lineNum = parseInt(fileMatch[2]);
+            errors.push({ filePath, lineNum, unusedName: 'ALL_IMPORTS' });
           }
         }
       }
@@ -308,6 +336,52 @@ while (iteration < maxIterations) {
   let fixed = 0;
   for (const error of errors) {
     console.log(`  - ${error.filePath}:${error.lineNum} - '${error.unusedName}'`);
+    
+    // ALL_IMPORTS durumu - tüm import satırını kaldır
+    if (error.unusedName === 'ALL_IMPORTS') {
+      const fullPath = path.join(process.cwd(), error.filePath);
+      if (fs.existsSync(fullPath)) {
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        const lines = content.split('\n');
+        const line = lines[error.lineNum - 1] || '';
+        
+        if (line.includes('import')) {
+          // Multi-line import kontrolü
+          let startLine = error.lineNum - 1;
+          let endLine = startLine;
+          
+          // Eğer satırda 'from' yoksa, multi-line import
+          if (!line.includes('from')) {
+            // 'from' satırını bul
+            for (let j = startLine + 1; j < lines.length; j++) {
+              if (lines[j].includes('from')) {
+                endLine = j;
+                break;
+              }
+            }
+          }
+          
+          // Tüm import satırlarını kaldır
+          for (let k = startLine; k <= endLine; k++) {
+            if (k < lines.length) {
+              lines[k] = '';
+            }
+          }
+          
+          const newContent = lines.filter((l, idx) => {
+            if (l.trim() === '' && idx > 0 && lines[idx - 1].trim() === '') {
+              return false;
+            }
+            return true;
+          }).join('\n');
+          fs.writeFileSync(fullPath, newContent, 'utf-8');
+          console.log(`✅ ${error.filePath}:${error.lineNum} - Tüm import satırı kaldırıldı (${endLine - startLine + 1} satır)`);
+          fixed++;
+          totalFixed++;
+          continue;
+        }
+      }
+    }
     
     // Import mu değişken mi kontrol et
     const fullPath = path.join(process.cwd(), error.filePath);
