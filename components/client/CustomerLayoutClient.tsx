@@ -1,8 +1,13 @@
 "use client";
 import { ReactNode, Suspense } from "react";
-import AppHeader from "@/components/layout/AppHeader";
+import dynamic from "next/dynamic";
 import AppFooter from "@/components/layout/AppFooter";
 import PromotionalBanner from "@/components/layout/PromotionalBanner";
+
+const AppHeader = dynamic(
+  () => import("@/components/layout/AppHeader"),
+  { ssr: false }
+);
 
 export default function CustomerLayoutClient({ children }: { children: ReactNode }) {
   return (

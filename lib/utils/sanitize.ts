@@ -41,10 +41,10 @@ export function sanitizeObject<T>(obj: T): T {
     return obj.map((item) => sanitizeObject(item)) as T;
   }
   if (obj && typeof obj === 'object') {
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        sanitized[key] = sanitizeObject((obj as any)[key]);
+        sanitized[key] = sanitizeObject((obj as Record<string, unknown>)[key]);
       }
     }
     return sanitized as T;

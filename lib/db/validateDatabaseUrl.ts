@@ -18,7 +18,7 @@ export function validateDatabaseUrl(): void {
     !databaseUrl.startsWith("postgres://")
   ) {
     // Try to fix common issues
-    let fixedUrl = databaseUrl;
+    const fixedUrl = databaseUrl;
 
     // If it starts with https:// (Supabase connection string sometimes)
     if (databaseUrl.startsWith("https://")) {

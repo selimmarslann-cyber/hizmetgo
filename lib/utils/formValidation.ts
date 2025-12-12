@@ -49,7 +49,7 @@ export const validationRules = {
 
   email: (message = "Geçerli bir e-posta adresi girin"): ValidationRule => ({
     test: (value) => {
-      if (!value) return true; // Optional field
+      if (!value) {return true;} // Optional field
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(value);
     },
@@ -58,7 +58,7 @@ export const validationRules = {
 
   minLength: (min: number, message?: string): ValidationRule => ({
     test: (value) => {
-      if (!value) return true; // Optional field
+      if (!value) {return true;} // Optional field
       return String(value).length >= min;
     },
     message: message || `En az ${min} karakter olmalıdır`,
@@ -66,7 +66,7 @@ export const validationRules = {
 
   maxLength: (max: number, message?: string): ValidationRule => ({
     test: (value) => {
-      if (!value) return true; // Optional field
+      if (!value) {return true;} // Optional field
       return String(value).length <= max;
     },
     message: message || `En fazla ${max} karakter olabilir`,
@@ -74,7 +74,7 @@ export const validationRules = {
 
   min: (min: number, message?: string): ValidationRule => ({
     test: (value) => {
-      if (value === null || value === undefined || value === "") return true;
+      if (value === null || value === undefined || value === "") {return true;}
       const num = Number(value);
       return !isNaN(num) && num >= min;
     },
@@ -83,7 +83,7 @@ export const validationRules = {
 
   max: (max: number, message?: string): ValidationRule => ({
     test: (value) => {
-      if (value === null || value === undefined || value === "") return true;
+      if (value === null || value === undefined || value === "") {return true;}
       const num = Number(value);
       return !isNaN(num) && num <= max;
     },
@@ -92,7 +92,7 @@ export const validationRules = {
 
   phone: (message = "Geçerli bir telefon numarası girin"): ValidationRule => ({
     test: (value) => {
-      if (!value) return true; // Optional field
+      if (!value) {return true;} // Optional field
       const phoneRegex = /^[0-9]{10,15}$/;
       return phoneRegex.test(value.replace(/[\s\-\(\)]/g, ""));
     },
@@ -101,7 +101,7 @@ export const validationRules = {
 
   iban: (message = "Geçerli bir IBAN girin"): ValidationRule => ({
     test: (value) => {
-      if (!value) return true; // Optional field
+      if (!value) {return true;} // Optional field
       const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/;
       return ibanRegex.test(value.replace(/\s/g, "").toUpperCase());
     },

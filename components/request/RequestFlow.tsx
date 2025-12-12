@@ -257,8 +257,8 @@ export default function RequestFlow() {
   };
 
   const canProceedStep1 = () => {
-    if (!formData.urgency) return false;
-    if (formData.urgency === "tarih" && !formData.desiredDate) return false;
+    if (!formData.urgency) {return false;}
+    if (formData.urgency === "tarih" && !formData.desiredDate) {return false;}
     return true;
   };
 
@@ -270,7 +270,7 @@ export default function RequestFlow() {
   };
 
   const countWords = (text: string): number => {
-    if (!text.trim()) return 0;
+    if (!text.trim()) {return 0;}
     // Kelime sayma: boşluklarla ayrılmış kelimeler
     const words = text
       .trim()

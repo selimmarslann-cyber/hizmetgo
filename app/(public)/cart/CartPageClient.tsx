@@ -79,7 +79,7 @@ export default function CartPageClient() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cart.length === 0) return;
+    if (cart.length === 0) {return;}
 
     // Login kontrolü
     if (!isAuthenticated) {

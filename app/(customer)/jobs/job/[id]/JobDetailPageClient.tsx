@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 
 import { Building2, CheckCircle2, Clock, MapPin, Star, TrendingDown } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
-import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Static generation'ı engelle
@@ -44,7 +43,28 @@ export default function JobDetailPageClient() {
   const params = useParams();
   const router = useRouter();
   const { success, error } = useToast();
-  const [job, setJob] = useState<any>(null);
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [job, setJob] = useState<any>(null);
   const [offers, setOffers] = useState<JobOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
@@ -89,7 +109,7 @@ export default function JobDetailPageClient() {
   }, [loadJob, loadOffers]);
 
   const handleAcceptOffer = async () => {
-    if (!selectedOffer) return;
+    if (!selectedOffer) {return;}
 
     try {
       const res = await fetch(
@@ -120,6 +140,13 @@ export default function JobDetailPageClient() {
   };
 
   if (loading) {
+    if (!mounted || !MotionComponents) {
+
+      return null; // or appropriate fallback
+
+    }
+
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -163,6 +190,8 @@ export default function JobDetailPageClient() {
   };
 
   const statusInfo = getStatusBadge(job.status);
+
+  if (!MotionComponents) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -256,12 +285,12 @@ export default function JobDetailPageClient() {
               ) : (
                 <div className="space-y-4">
                   {sortedOffers.map((offer, index) => (
-                    <motion.div
+                    <MotionComponents.MotionDiv
                       key={offer.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                    >
+                     suppressHydrationWarning>
                       <Card
                         className={`border-2 transition-all ${
                           index === 0
@@ -344,7 +373,7 @@ export default function JobDetailPageClient() {
                           </div>
                         </CardContent>
                       </Card>
-                    </motion.div>
+                    </MotionComponents.MotionDiv>
                   ))}
                 </div>
               )}

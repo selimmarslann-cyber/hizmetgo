@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,16 @@ export default function CustomerWalletPage() {
   const [overview, setOverview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -51,7 +60,7 @@ export default function CustomerWalletPage() {
   };
 
   const shareWhatsApp = () => {
-    if (!overview) return;
+    if (!overview) {return;}
     const text = encodeURIComponent(
       "Hizmetgo'e katıl, kazan! Bu link ile kayıt ol: " + overview.referralLink,
     );
@@ -66,18 +75,50 @@ export default function CustomerWalletPage() {
     );
   }
 
+  // Prevent framer-motion from rendering during SSR
+  if (!mounted || !MotionDiv) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white">
+          <div className="max-w-md mx-auto px-4 py-8">
+            <div className="text-center">
+              <div className="inline-block mb-4">
+                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto shadow-xl">
+                  <Coins className="w-10 h-10 text-white" />
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold mb-2">Cüzdanım</h1>
+              <p className="text-white/90 text-sm">
+                Kazancını takip et, arkadaşlarını davet et
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-md mx-auto px-4 py-6 space-y-6 -mt-6">
+          <div className="grid grid-cols-1 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Yükleniyor...</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white">
         <div className="max-w-md mx-auto px-4 py-8">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <motion.div
+            <MotionDiv
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               className="inline-block mb-4"
@@ -85,19 +126,19 @@ export default function CustomerWalletPage() {
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto shadow-xl">
                 <Coins className="w-10 h-10 text-white" />
               </div>
-            </motion.div>
+            </MotionDiv>
             <h1 className="text-2xl font-bold mb-2">Cüzdanım</h1>
             <p className="text-white/90 text-sm">
               Kazancını takip et, arkadaşlarını davet et
             </p>
-          </motion.div>
+          </MotionDiv>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6 -mt-6">
         {/* Üst Kartlar */}
         <div className="grid grid-cols-1 gap-4">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -108,12 +149,12 @@ export default function CustomerWalletPage() {
                 <CardTitle className="text-sm font-semibold text-slate-700">
                   Kullanılabilir Bakiyen
                 </CardTitle>
-                <motion.div
+                <MotionDiv
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 >
                   <Coins className="h-5 w-5 text-amber-600" />
-                </motion.div>
+                </MotionDiv>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-slate-900 mb-1">
@@ -124,9 +165,9 @@ export default function CustomerWalletPage() {
                 </p>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
 
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -154,9 +195,9 @@ export default function CustomerWalletPage() {
                 </Link>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
 
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -178,12 +219,12 @@ export default function CustomerWalletPage() {
                 </p>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
         </div>
 
         {/* Referral Blok */}
         {overview && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -273,7 +314,7 @@ export default function CustomerWalletPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
         )}
 
         {/* Alt Buton */}

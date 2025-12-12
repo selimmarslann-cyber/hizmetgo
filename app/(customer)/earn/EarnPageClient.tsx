@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -55,7 +54,28 @@ export default function EarnPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [loading, setLoading] = useState(true);
   const [instantJobs, setInstantJobs] = useState<InstantJob[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<InstantJob[]>([]);
   const [userLocation, setUserLocation] = useState<{
@@ -199,6 +219,17 @@ export default function EarnPageClient() {
 
   const openJobsCount = instantJobs.filter((j) => j.status === "OPEN").length;
 
+  if (!mounted || !MotionComponents) {
+
+
+    return null; // or appropriate fallback
+
+
+  }
+
+
+
+  if (!MotionComponents) return null;
   return (
     <div className="min-h-screen bg-background">
       {/* Premium Hero Section with Stats */}
@@ -339,11 +370,11 @@ export default function EarnPageClient() {
         ) : (
           <div className="space-y-4">
             {filteredJobs.map((job) => (
-              <motion.div
+              <MotionComponents.MotionDiv
                 key={job.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-              >
+               suppressHydrationWarning>
                 <Card className="hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:-translate-y-0.5 transition-all">
                   <CardContent className="p-5 md:p-6">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -438,7 +469,7 @@ export default function EarnPageClient() {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </MotionComponents.MotionDiv>
             ))}
           </div>
         )}

@@ -40,7 +40,7 @@ const categoryImages: Record<string, string> = {
 
 // URL'e version ekle (cache bypass için)
 const addVersionToUrl = (url: string): string => {
-  if (!url) return url;
+  if (!url) {return url;}
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}v=${IMAGE_VERSION}`;
 };

@@ -40,7 +40,7 @@ export default function CategoryAutocomplete({
   );
 
   const handleSelect = (categoryId: string) => {
-    if (value.length >= maxCategories) return;
+    if (value.length >= maxCategories) {return;}
     onChange([...value, categoryId]);
     setSearchQuery("");
     setIsOpen(false);

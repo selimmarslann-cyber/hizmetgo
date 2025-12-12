@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react"; // TS2304 fix: useCallback import missing
+import { useEffect, useState, useCallback } from "react";
 import { File, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface FileCountBadgeProps {
   orderId: string;
   maxFiles: number;
-  messages?: Array<{ fileUrl?: string | null }>; // Optional messages array for real-time updates
+  messages?: Array<{ fileUrl?: string | null }>;
 }
 
 export default function FileCountBadge({
@@ -18,51 +18,61 @@ export default function FileCountBadge({
   const [fileCount, setFileCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Calculate file count from messages if provided (real-time)
-  useEffect(() => {
-    if (messages) {
-      const files = messages.filter(
-        (m) => m.fileUrl !== null && m.fileUrl !== undefined,
-      );
-      setFileCount(files.length);
+  const fetchFileCount = useCallback(async () => {
+    if (!orderId) {
       setLoading(false);
       return;
     }
-  }, [messages]);
 
-  const fetchFileCount = useCallback(async () => {
     try {
       const res = await fetch(`/api/orders/${orderId}/messages`, {
         credentials: "include",
       });
-      if (res.ok) {
-        const data = await res.json();
-        const files = (data.messages || []).filter(
-          (m: any) => m.fileUrl !== null && m.fileUrl !== undefined,
-        );
-        setFileCount(files.length);
+
+      if (!res.ok) {
+        setFileCount(0);
+        return;
       }
+
+      const data = await res.json();
+      const files = (data?.messages || []).filter(
+        (m: any) => m?.fileUrl !== null && m?.fileUrl !== undefined,
+      );
+      setFileCount(files.length);
     } catch (err) {
       console.error("Failed to fetch file count:", err);
+      setFileCount(0);
     } finally {
       setLoading(false);
     }
   }, [orderId]);
 
-  // Fetch file count if messages not provided
+  // Real-time: messages varsa count'u oradan hesapla
   useEffect(() => {
-    if (orderId && !messages) {
-      fetchFileCount();
+    if (!messages) return;
 
-      // Refresh file count every 5 seconds
-      const interval = setInterval(fetchFileCount, 5000);
-      return () => clearInterval(interval);
-    }
+    const files = messages.filter(
+      (m) => m.fileUrl !== null && m.fileUrl !== undefined,
+    );
+    setFileCount(files.length);
+    setLoading(false);
+    return; // TS7030 safe
+  }, [messages]);
+
+  // messages yoksa API'den çek + interval
+  useEffect(() => {
+    if (!orderId || messages) return;
+
+    void fetchFileCount();
+
+    const interval = setInterval(() => {
+      void fetchFileCount();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [orderId, messages, fetchFileCount]);
 
-  if (loading || fileCount === 0) {
-    return null;
-  }
+  if (loading || fileCount === 0) return null;
 
   const remaining = maxFiles - fileCount;
 

@@ -76,7 +76,6 @@ export async function verifyUser(email: string, password: string) {
     if (user && (authError?.message?.includes("Invalid login credentials") || authError?.message?.includes("User not found"))) {
       // Önce Prisma'da password hash varsa bcrypt ile kontrol et (hızlı fallback)
       if (user.passwordHash) {
-        const bcrypt = require("bcryptjs");
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (isValid) {
           // Şifre doğru, Supabase'de oluşturmayı dene ama başarısız olursa da kullanıcıyı döndür
@@ -150,7 +149,6 @@ export async function verifyUser(email: string, password: string) {
     // Giriş başarısız ve kullanıcı Prisma'da da yok
     // Eğer Prisma'da kullanıcı varsa ama şifre yanlışsa, bcrypt ile kontrol et
     if (user && user.passwordHash) {
-      const bcrypt = require("bcryptjs");
       const isValid = await bcrypt.compare(password, user.passwordHash);
       if (isValid) {
         return user;

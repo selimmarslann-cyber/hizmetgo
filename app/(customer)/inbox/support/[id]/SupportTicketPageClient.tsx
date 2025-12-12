@@ -69,7 +69,7 @@ export default function SupportTicketPageClient() {
   }, [ticket?.messages]);
 
   const handleSendMessage = async () => {
-    if (!messageContent.trim() || sending) return;
+    if (!messageContent.trim() || sending) {return;}
 
     setSending(true);
     try {

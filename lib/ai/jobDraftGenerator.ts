@@ -5,6 +5,8 @@
  * HIZMETGO_SYSTEM_PROMPT kullanarak toplanan bilgilerden structured data üretir
  */
 
+import "server-only";
+
 import { ChatMessage } from "./chatService";
 import { askOpenAI } from "./openai";
 import { HIZMETGO_SYSTEM_PROMPT } from "./systemPrompt";

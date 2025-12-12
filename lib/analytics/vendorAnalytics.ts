@@ -257,7 +257,7 @@ export async function getVendorAnalytics(
 
   const productStats = new Map<string, { sales: number; revenue: number }>();
   orderItems.forEach((item) => {
-    if (!item.product) return;
+    if (!item.product) {return;}
     const existing = productStats.get(item.product.id) || {
       sales: 0,
       revenue: 0,

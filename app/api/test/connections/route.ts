@@ -148,6 +148,7 @@ export async function GET(request: NextRequest) {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY not set");
     }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const OpenAI = require("openai");
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY.trim() });
     await client.models.list();

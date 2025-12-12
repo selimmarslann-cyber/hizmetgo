@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Building2, CheckCircle2, Clock, DollarSign, MapPin, MessageSquare, Send, User } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
-import { motion } from "framer-motion";
 // Static generation'ı engelle - client component olduğu için
 interface Job {
   id: string;
@@ -54,7 +53,28 @@ interface Job {
 export default function AvailableJobsPageClient() {
   const router = useRouter();
   const { success, error } = useToast();
-  const [jobs, setJobs] = useState<Job[]>([]);
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [offerDialogOpen, setOfferDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -131,6 +151,10 @@ export default function AvailableJobsPageClient() {
       (o) => o.status === "PENDING" || o.status === "ACCEPTED",
     );
   };
+  if (!mounted || !MotionComponents) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -141,6 +165,7 @@ export default function AvailableJobsPageClient() {
       </div>
     );
   }
+  if (!MotionComponents) return null;
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -169,12 +194,12 @@ export default function AvailableJobsPageClient() {
             {jobs.map((job, index) => {
               const alreadyOffered = hasOffered(job);
               return (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key={job.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                >
+                 suppressHydrationWarning>
                   <Card className="hover:shadow-lg transition-all">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between gap-4 mb-4">
@@ -270,7 +295,7 @@ export default function AvailableJobsPageClient() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               );
             })}
           </div>

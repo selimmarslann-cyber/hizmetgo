@@ -20,7 +20,7 @@ export function useNotificationStream(enabled: boolean = true) {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {return;}
 
     // EventSource oluştur
     const eventSource = new EventSource("/api/notifications/stream", {

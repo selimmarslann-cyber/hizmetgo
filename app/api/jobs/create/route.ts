@@ -287,7 +287,7 @@ async function createJobHandler(request: NextRequest) {
       const business = allMatchingBusinesses.find(
         (b) => b.ownerUserId === vendorScore.vendorId,
       );
-      if (!business) return null;
+      if (!business) {return null;}
 
       return createNotification({
         userId: business.ownerUserId,
@@ -325,8 +325,8 @@ async function createJobHandler(request: NextRequest) {
       const emailPromises: Promise<void>[] = [];
 
       for (const business of allMatchingBusinesses) {
-        if (!business.lat || !business.lng) continue;
-        if (!business.owner) continue;
+        if (!business.lat || !business.lng) {continue;}
+        if (!business.owner) {continue;}
 
         // Mesafe hesapla
         const distanceKm = haversineDistanceKm(jobLocation, {

@@ -17,7 +17,7 @@ export default function BusinessWalletPageClient() {
   const [loading, setLoading] = useState(true);
 
   const calculateBusinessEarnings = useCallback(async () => {
-    if (!business) return { total: 0, monthly: 0, pending: 0 };
+    if (!business) {return { total: 0, monthly: 0, pending: 0 };}
 
     try {
       const ordersRes = await fetch(`/api/orders/business/${business.id}`, {
@@ -121,7 +121,7 @@ export default function BusinessWalletPageClient() {
   };
 
   const shareWhatsApp = () => {
-    if (!overview) return;
+    if (!overview) {return;}
     const text = encodeURIComponent(
       "Hizmetgo'e katıl, kazan! Bu link ile kayıt ol: " + overview.referralLink,
     );

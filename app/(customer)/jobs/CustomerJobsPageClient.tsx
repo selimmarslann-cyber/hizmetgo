@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,7 +56,28 @@ export default function CustomerJobsPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser } = useHizmetgoStore();
-  const { success, error } = useToast();
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const { success, error } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("my-jobs");
@@ -86,7 +106,7 @@ export default function CustomerJobsPageClient() {
 
   // Teklif sayılarını yükle - Batch olarak
   const loadOfferCounts = useCallback(async (jobIds: string[]) => {
-    if (jobIds.length === 0) return;
+    if (jobIds.length === 0) {return;}
 
     try {
       const counts: Record<string, number> = {};
@@ -217,7 +237,7 @@ export default function CustomerJobsPageClient() {
   const nearbyJobs: CustomerJob[] = jobs
     .filter((job) => {
       // Only open instant jobs
-      if (job.status !== "PENDING" || job.type !== "instant") return false;
+      if (job.status !== "PENDING" || job.type !== "instant") {return false;}
 
       // Skill matching
       if (userSkillIds.length > 0 && job.keywords) {
@@ -225,13 +245,13 @@ export default function CustomerJobsPageClient() {
         const hasSkillMatch = userSkillIds.some((skillId: string) =>
           jobKeywordIds.includes(skillId),
         );
-        if (!hasSkillMatch) return false;
+        if (!hasSkillMatch) {return false;}
       }
 
       // Distance filter (10 km)
       if (userLocation && job.location) {
         const distance = haversineDistanceKm(userLocation, job.location);
-        if (distance > 10) return false;
+        if (distance > 10) {return false;}
       }
 
       return true;
@@ -347,7 +367,7 @@ export default function CustomerJobsPageClient() {
 
   // Teklif sayılarını yükle
   useEffect(() => {
-    if (loading || isVendor) return;
+    if (loading || isVendor) {return;}
 
     const filteredMyJobs = getFilteredJobs(customerJobs);
     const filteredNearbyJobs = getFilteredJobs(nearbyJobs);
@@ -394,25 +414,38 @@ export default function CustomerJobsPageClient() {
   const filteredMyJobs = getFilteredJobs(customerJobs);
   const filteredNearbyJobs = getFilteredJobs(nearbyJobs);
 
+  if (!mounted || !MotionComponents) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F7] pt-24 pb-24 md:pb-0">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <ListSkeleton count={5} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!MotionComponents) return null;
   return (
     <div className="min-h-screen bg-[#F5F5F7] pt-24 pb-24 md:pb-0">
       {/* Kutlama Animasyonu */}
       {showCelebration && (
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={() => setShowCelebration(false)}
+          suppressHydrationWarning
         >
-          <motion.div
+          <MotionComponents.MotionDiv
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            suppressHydrationWarning
           >
-            <motion.div
+            <MotionComponents.MotionDiv
               animate={{
                 scale: [1, 1.2, 1],
                 rotate: [0, 10, -10, 0],
@@ -422,9 +455,9 @@ export default function CustomerJobsPageClient() {
                 repeat: 2,
               }}
               className="text-6xl mb-4"
-            >
+             suppressHydrationWarning>
               🎉
-            </motion.div>
+            </MotionComponents.MotionDiv>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               İlanınız Yayında!
             </h2>
@@ -437,8 +470,8 @@ export default function CustomerJobsPageClient() {
             >
               Harika!
             </Button>
-          </motion.div>
-        </motion.div>
+          </MotionComponents.MotionDiv>
+        </MotionComponents.MotionDiv>
       )}
 
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -513,12 +546,13 @@ export default function CustomerJobsPageClient() {
             ) : (
               filteredMyJobs.map((job) => {
                 const statusInfo = getStatusBadge(job.status);
+                if (!statusInfo) return null;
                 const isExpanded = expandedJobs.has(job.id);
                 const jobWithDetails = job as CustomerJob;
                 const isListing = !!jobWithDetails.listingDetails;
 
                 return (
-                  <motion.div
+                  <MotionComponents.MotionDiv
                     key={job.id}
                     whileHover={{ y: -2 }}
                     transition={{
@@ -526,7 +560,7 @@ export default function CustomerJobsPageClient() {
                       stiffness: 400,
                       damping: 17,
                     }}
-                  >
+                   suppressHydrationWarning>
                     <Card className="border-2 border-gray-200 hover:border-[#FF6000]/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all bg-white">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between gap-4">
@@ -897,7 +931,7 @@ export default function CustomerJobsPageClient() {
                         </div>
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </MotionComponents.MotionDiv>
                 );
               })
             )}
@@ -914,16 +948,17 @@ export default function CustomerJobsPageClient() {
             ) : (
               filteredNearbyJobs.map((job) => {
                 const statusInfo = getStatusBadge(job.status);
+                if (!statusInfo) return null;
                 return (
                   <Link key={job.id} href={`/jobs/${job.id}`}>
-                    <motion.div
+                    <MotionComponents.MotionDiv
                       whileHover={{ y: -2 }}
                       transition={{
                         type: "spring",
                         stiffness: 400,
                         damping: 17,
                       }}
-                    >
+                     suppressHydrationWarning>
                       <Card className="border-2 border-yellow-200 hover:border-[#FF6000]/30 hover:shadow-lg transition-all cursor-pointer bg-white">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between gap-4">
@@ -994,7 +1029,7 @@ export default function CustomerJobsPageClient() {
                           </div>
                         </CardContent>
                       </Card>
-                    </motion.div>
+                    </MotionComponents.MotionDiv>
                   </Link>
                 );
               })

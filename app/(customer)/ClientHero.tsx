@@ -1,10 +1,18 @@
 "use client";
+import dynamic from "next/dynamic";
 import { RotatingHeadline } from "@/components/home/RotatingHeadline";
 import SmartSearchBar from "@/components/ui/SmartSearchBar";
-import { PopularCategoriesSection } from "@/components/home/PopularCategoriesTabs";
 import { SearchExperienceShowcase } from "@/components/home/SearchExperienceShowcase";
 import HeroAfterImage from "@/components/home/HeroAfterImage";
 import AppDownloadFinal from "@/components/home/AppDownloadFinal";
+
+const PopularCategoriesSection = dynamic(
+  () => import("@/components/home/PopularCategoriesTabs").then((mod) => ({ default: mod.PopularCategoriesSection })),
+  { 
+    ssr: false,
+    loading: () => <div className="h-64 flex items-center justify-center"><p className="text-slate-600">Yükleniyor...</p></div>
+  }
+);
 
 export default function ClientHero() {
   return (

@@ -89,7 +89,7 @@ export default function WorkingHoursPageClient() {
   }, [loadBusiness]);
 
   const handleSave = async () => {
-    if (!business) return;
+    if (!business) {return;}
 
     setSaving(true);
     try {

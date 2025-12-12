@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Briefcase, Gift, Plus, TrendingUp, Wallet } from "lucide-react";
@@ -10,6 +9,27 @@ import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
 
 // Static generation'ı engelle
 export default function AccountDashboardPageClient() {
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);
 
   const [stats, setStats] = useState({
     balance: 0,
@@ -70,6 +90,8 @@ export default function AccountDashboardPageClient() {
     );
   }
 
+  if (!MotionComponents) return null;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -80,11 +102,11 @@ export default function AccountDashboardPageClient() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-        >
+         suppressHydrationWarning>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -101,13 +123,13 @@ export default function AccountDashboardPageClient() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-        >
+         suppressHydrationWarning>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -122,13 +144,13 @@ export default function AccountDashboardPageClient() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-        >
+         suppressHydrationWarning>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -145,13 +167,13 @@ export default function AccountDashboardPageClient() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-        >
+         suppressHydrationWarning>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -167,7 +189,7 @@ export default function AccountDashboardPageClient() {
               </Link>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
       </div>
 
       {/* Quick Actions */}

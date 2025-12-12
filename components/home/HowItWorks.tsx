@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { Search, MessageSquare, CheckCircle2 } from "lucide-react";
 
 const steps = [
@@ -25,6 +25,17 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
   return (
     <section className="py-12 md:py-16 bg-white">
       <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8">
@@ -42,15 +53,8 @@ export default function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {steps.map((step, index) => {
             const Icon = step.icon;
-            return (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex flex-col items-center text-center"
-              >
+            const content = (
+              <>
                 {/* Icon Circle */}
                 <div className="relative mb-6">
                   <div className="w-20 h-20 rounded-full bg-brand-500 flex items-center justify-center shadow-lg">
@@ -69,7 +73,29 @@ export default function HowItWorks() {
                 <p className="text-base text-slate-600 leading-relaxed">
                   {step.description}
                 </p>
-              </motion.div>
+              </>
+            );
+
+            if (!mounted || !MotionDiv) {
+              return (
+                <div key={step.number} className="flex flex-col items-center text-center">
+                  {content}
+                </div>
+              );
+            }
+
+            return (
+              <MotionDiv
+                key={step.number}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="flex flex-col items-center text-center"
+                suppressHydrationWarning
+              >
+                {content}
+              </MotionDiv>
             );
           })}
         </div>

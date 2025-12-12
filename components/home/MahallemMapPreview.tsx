@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin } from "lucide-react";
-import { motion } from "framer-motion";
 
 // Mock business data for preview
 const MOCK_BUSINESSES = [
@@ -61,9 +60,19 @@ export default function HizmetgoMapPreview({
   const mapContainer = useRef<HTMLDivElement>(null);
   const [hoveredBusiness, setHoveredBusiness] = useState<Business | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!mapContainer.current) {return;}
 
     // Dynamic import for MapLibre
     import("maplibre-gl").then((maplibregl) => {
@@ -142,10 +151,12 @@ export default function HizmetgoMapPreview({
 
         {/* Hover Tooltip */}
         {hoveredBusiness && (
-          <motion.div
+          mounted && MotionDiv ? (
+            <MotionDiv
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="absolute bottom-4 left-4 right-4 z-20"
+              suppressHydrationWarning
           >
             <Card className="bg-white/95 backdrop-blur-sm p-4 shadow-xl border border-slate-200">
               <div className="flex items-start justify-between gap-3">
@@ -181,7 +192,45 @@ export default function HizmetgoMapPreview({
                 )}
               </div>
             </Card>
-          </motion.div>
+          </MotionDiv>
+          ) : (
+            <div className="absolute bottom-4 left-4 right-4 z-20">
+              <Card className="bg-white/95 backdrop-blur-sm p-4 shadow-xl border border-slate-200">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 mb-1">
+                      {hoveredBusiness.name}
+                    </h4>
+                    <Badge variant="secondary" className="text-xs mb-2">
+                      {hoveredBusiness.category}
+                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-semibold text-slate-900">
+                          {hoveredBusiness.avgRating}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          ({hoveredBusiness.reviewCount})
+                        </span>
+                      </div>
+                      <span className="text-slate-300">•</span>
+                      <div className="flex items-center gap-1 text-xs text-slate-600">
+                        <MapPin className="w-3 h-3" />
+                        <span>0.8 km</span>
+                      </div>
+                    </div>
+                  </div>
+                  {hoveredBusiness.onlineStatus === "ONLINE" && (
+                    <Badge className="bg-emerald-500 text-white text-xs">
+                      <span className="w-2 h-2 bg-white rounded-full inline-block mr-1.5 animate-pulse" />
+                      Online
+                    </Badge>
+                  )}
+                </div>
+              </Card>
+            </div>
+          )
         )}
 
         {/* Loading State */}

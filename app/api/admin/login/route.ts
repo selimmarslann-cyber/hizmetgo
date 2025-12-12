@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { signToken } from "@/lib/auth/jwt";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -57,8 +57,7 @@ export async function POST(req: NextRequest) {
 
     if (!adminUser) {
       // Admin kullanıcı yoksa oluştur
-      const bcrypt = require("bcryptjs");
-      const passwordHash = await bcrypt.hash(adminCredentials.password, 10);
+      const passwordHash = await hash(adminCredentials.password, 10);
 
       adminUser = await prisma.user.create({
         data: {

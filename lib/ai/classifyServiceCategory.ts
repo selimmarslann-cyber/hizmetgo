@@ -8,9 +8,9 @@
  * - AI SADECE kategori/slug seçer
  * - AI level, fiyat, süre, zorluk HESAPLAMAZ
  * - Level ve fee backend'deki service_categories ve lead_levels tablolarından gelir
+ * - Bu dosya dinamik olarak import edilebilir (client'tan da), ama sadece server-side'da çalışır
  */
 
-import { askOpenAI } from "./openai";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export interface ServiceCategory {
@@ -156,26 +156,31 @@ Cevabını JSON formatta döndür:
   let selectedSlug: string | null = null;
 
   try {
-    // OpenAI'ı çağır (timeout ve rate limit lib/ai/openai.ts içinde yönetiliyor)
-    const enhancedUserPrompt = `${systemPrompt}\n\n${userPrompt}`;
-    const response = await askOpenAI(enhancedUserPrompt, [], false);
+    // OpenAI'ı çağır (timeout ve rate limit lib/ai/openai-client.ts içinde yönetiliyor)
+    // Dynamic import - sadece server-side'da çalışır
+    // openai-client.ts doesn't have server-only, so it can be dynamically imported
+    if (typeof window === "undefined") {
+      const { askOpenAI } = await import("./openai-client");
+      const enhancedUserPrompt = `${systemPrompt}\n\n${userPrompt}`;
+      const response = await askOpenAI(enhancedUserPrompt, [], false);
 
-    // JSON parse et
-    try {
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        const slugs = parsed.slugs || parsed.slug || [];
+      // JSON parse et
+      try {
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const slugs = parsed.slugs || parsed.slug || [];
 
-        if (Array.isArray(slugs) && slugs.length > 0) {
-          // İlk slug'ı kullan (primary kategori)
-          selectedSlug = slugs[0];
-        } else if (typeof slugs === "string") {
-          selectedSlug = slugs;
+          if (Array.isArray(slugs) && slugs.length > 0) {
+            // İlk slug'ı kullan (primary kategori)
+            selectedSlug = slugs[0];
+          } else if (typeof slugs === "string") {
+            selectedSlug = slugs;
+          }
         }
+      } catch (parseError) {
+        // JSON parse hatası - fallback'e geç
       }
-    } catch (parseError) {
-      // JSON parse hatası - fallback'e geç
     }
   } catch (aiError) {
     // Error already logged

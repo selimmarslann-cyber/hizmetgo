@@ -552,8 +552,8 @@ export async function updateOrderStatus(
           await createInvoiceAndLedgerEntries(
             orderId,
             business.ownerUserId,
-            updatedOrder.totalAmount,
-            updatedOrder.commissionFee,
+            Number(updatedOrder.totalAmount),
+            Number(updatedOrder.commissionFee),
           );
         } catch (invoiceError) {
           console.error("Invoice ve ledger entry oluşturma hatası:", invoiceError);

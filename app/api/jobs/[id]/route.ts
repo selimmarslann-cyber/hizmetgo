@@ -236,7 +236,7 @@ export async function GET(
       matchedVendors = scoredVendors
         .map((scored) => {
           const vendor = vendorProfiles.find((v) => v.id === scored.vendorId);
-          if (!vendor) return null;
+          if (!vendor) {return null;}
 
           // Distance hesapla
           let distanceKm: number | null = null;

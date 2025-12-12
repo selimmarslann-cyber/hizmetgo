@@ -27,12 +27,16 @@ export function getTodayDayKey(): DayKey {
  * İşletme şu an açık mı kontrol eder
  */
 export function isBusinessOpenNow(workingHours: WorkingHours | null): boolean {
-  if (!workingHours) return false;
+  if (!workingHours) {
+    return false;
+  }
 
   const today = getTodayDayKey();
   const todayHours = workingHours[today];
 
-  if (!todayHours) return false;
+  if (!todayHours) {
+    return false;
+  }
 
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -46,12 +50,16 @@ export function isBusinessOpenNow(workingHours: WorkingHours | null): boolean {
 export function isWorkingHoursEnded(
   workingHours: WorkingHours | null,
 ): boolean {
-  if (!workingHours) return false;
+  if (!workingHours) {
+    return false;
+  }
 
   const today = getTodayDayKey();
   const todayHours = workingHours[today];
 
-  if (!todayHours) return false;
+  if (!todayHours) {
+    return false;
+  }
 
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;

@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +36,28 @@ interface Transaction {
 export default function AccountWalletPageClient() {
   const router = useRouter();
   const { currentUser, earnings } = useHizmetgoStore();
-  const { success, error } = useToast();
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const { success, error } = useToast();
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -287,6 +307,7 @@ export default function AccountWalletPageClient() {
 
   const isVendor = currentUser?.role === "vendor" || user?.role === "vendor";
 
+  if (!MotionComponents) return null;
   return (
     <div className="min-h-screen bg-[#F5F5F7] pt-24 pb-24 md:pb-0">
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -298,10 +319,10 @@ export default function AccountWalletPageClient() {
         </div>
 
         {/* Balance Card */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-        >
+         suppressHydrationWarning>
           <Card className="bg-gradient-to-br from-[#FF6000]/10 via-[#FF6000]/5 to-white border-2 border-[#FF6000]/20">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -317,16 +338,16 @@ export default function AccountWalletPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Earnings Breakdown - For Vendors */}
         {isVendor && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-            >
+             suppressHydrationWarning>
               <Card className="border-2 border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -349,13 +370,13 @@ export default function AccountWalletPageClient() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </MotionComponents.MotionDiv>
 
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-            >
+             suppressHydrationWarning>
               <Card className="border-2 border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -378,13 +399,13 @@ export default function AccountWalletPageClient() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </MotionComponents.MotionDiv>
 
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-            >
+             suppressHydrationWarning>
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -407,31 +428,31 @@ export default function AccountWalletPageClient() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </MotionComponents.MotionDiv>
           </div>
         )}
 
         {/* Earnings Chart */}
         {isVendor && (
-          <motion.div
+          <MotionComponents.MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-          >
+           suppressHydrationWarning>
             <EarningsChart
               data={chartData}
               title="Son 7 Günlük Kazanç Trendi"
             />
-          </motion.div>
+          </MotionComponents.MotionDiv>
         )}
 
         {/* Deposit & Withdraw Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <motion.div
+          <MotionComponents.MotionDiv
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-          >
+           suppressHydrationWarning>
             <Card className="border-2 border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -473,13 +494,13 @@ export default function AccountWalletPageClient() {
                 </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionComponents.MotionDiv>
 
-          <motion.div
+          <MotionComponents.MotionDiv
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-          >
+           suppressHydrationWarning>
             <Card className="border-2 border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -540,15 +561,15 @@ export default function AccountWalletPageClient() {
                 </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionComponents.MotionDiv>
         </div>
 
         {/* Transaction History Table */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-        >
+         suppressHydrationWarning>
           <Card className="border-2 border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -665,7 +686,7 @@ export default function AccountWalletPageClient() {
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
       </div>
     </div>
   );

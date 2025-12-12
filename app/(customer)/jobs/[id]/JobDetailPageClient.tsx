@@ -155,7 +155,7 @@ export default function JobDetailPageClient() {
     categoryId: string,
     subServiceId: string | null,
   ) => {
-    if (!subServiceId) return null;
+    if (!subServiceId) {return null;}
     const category = SERVICE_CATEGORIES.find((cat) => cat.id === categoryId);
     const subService = category?.subServices.find(
       (sub) => sub.id === subServiceId,

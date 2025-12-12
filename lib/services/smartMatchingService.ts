@@ -177,7 +177,7 @@ export function getBestMatchingVendors(
 ): VendorScore[] {
   // Filter: Only online vendors, same city or within maxDistance
   const filtered = vendors.filter((vendor) => {
-    if (vendor.onlineStatus === "OFFLINE") return false;
+    if (vendor.onlineStatus === "OFFLINE") {return false;}
 
     if (vendor.location && context.jobLocation) {
       const distance = haversineDistanceKm(

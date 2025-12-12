@@ -66,7 +66,7 @@ export function getSectors(): Sector[] {
  */
 export function getSkillsBySector(sectorId: string): SkillKeyword[] {
   const sector = SERVICE_CATEGORIES.find((c) => c.id === sectorId);
-  if (!sector) return [];
+  if (!sector) {return [];}
 
   const skills: SkillKeyword[] = [];
 

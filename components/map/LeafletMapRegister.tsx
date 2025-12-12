@@ -61,7 +61,7 @@ export default function LeafletMapRegister({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map) {return;}
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       onLocationSelect(e.latlng.lat, e.latlng.lng);

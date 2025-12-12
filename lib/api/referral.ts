@@ -37,11 +37,11 @@ export async function getReferralRewards(options?: {
   dateTo?: Date;
 }): Promise<ReferralRewardsResponse> {
   const params: Record<string, string> = {};
-  if (options?.page) params.page = String(options.page);
-  if (options?.pageSize) params.pageSize = String(options.pageSize);
-  if (options?.level) params.level = String(options.level);
-  if (options?.dateFrom) params.dateFrom = options.dateFrom.toISOString();
-  if (options?.dateTo) params.dateTo = options.dateTo.toISOString();
+  if (options?.page) {params.page = String(options.page);}
+  if (options?.pageSize) {params.pageSize = String(options.pageSize);}
+  if (options?.level) {params.level = String(options.level);}
+  if (options?.dateFrom) {params.dateFrom = options.dateFrom.toISOString();}
+  if (options?.dateTo) {params.dateTo = options.dateTo.toISOString();}
 
   return fetchJson<ReferralRewardsResponse>("/referral/rewards", {
     params,

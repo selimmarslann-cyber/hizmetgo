@@ -129,7 +129,7 @@ export default function HomeMap({ onMapClick }: HomeMapProps) {
 
         {/* Vendor Markers */}
         {vendors.map((vendor) => {
-          if (!vendor.location) return null;
+          if (!vendor.location) {return null;}
           return (
             <Marker
               key={vendor.id}
@@ -155,7 +155,7 @@ export default function HomeMap({ onMapClick }: HomeMapProps) {
 
         {/* Instant Job Markers */}
         {instantJobs.map((job) => {
-          if (!job.location) return null;
+          if (!job.location) {return null;}
           return (
             <Marker
               key={job.id}

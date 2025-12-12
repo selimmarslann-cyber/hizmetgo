@@ -1,16 +1,33 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Award, Building2, CheckCircle2, Crown, Gift, Globe, Share2, Shield, Target, TrendingUp, Users, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 
 
 // Static generation'ı engelle
 export default function PartnerPageClient() {
   const router = useRouter();
+  
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const MotionComponents = useMemo(() => {
+    if (!mounted) return null;
+    return {
+      MotionDiv: motion.div,
+      MotionSpan: motion.span,
+      MotionButton: motion.button,
+    };
+  }, [mounted]);
+
+  if (!MotionComponents) return null;
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const checkAuth = async () => {
@@ -56,11 +73,11 @@ export default function PartnerPageClient() {
           </p>
         </div>
         {/* Hero Section */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-        >
+         suppressHydrationWarning>
           <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/3 to-white shadow-lg">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-6">
@@ -117,14 +134,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Nasıl Çalışır? */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-        >
+         suppressHydrationWarning>
           <div>
             <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-gray-900 tracking-tight">
               <Zap className="w-7 h-7 text-primary" />
@@ -198,14 +215,14 @@ export default function PartnerPageClient() {
               </Card>
             </div>
           </div>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* 3 Gelir Modeli */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-        >
+         suppressHydrationWarning>
           <Card className="border-2 border-primary/30 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
@@ -340,14 +357,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Örnek Hesaplamalar - Sadeleştirilmiş */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-        >
+         suppressHydrationWarning>
           <Card className="border-2 border-primary/30">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
@@ -539,14 +556,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Ömür Boyu Kazanç */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-        >
+         suppressHydrationWarning>
           <Card className="border-2 border-primary/30">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -582,14 +599,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* İpucu: Restoran/Market Kayıt */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45 }}
-        >
+         suppressHydrationWarning>
           <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -684,14 +701,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Liderlik ve Kariyer Basamakları */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-        >
+         suppressHydrationWarning>
           <Card>
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -758,14 +775,14 @@ export default function PartnerPageClient() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Medya Kuruluşları Notu */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.55 }}
-        >
+         suppressHydrationWarning>
           <Card className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-2 border-indigo-200 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
@@ -787,14 +804,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Güven & Şeffaflık */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-        >
+         suppressHydrationWarning>
           <Card className="bg-blue-50 border-blue-200">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -860,14 +877,14 @@ export default function PartnerPageClient() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* Serbest Tanıtım ve Kalite Kuralları */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-        >
+         suppressHydrationWarning>
           <Card>
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -900,15 +917,15 @@ export default function PartnerPageClient() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionComponents.MotionDiv>
 
         {/* CTA Buttons */}
-        <motion.div
+        <MotionComponents.MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
           className="space-y-4 pt-4"
-        >
+         suppressHydrationWarning>
           <Button
             onClick={handleGoToReferral}
             className="w-full"
@@ -937,7 +954,7 @@ export default function PartnerPageClient() {
               Esnaf Paneline Git
             </Button>
           </div>
-        </motion.div>
+        </MotionComponents.MotionDiv>
       </div>
     </div>
   );

@@ -54,11 +54,13 @@ class Logger {
           contexts: { custom: context },
           tags: { source: 'logger' },
         });
-      } else if (typeof require !== "undefined") {
-        // Server-side Sentry
-        const Sentry = require("@sentry/nextjs");
-        if (Sentry && Sentry.captureException) {
-          Sentry.captureException(error instanceof Error ? error : new Error(message), {
+      } else {
+        // Server-side Sentry - use dynamic require with eslint-disable
+        // This is necessary for conditional loading in server environments
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const SentryModule = require("@sentry/nextjs");
+        if (SentryModule && SentryModule.captureException) {
+          SentryModule.captureException(error instanceof Error ? error : new Error(message), {
             contexts: { custom: context },
             tags: { source: 'logger' },
           });

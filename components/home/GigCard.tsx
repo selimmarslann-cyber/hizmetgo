@@ -1,10 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Clock, ArrowRight, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils/cn";
 
 interface GigCardProps {
@@ -26,13 +26,18 @@ export default function GigCard({
   distance,
   onApply,
 }: GigCardProps) {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.03, y: -8 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
-      className="flex-shrink-0"
-    >
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
+  const cardContent = (
       <Card className="bg-white border-2 border-slate-200 rounded-3xl p-6 w-80 min-w-[320px] h-[320px] shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-300 flex flex-col group relative overflow-hidden">
         {/* Premium Gradient Accent */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF7A00] via-[#FFB347] to-[#FF7A00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -92,7 +97,19 @@ export default function GigCard({
 
           {/* Premium Button - Always at bottom */}
           <div className="mt-auto pt-4">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            {mounted && MotionDiv ? (
+              <MotionDiv whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} suppressHydrationWarning>
+                <Button
+                  className="w-full bg-gradient-to-r from-[#FF7A00] to-[#FF8A00] hover:from-[#FF8A00] hover:to-[#FF9A00] text-white rounded-xl py-6 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-300 group/btn"
+                  onClick={onApply}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    Başvur
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </span>
+                </Button>
+              </MotionDiv>
+            ) : (
               <Button
                 className="w-full bg-gradient-to-r from-[#FF7A00] to-[#FF8A00] hover:from-[#FF8A00] hover:to-[#FF9A00] text-white rounded-xl py-6 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-300 group/btn"
                 onClick={onApply}
@@ -102,10 +119,29 @@ export default function GigCard({
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </span>
               </Button>
-            </motion.div>
+            )}
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+  );
+
+  if (!mounted || !MotionDiv) {
+    return (
+      <div className="flex-shrink-0">
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <MotionDiv
+      whileHover={{ scale: 1.03, y: -8 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+      className="flex-shrink-0"
+      suppressHydrationWarning
+    >
+      {cardContent}
+    </MotionDiv>
   );
 }

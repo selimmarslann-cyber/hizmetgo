@@ -69,7 +69,7 @@ export default function OrderSettingsPageClient() {
   }, [loadBusiness]);
 
   const handleSave = async () => {
-    if (!business) return;
+    if (!business) {return;}
 
     setSaving(true);
     try {

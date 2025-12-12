@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/lib/hooks/useToast";
-import { AnimatePresence, motion } from "framer-motion";
 import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
 import {
   AlertCircle,
@@ -77,7 +76,28 @@ const notificationColors: Record<string, string> = {
 export default function NotificationsPageClient() {
   const router = useRouter();
   const { error, success } = useToast();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [markingAsRead, setMarkingAsRead] = useState<string | null>(null);
@@ -180,7 +200,7 @@ export default function NotificationsPageClient() {
   };
 
   const getNotificationLink = (notification: Notification): string | null => {
-    if (!notification.data) return null;
+    if (!notification.data) {return null;}
 
     const data = notification.data as any;
 
@@ -198,6 +218,8 @@ export default function NotificationsPageClient() {
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  if (!MotionComponents) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -296,7 +318,7 @@ export default function NotificationsPageClient() {
           </Card>
         ) : (
           <div className="space-y-3">
-            <AnimatePresence>
+            <MotionComponents.AnimatePresence>
               {notifications.map((notification) => {
                 const Icon = notificationIcons[notification.type] || Bell;
                 const colorClass =
@@ -305,13 +327,13 @@ export default function NotificationsPageClient() {
                 const link = getNotificationLink(notification);
 
                 return (
-                  <motion.div
+                  <MotionComponents.MotionDiv
                     key={notification.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
-                  >
+                   suppressHydrationWarning>
                     <Card
                       className={`cursor-pointer transition-all hover:shadow-md ${
                         !notification.isRead
@@ -388,10 +410,10 @@ export default function NotificationsPageClient() {
                         </div>
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </MotionComponents.MotionDiv>
                 );
               })}
-            </AnimatePresence>
+            </MotionComponents.AnimatePresence>
           </div>
         )}
       </div>

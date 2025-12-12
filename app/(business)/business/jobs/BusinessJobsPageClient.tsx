@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,28 @@ import AnimatedLoadingLogo from "@/components/ui/AnimatedLoadingLogo";
 export default function BusinessJobsPageClient() {
   const router = useRouter();
   const { success, error } = useToast();
-  const { confirm: confirmDialog, ConfirmDialog } = useConfirmDialog();
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const { confirm: confirmDialog, ConfirmDialog } = useConfirmDialog();
   const { unreadCount } = useNotificationStream(true); // Real-time bildirimler
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +88,7 @@ export default function BusinessJobsPageClient() {
     loadOrders();
   }, [loadOrders]);
   const handleAccept = async () => {
-    if (!selectedOrder) return;
+    if (!selectedOrder) {return;}
     try {
       const res = await fetch(`/api/orders/${selectedOrder.id}/accept`, {
         method: "POST",
@@ -162,6 +182,9 @@ export default function BusinessJobsPageClient() {
       : activeTab === "active"
         ? activeOrders
         : pastOrders;
+  if (!mounted || !MotionComponents) {
+    return null;
+  }
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -252,14 +275,15 @@ export default function BusinessJobsPageClient() {
           <div className="grid gap-4">
             {displayOrders.map((order, index) => {
               const statusInfo = getStatusText(order.status);
+              if (!statusInfo) return null;
               const StatusIcon = statusInfo.icon;
               return (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                >
+                 suppressHydrationWarning>
                   <Card className="hover:shadow-lg transition-all border-l-4 border-l-primary">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -364,7 +388,7 @@ export default function BusinessJobsPageClient() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               );
             })}
           </div>

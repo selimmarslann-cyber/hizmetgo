@@ -59,7 +59,7 @@ export async function listBusinessOrders(
   status?: OrderStatus,
 ): Promise<Order[]> {
   const params: Record<string, string> = {};
-  if (status) params.status = status;
+  if (status) {params.status = status;}
 
   return fetchJson<Order[]>(`/orders/business/${businessId}`, {
     params,

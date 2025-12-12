@@ -45,17 +45,17 @@ export function getMatchingVendors(
         jobKeywordIds.includes(id),
       );
 
-      if (!hasKeywordMatch) return false;
+      if (!hasKeywordMatch) {return false;}
 
       // For normal jobs: match by city
       if (job.type === "normal") {
-        if (!job.city || !v.city) return false;
+        if (!job.city || !v.city) {return false;}
         return job.city.toLowerCase() === v.city.toLowerCase();
       }
 
       // For instant jobs: match by distance (≤ 10 km)
       if (job.type === "instant") {
-        if (!job.location || !v.location) return false;
+        if (!job.location || !v.location) {return false;}
         const dist = haversineDistanceKm(job.location, v.location);
         return dist <= 10;
       }

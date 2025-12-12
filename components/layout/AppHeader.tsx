@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { motion } from "framer-motion";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Bell,
   ShoppingCart,
@@ -95,16 +93,22 @@ export default function AppHeader({
 }: AppHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Kullanıcı bilgisini yükle
   useEffect(() => {
+    if (mounted) {
     checkAuth();
-  }, []);
+    }
+  }, [mounted]);
 
   const checkAuth = async () => {
     try {
@@ -140,12 +144,24 @@ export default function AppHeader({
     whiteBackgroundPages.some((page) => pathname.startsWith(page)) &&
     pathname !== "/partner";
 
-  // CategoryBar için active category - useSearchParams kullan (SSR ve client tutarlı)
-  const activeCategory = searchParams.get("q") || "";
-
   const handleCategoryClick = (keyword: string) => {
     router.push(`/request?q=${encodeURIComponent(keyword)}`);
   };
+
+  // SSR sırasında basit bir header render et
+  if (!mounted) {
+    return (
+      <header className="w-full transition-all sticky top-0 z-50 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4 py-3">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-2xl md:text-3xl font-extrabold leading-none tracking-tight">hizmetgo</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -222,11 +238,7 @@ export default function AppHeader({
             {!isLoading && isAuthenticated && user ? (
               <div className="hidden lg:flex items-center gap-4">
                 <Link href="/account">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <div className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95">
                     <Avatar className="w-8 h-8 border border-slate-200">
                       <AvatarImage src={user.avatarUrl} />
                       <AvatarFallback className="bg-slate-100 text-slate-700">
@@ -238,7 +250,7 @@ export default function AppHeader({
                         {user.name}
                       </p>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
                 {/* Destek Butonu - En sağda */}
                 <SupportHelpButton />
@@ -297,12 +309,11 @@ export default function AppHeader({
             )}
 
             {showCart && (
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Link href="/cart">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="relative text-slate-700 hover:bg-slate-100 rounded-md"
+                  className="relative text-slate-700 hover:bg-slate-100 rounded-md transition-transform hover:scale-110 active:scale-90"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     {cartCount > 0 && (
@@ -315,19 +326,13 @@ export default function AppHeader({
                     )}
                   </Button>
                 </Link>
-              </motion.div>
             )}
           </div>
         </div>
 
         {/* Mobile Menu - Thumbtack Style */}
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-slate-200 bg-white py-4 space-y-1"
-          >
+          <div className="md:hidden border-t border-slate-200 bg-white py-4 space-y-1 animate-in slide-in-from-top-2 duration-200">
             {/* Main Tabs */}
             {customerTabs
               .filter((tab) => {
@@ -425,7 +430,7 @@ export default function AppHeader({
                 </div>
               )
             )}
-          </motion.div>
+          </div>
         )}
       </div>
       

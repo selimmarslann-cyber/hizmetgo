@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
 import { X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ export default function AIChatModal({
   initialCategory,
 }: AIChatModalProps) {
   const router = useRouter();
-  const { success, error: showError } = useToast();
+  const { error: showError } = useToast();
 
   // UI Messages - only for display
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -113,12 +113,12 @@ export default function AIChatModal({
     }
   }, [isOpen]);
 
-  // Hide initial warning after 5 seconds
+  // Hide initial warning after 5 seconds (TS7030 fix)
   useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => setShowInitialWarning(false), 5000);
-      return () => clearTimeout(timer);
-    }
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => setShowInitialWarning(false), 5000);
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   // ONLY handler that triggers API calls
@@ -130,9 +130,6 @@ export default function AIChatModal({
     setInput("");
     setLocalWarning(null);
 
-    // Eğer isComplete true ise VE son AI mesajı "onaylıyor musunuz" içeriyorsa
-    // ve kullanıcı "onaylıyorum", "evet", "tamam" gibi bir mesaj yazdıysa
-    // conversation history'den ilan oluştur
     const lastAssistantMessage = messages
       .filter((m) => m.role === "assistant")
       .pop();
@@ -153,7 +150,7 @@ export default function AIChatModal({
       "yes",
       "onay",
     ];
-    const trimmedMessage = userMessageText.trim().replace(/[.,!?]/g, ""); // Noktalama işaretlerini kaldır
+    const trimmedMessage = userMessageText.trim().replace(/[.,!?]/g, "");
     const isApprovalMessage = approvalKeywords.some(
       (keyword) => trimmedMessage === keyword,
     );
@@ -161,17 +158,12 @@ export default function AIChatModal({
       isComplete && isAskingForApproval && isApprovalMessage;
 
     if (shouldCreateListing) {
-      // Kullanıcı mesajını UI'da göster
-      const userMessage: ChatMessage = {
-        role: "user",
-        content: originalInput,
-      };
+      const userMessage: ChatMessage = { role: "user", content: originalInput };
       setMessages((prev) => [...prev, userMessage]);
 
       setLoading(true);
 
       try {
-        // Conversation history'yi birleştir (onay mesajı hariç)
         const fullConversation = conversationHistoryRef.current
           .map(
             (msg) =>
@@ -179,11 +171,6 @@ export default function AIChatModal({
           )
           .join("\n\n");
 
-        console.log("📝 İlan oluşturma başlatılıyor...", {
-          conversationLength: fullConversation.length,
-        });
-
-        // İlan metnini oluştur
         const generateResponse = await fetch("/api/generate-listing", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -207,7 +194,6 @@ export default function AIChatModal({
           generateData.listing || generateData.listingText || fullConversation;
 
         if (!listingDescription || listingDescription.trim().length < 10) {
-          // Eğer AI'dan gelen metin çok kısa ise, conversation history'yi kullan
           const fallbackDescription =
             fullConversation.length >= 10
               ? fullConversation
@@ -219,16 +205,9 @@ export default function AIChatModal({
             );
           }
 
-          console.warn("⚠️ AI metni çok kısa, fallback kullanılıyor");
           listingDescription = fallbackDescription;
         }
 
-        console.log(
-          "✅ İlan metni oluşturuldu, uzunluk:",
-          listingDescription.length,
-        );
-
-        // İlanı oluştur
         const listingPayload = {
           description: listingDescription.trim(),
           title: listingDescription.substring(0, 50).trim(),
@@ -237,12 +216,6 @@ export default function AIChatModal({
           priority: "normal" as const,
           price_range: "",
         };
-
-        console.log("📤 İlan payload:", {
-          descriptionLength: listingPayload.description.length,
-          title: listingPayload.title,
-          priority: listingPayload.priority,
-        });
 
         const createResponse = await fetch("/api/listings", {
           method: "POST",
@@ -255,26 +228,17 @@ export default function AIChatModal({
           const errorData = await createResponse
             .json()
             .catch(() => ({ error: "İlan oluşturulamadı" }));
-          console.error("❌ İlan oluşturma hatası:", errorData);
           throw new Error(errorData.error || "İlan oluşturulamadı");
         }
 
         const createData = await createResponse.json();
 
         if (!createData.listing || !createData.listing.id) {
-          console.error("❌ İlan ID bulunamadı:", createData);
           throw new Error("İlan oluşturuldu ancak ID alınamadı");
         }
 
-        console.log(
-          "✅ İlan başarıyla oluşturuldu, ID:",
-          createData.listing.id,
-        );
-
-        // İlan ID'sini sakla (buton için)
         setCreatedListingId(createData.listing.id);
 
-        // Başarı mesajı göster - buton ile
         setLocalWarning("İlanınız başarıyla oluşturuldu!");
         setMessages((prev) => [
           ...prev,
@@ -285,13 +249,11 @@ export default function AIChatModal({
           },
         ]);
       } catch (err: any) {
-        console.error("❌ Create listing error:", err);
         const errorMessage =
           err.message || "İlan oluşturulamadı. Lütfen tekrar deneyin.";
         showError(errorMessage);
         setLocalWarning(errorMessage);
 
-        // Hata mesajını chat'e ekle
         setMessages((prev) => [
           ...prev,
           {
@@ -305,22 +267,14 @@ export default function AIChatModal({
       return;
     }
 
-    // Normal mesaj gönderme akışı
-    const userMessage: ChatMessage = {
-      role: "user",
-      content: originalInput,
-    };
+    const userMessage: ChatMessage = { role: "user", content: originalInput };
     setMessages((prev) => [...prev, userMessage]);
-
-    // Add to conversation history (for backend context)
     conversationHistoryRef.current.push(userMessage);
 
     setLoading(true);
 
     try {
-      // Send to API with conversation history (NOT including current user message in history)
-      // The backend will add it itself
-      const historyForBackend = conversationHistoryRef.current.slice(0, -1); // Exclude current message
+      const historyForBackend = conversationHistoryRef.current.slice(0, -1);
 
       const response = await sendChatMessage(
         originalInput,
@@ -329,8 +283,6 @@ export default function AIChatModal({
         userId,
         !sessionId ? initialCategory : undefined,
       );
-
-      console.log("🧠 AI raw response", response);
 
       if (response.error) {
         setLocalWarning(response.error);
@@ -345,31 +297,24 @@ export default function AIChatModal({
         }
       }
 
-      // Update session ID
       if (response.sessionId) {
         setSessionId(response.sessionId);
       }
 
-      // Add assistant response to UI
       const assistantMessage: ChatMessage = {
         role: "assistant",
         content: response.reply,
       };
       setMessages((prev) => [...prev, assistantMessage]);
-
-      // Add to conversation history
       conversationHistoryRef.current.push(assistantMessage);
 
-      // Check if complete
       if (response.isComplete) {
         setIsComplete(true);
       }
     } catch (err: any) {
-      console.error("AI chat error:", err);
       setLocalWarning("Bir hata oluştu. Lütfen tekrar deneyin.");
       showError(err.message || "Bir hata oluştu");
 
-      // Remove user message on error
       setMessages((prev) => prev.slice(0, -1));
       conversationHistoryRef.current.pop();
     } finally {
@@ -377,88 +322,7 @@ export default function AIChatModal({
     }
   };
 
-  const createListing = async (listingData: any) => {
-    try {
-      let finalDescription =
-        listingData.description || listingData.finalDescription || "";
-
-      if (listingData.category && listingData.location) {
-        try {
-          const generateResponse = await fetch("/api/generate-listing", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              category: listingData.category || "genel",
-              location: listingData.location || "belirtilmemiş",
-              area: listingData.area || "belirtilmemiş",
-              budget: listingData.budget || "belirtilmemiş",
-              urgency: listingData.urgency || "esnek",
-              details:
-                listingData.details ||
-                listingData.description ||
-                "belirtilmemiş",
-            }),
-          });
-
-          const generateData = await generateResponse.json();
-          console.log("🧠 /api/generate-listing response", generateData);
-
-          if (generateData.listing) {
-            finalDescription = generateData.listing;
-          } else if (generateData.listingText) {
-            finalDescription = generateData.listingText;
-          }
-        } catch (generateError) {
-          console.error("Generate listing error:", generateError);
-        }
-      }
-
-      const response = await fetch("/api/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description: finalDescription,
-          title: listingData.title || finalDescription.substring(0, 30),
-          raw_description: listingData.rawDescription || "",
-          city: listingData.city || "",
-          district: listingData.district || "",
-          address: listingData.address || "",
-          date: listingData.date || "esnek",
-          priority: listingData.priority || "normal",
-          price_range: listingData.price_range || "",
-        }),
-        credentials: "include",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "İlan oluşturulamadı");
-      }
-
-      setLocalWarning(
-        "İlanınız oluşturuldu! 5 saniye içinde detay sayfasına yönlendiriliyorsunuz...",
-      );
-
-      setTimeout(() => {
-        router.push(`/listings/${data.listing.id}?edit=true&created=true`);
-        onClose();
-      }, 5000);
-    } catch (err: any) {
-      console.error("Create listing error:", err);
-      showError(err.message || "İlan oluşturulamadı");
-      setLocalWarning(
-        "İlan oluşturulamadı. Manuel forma yönlendiriliyorsunuz...",
-      );
-
-      setTimeout(() => {
-        router.push("/request");
-        onClose();
-      }, 2000);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -507,11 +371,12 @@ export default function AIChatModal({
             />
           )}
 
-          {/* WhatsApp-style message bubbles */}
           {messages.map((msg, index) => (
             <div
               key={`${msg.role}-${index}-${msg.content.substring(0, 10)}`}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex ${
+                msg.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-2 ${
@@ -564,7 +429,7 @@ export default function AIChatModal({
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder={
                   isManualMode
                     ? "İlanınızı yazın..."

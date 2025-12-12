@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +18,28 @@ import {
 // Static generation'ı engelle
 export default function AccountSettingsPageClient() {
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const [loading, setLoading] = useState(true);
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -196,12 +216,21 @@ export default function AccountSettingsPageClient() {
   };
 
   if (loading) {
+    if (!mounted || !MotionComponents) {
+
+      return null; // or appropriate fallback
+
+    }
+
+
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div>Yükleniyor...</div>
       </div>
     );
   }
+
+  if (!MotionComponents) return null;
 
   return (
     <div className="space-y-6">
@@ -218,10 +247,10 @@ export default function AccountSettingsPageClient() {
       )}
 
       {/* Notification Settings */}
-      <motion.div
+      <MotionComponents.MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-      >
+       suppressHydrationWarning>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -301,14 +330,14 @@ export default function AccountSettingsPageClient() {
             </Button>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionComponents.MotionDiv>
 
       {/* Security Settings */}
-      <motion.div
+      <MotionComponents.MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-      >
+       suppressHydrationWarning>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -397,14 +426,14 @@ export default function AccountSettingsPageClient() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionComponents.MotionDiv>
 
       {/* Location Settings */}
-      <motion.div
+      <MotionComponents.MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-      >
+       suppressHydrationWarning>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -465,7 +494,7 @@ export default function AccountSettingsPageClient() {
             </Button>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionComponents.MotionDiv>
     </div>
   );
 }

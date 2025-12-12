@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Mesafe hesapla ve filtrele (lat/lng null olanlar zaten burada filtreleniyor)
     const businessesToNotify = allBusinesses
       .map((business) => {
-        if (!business.lat || !business.lng) return null;
+        if (!business.lat || !business.lng) {return null;}
         const distance = haversineDistanceKm(
           { lat: validated.locationLat, lng: validated.locationLng },
           { lat: business.lat, lng: business.lng },
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     });
 
     for (const business of businessesToNotify) {
-      if (!business.owner) continue;
+      if (!business.owner) {continue;}
 
       // Database notification oluştur
       notificationPromises.push(

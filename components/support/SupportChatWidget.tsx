@@ -9,10 +9,7 @@ import {
   Loader2,
   Bot,
   User,
-  AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/lib/hooks/useToast";
@@ -42,7 +39,17 @@ export default function SupportChatWidget({
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { success, error } = useToast();
+  const { error } = useToast();
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,6 +58,16 @@ export default function SupportChatWidget({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  const addBotMessage = useCallback((content: string) => {
+    const newMessage: Message = {
+      id: `bot-${Date.now()}`,
+      type: "bot",
+      content,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, newMessage]);
+  }, []);
 
   const loadOrCreateTicket = useCallback(async () => {
     setIsLoading(true);
@@ -61,46 +78,15 @@ export default function SupportChatWidget({
         credentials: "include",
         body: JSON.stringify({ action: "get_or_create" }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setTicketId(data.ticketId);
-        if (data.messages && data.messages.length > 0) {
-          setMessages(
-            data.messages.map((msg: any) => ({
-              id: msg.id,
-              type:
-                msg.type === "USER"
-                  ? "user"
-                  : msg.type === "BOT"
-                    ? "bot"
-                    : "admin",
-              content: msg.content,
-              timestamp: new Date(msg.createdAt),
-              isRead: msg.isRead,
-            })),
-          );
-        } else {
-          // İlk mesaj - bot hoş geldin mesajı
-          addBotMessage(
-            "Merhaba! 👋 Hizmetgo Destek Botuna hoş geldiniz. Size nasıl yardımcı olabilirim?",
-          );
-        }
-      }
-    } catch (err) {
-      error("Destek sistemine bağlanılamadı. Lütfen tekrar deneyin.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [error]);
 
-  const loadMessages = useCallback(async () => {
-    if (!ticketId) return;
-    try {
-      const res = await fetch(`/api/support/messages?ticketId=${ticketId}`, {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
+      if (!res.ok) {
+        throw new Error("support ticket request failed");
+      }
+
+      const data = await res.json();
+      setTicketId(data.ticketId);
+
+      if (data.messages && data.messages.length > 0) {
         setMessages(
           data.messages.map((msg: any) => ({
             id: msg.id,
@@ -115,32 +101,67 @@ export default function SupportChatWidget({
             isRead: msg.isRead,
           })),
         );
+      } else {
+        addBotMessage(
+          "Merhaba! 👋 Hizmetgo Destek Botuna hoş geldiniz. Size nasıl yardımcı olabilirim?",
+        );
       }
     } catch (err) {
-      // Sessizce hata yut
+      error("Destek sistemine bağlanılamadı. Lütfen tekrar deneyin.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [addBotMessage, error]);
+
+  const loadMessages = useCallback(async () => {
+    if (!ticketId) return;
+
+    try {
+      const res = await fetch(`/api/support/messages?ticketId=${ticketId}`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setMessages(
+        data.messages.map((msg: any) => ({
+          id: msg.id,
+          type:
+            msg.type === "USER"
+              ? "user"
+              : msg.type === "BOT"
+                ? "bot"
+                : "admin",
+          content: msg.content,
+          timestamp: new Date(msg.createdAt),
+          isRead: msg.isRead,
+        })),
+      );
+    } catch {
+      // sessiz
     }
   }, [ticketId]);
 
-  // Ticket'ı yükle veya yeni oluştur
+  // ✅ Ticket'ı yükle veya yeni oluştur (TS-safe: her path return eder)
   useEffect(() => {
-    if (!ticketId && !isLoading) {
-      loadOrCreateTicket();
-    } else if (ticketId) {
-      loadMessages();
-      const interval = setInterval(loadMessages, 5000); // 5 saniyede bir yeni mesajları kontrol et
-      return () => clearInterval(interval);
+    // TS "Not all code paths return a value" fix: her durumda return
+    if (isLoading) {
+      return;
     }
-  }, [ticketId, isLoading, loadOrCreateTicket, loadMessages]);
 
-  const addBotMessage = (content: string) => {
-    const newMessage: Message = {
-      id: `bot-${Date.now()}`,
-      type: "bot",
-      content,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
-  };
+    // Ticket yoksa oluştur/yükle
+    if (!ticketId) {
+      loadOrCreateTicket();
+      return;
+    }
+
+    // Ticket varsa mesajları yükle + polling
+    loadMessages();
+    const interval = setInterval(loadMessages, 5000);
+
+    return () => clearInterval(interval);
+  }, [ticketId, isLoading, loadOrCreateTicket, loadMessages]);
 
   const handleSend = async () => {
     if (!input.trim() || !ticketId || isTyping) return;
@@ -151,6 +172,7 @@ export default function SupportChatWidget({
       content: input.trim(),
       timestamp: new Date(),
     };
+
     setMessages((prev) => [...prev, userMessage]);
     const messageContent = input.trim();
     setInput("");
@@ -167,29 +189,28 @@ export default function SupportChatWidget({
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-
-        // Bot cevabı varsa ekle
-        if (data.botResponse) {
-          setTimeout(() => {
-            addBotMessage(data.botResponse.content);
-
-            // Bot çözemedi mi? Admin'e aktarıldı mesajı
-            if (data.botResponse.escalated) {
-              setTimeout(() => {
-                addBotMessage(
-                  "🤝 Sorunuzu daha detaylı incelemek için destek ekibimize yönlendirdim. En kısa sürede size dönüş yapılacaktır.",
-                );
-              }, 500);
-            }
-          }, 1000);
-        }
-      } else {
+      if (!res.ok) {
         error("Mesaj gönderilemedi. Lütfen tekrar deneyin.");
         setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+        return;
       }
-    } catch (err) {
+
+      const data = await res.json();
+
+      if (data.botResponse) {
+        setTimeout(() => {
+          addBotMessage(data.botResponse.content);
+
+          if (data.botResponse.escalated) {
+            setTimeout(() => {
+              addBotMessage(
+                "🤝 Sorunuzu daha detaylı incelemek için destek ekibimize yönlendirdim. En kısa sürede size dönüş yapılacaktır.",
+              );
+            }, 500);
+          }
+        }, 1000);
+      }
+    } catch {
       error("Bir hata oluştu. Lütfen tekrar deneyin.");
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
     } finally {
@@ -264,13 +285,8 @@ export default function SupportChatWidget({
           </div>
         ) : (
           <>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-              >
+            {messages.map((message) => {
+              const messageContent = (
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.type === "user"
@@ -304,13 +320,39 @@ export default function SupportChatWidget({
                     })}
                   </p>
                 </div>
-              </motion.div>
-            ))}
+              );
+
+              if (!mounted || !MotionDiv) {
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {messageContent}
+                  </div>
+                );
+              }
+
+              return (
+                <MotionDiv
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                  suppressHydrationWarning
+                >
+                  {messageContent}
+                </MotionDiv>
+              );
+            })}
+
             {isTyping && (
-              <motion.div
+              mounted && MotionDiv ? (
+                <MotionDiv
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex justify-start"
+                  suppressHydrationWarning
               >
                 <div className="bg-white border border-gray-200 rounded-lg p-3">
                   <div className="flex items-center gap-1">
@@ -332,8 +374,33 @@ export default function SupportChatWidget({
                     />
                   </div>
                 </div>
-              </motion.div>
+              </MotionDiv>
+              ) : (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center gap-1">
+                      <Bot className="w-3 h-3 text-[#FF6000]" />
+                      <span className="text-xs font-semibold">Hizmetgo Bot</span>
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
             )}
+
             <div ref={messagesEndRef} />
           </>
         )}

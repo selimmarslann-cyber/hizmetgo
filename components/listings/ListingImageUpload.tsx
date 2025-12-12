@@ -83,7 +83,7 @@ export default function ListingImageUpload({
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     // Validate image
     const isValid = await validateImage(file);
@@ -137,7 +137,7 @@ export default function ListingImageUpload({
   };
 
   const handleRemove = async () => {
-    if (!preview) return;
+    if (!preview) {return;}
 
     try {
       const res = await fetch(`/api/listings/${listingId}/image`, {

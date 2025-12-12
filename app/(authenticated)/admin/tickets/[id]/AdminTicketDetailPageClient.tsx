@@ -62,6 +62,7 @@ export default function AdminTicketDetailPageClient({
 
   useEffect(() => {
     loadTicket();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
 
   const loadTicket = async () => {
@@ -153,8 +154,12 @@ export default function AdminTicketDetailPageClient({
   };
 
   const getPriorityColor = (priority: number) => {
-    if (priority === 1) return "bg-red-500";
-    if (priority === 2) return "bg-orange-500";
+    if (priority === 1) {
+      return "bg-red-500";
+    }
+    if (priority === 2) {
+      return "bg-orange-500";
+    }
     return "bg-gray-500";
   };
 

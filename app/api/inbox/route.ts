@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
 
       for (const order of orders) {
         const lastMessage = order.messages[0];
-        if (!lastMessage) continue;
+        if (!lastMessage) {continue;}
 
         const unreadCount = await prisma.message.count({
           where: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,12 +43,18 @@ export default function BusinessCard({
   onOrderClick,
   showActions = false,
 }: BusinessCardProps) {
-  return (
-    <Link href={href}>
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      >
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
+  const cardContent = (
         <Card className="h-full cursor-pointer border-2 border-gray-200 hover:border-[#FF6000]/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 bg-white overflow-hidden">
           {/* Image */}
           <div className="relative w-full h-40 md:h-48 bg-gray-100">
@@ -156,7 +162,27 @@ export default function BusinessCard({
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+  );
+
+  if (!mounted || !MotionDiv) {
+    return (
+      <Link href={href}>
+        <div>
+          {cardContent}
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={href}>
+      <MotionDiv
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        suppressHydrationWarning
+      >
+        {cardContent}
+      </MotionDiv>
     </Link>
   );
 }

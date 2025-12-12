@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +36,28 @@ export default function ServicesPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [searchQuery, setSearchQuery] = useState("");
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{
@@ -202,6 +222,17 @@ export default function ServicesPageClient() {
     return <RequestFlow />;
   }
 
+  if (!mounted || !MotionComponents) {
+
+
+    return null; // or appropriate fallback
+
+
+  }
+
+
+
+  if (!MotionComponents) return null;
   return (
     <div className="min-h-screen bg-[#F5F5F7] pt-24 pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -308,12 +339,12 @@ export default function ServicesPageClient() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {businesses.map((business) => (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key={business.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                >
+                 suppressHydrationWarning>
                     <Card className="h-full border-2 border-gray-200 hover:border-[#FF6000]/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all bg-white">
                       {/* Business Info */}
                       <CardContent className="p-6">
@@ -397,7 +428,7 @@ export default function ServicesPageClient() {
                         </div>
                       </CardContent>
                     </Card>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               ))}
             </div>
           </div>

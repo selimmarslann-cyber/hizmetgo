@@ -285,7 +285,7 @@ export default function BusinessStorePageClient() {
       return;
     }
 
-    if (!business) return;
+    if (!business) {return;}
 
     try {
       const res = await fetch(
@@ -314,7 +314,7 @@ export default function BusinessStorePageClient() {
   };
 
   const toggleProductActive = async (productId: string, value: boolean) => {
-    if (!business) return;
+    if (!business) {return;}
 
     try {
       const res = await fetch(
@@ -339,7 +339,7 @@ export default function BusinessStorePageClient() {
   };
 
   const handleSaveBusiness = async () => {
-    if (!business) return;
+    if (!business) {return;}
 
     setSaving(true);
     try {
@@ -772,7 +772,7 @@ export default function BusinessStorePageClient() {
                       input.accept = "image/*";
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0];
-                        if (!file) return;
+                        if (!file) {return;}
 
                         // File size check (max 5MB)
                         if (file.size > 5 * 1024 * 1024) {

@@ -1,7 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface LocalWarningProps {
   message: string;
@@ -12,6 +12,17 @@ export default function LocalWarning({
   message,
   type = "warning",
 }: LocalWarningProps) {
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
   const bgColor =
     type === "error"
       ? "bg-red-50 border-red-200"
@@ -26,13 +37,8 @@ export default function LocalWarning({
         ? "text-blue-800"
         : "text-yellow-800";
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className={`rounded-lg border-2 p-4 ${bgColor} ${textColor}`}
-    >
+  const content = (
+    <div className={`rounded-lg border-2 p-4 ${bgColor} ${textColor}`}>
       <div className="flex items-start gap-3">
         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
@@ -41,7 +47,22 @@ export default function LocalWarning({
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
+  );
+
+  if (!mounted || !MotionDiv) {
+    return content;
+  }
+
+  return (
+    <MotionDiv
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      suppressHydrationWarning
+    >
+      {content}
+    </MotionDiv>
   );
 }
 

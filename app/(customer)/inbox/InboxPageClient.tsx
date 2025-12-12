@@ -94,8 +94,8 @@ export default function InboxPageClient() {
   };
 
   const filteredItems = items.filter((item) => {
-    if (filter === "unread") return item.unread;
-    if (filter === "all") return true;
+    if (filter === "unread") {return item.unread;}
+    if (filter === "all") {return true;}
     return item.type === filter.slice(0, -1); // 'orders' -> 'order'
   });
 

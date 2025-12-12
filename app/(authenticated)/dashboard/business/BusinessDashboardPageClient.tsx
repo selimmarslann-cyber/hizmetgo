@@ -6,12 +6,37 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Package, Power, ShoppingBag, Star } from "lucide-react";
+import { Business } from "@/lib/types/domain";
 
-// Static generation'ı engelle
+interface BusinessWithBanned extends Business {
+  bannedUntil?: string | null;
+  consecutiveCancellations?: number;
+}
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  product: {
+    name: string;
+  };
+}
+
+interface Order {
+  id: string;
+  status: string;
+  totalAmount: number;
+  addressText: string;
+  createdAt: string;
+  items?: OrderItem[];
+}
+
+// Badge component'inin kabul ettiği variant tipi
+type BadgeVariant = "secondary" | "destructive" | "success" | "default" | "outline";
+
 export default function BusinessDashboardPageClient() {
   const router = useRouter();
-  const [business, setBusiness] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [business, setBusiness] = useState<BusinessWithBanned | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadOrders = useCallback(async (businessId: string) => {
@@ -65,7 +90,9 @@ export default function BusinessDashboardPageClient() {
   }, [loadUserAndBusiness]);
 
   const toggleOnlineStatus = async () => {
-    if (!business) return;
+    if (!business) {
+      return;
+    }
 
     try {
       const res = await fetch(`/api/businesses/${business.id}/online-status`, {
@@ -120,15 +147,23 @@ export default function BusinessDashboardPageClient() {
   );
 
   // Online durumu badge rengi
-  const getStatusBadgeVariant = () => {
-    if (business.onlineStatus === "ONLINE") return "success";
-    if (business.onlineStatus === "AUTO_OFFLINE") return "secondary";
+  const getStatusBadgeVariant = (): BadgeVariant => {
+    if (business.onlineStatus === "ONLINE") {
+      return "success";
+    }
+    if (business.onlineStatus === "AUTO_OFFLINE") {
+      return "secondary";
+    }
     return "secondary";
   };
 
   const getStatusText = () => {
-    if (business.onlineStatus === "ONLINE") return "Online";
-    if (business.onlineStatus === "AUTO_OFFLINE") return "Otomatik Offline";
+    if (business.onlineStatus === "ONLINE") {
+      return "Online";
+    }
+    if (business.onlineStatus === "AUTO_OFFLINE") {
+      return "Otomatik Offline";
+    }
     return "Offline";
   };
 
@@ -156,14 +191,15 @@ export default function BusinessDashboardPageClient() {
                   </p>
                   <p className="text-sm text-yellow-800 mt-1">
                     Hesabınız{" "}
-                    {new Date(business.bannedUntil).toLocaleDateString(
-                      "tr-TR",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      },
-                    )}{" "}
+                    {business.bannedUntil &&
+                      new Date(business.bannedUntil).toLocaleDateString(
+                        "tr-TR",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )}{" "}
                     tarihine kadar sistem tarafından geçici olarak
                     durdurulmuştur. Üst üste 3 iptal sebebiyle 7 günlük ban
                     uygulanmıştır.
@@ -187,7 +223,7 @@ export default function BusinessDashboardPageClient() {
                   >
                     {getStatusText()}
                   </Badge>
-                  {isBanned && (
+                  {isBanned && business.bannedUntil && (
                     <Badge variant="destructive">
                       Banlı (
                       {new Date(business.bannedUntil).toLocaleDateString(
@@ -200,7 +236,7 @@ export default function BusinessDashboardPageClient() {
               </div>
               <Button
                 onClick={toggleOnlineStatus}
-                disabled={isBanned}
+                disabled={!!isBanned}
                 variant={
                   business.onlineStatus === "ONLINE" ? "destructive" : "default"
                 }
@@ -322,7 +358,13 @@ export default function BusinessDashboardPageClient() {
   );
 }
 
-function OrderCard({ order, onUpdate }: { order: any; onUpdate: () => void }) {
+function OrderCard({
+  order,
+  onUpdate,
+}: {
+  order: Order;
+  onUpdate: () => void;
+}) {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -330,8 +372,10 @@ function OrderCard({ order, onUpdate }: { order: any; onUpdate: () => void }) {
     setNow(Date.now());
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
+  const getStatusBadge = (
+    status: string,
+  ): { variant: BadgeVariant; text: string } => {
+    const variants: Record<string, { variant: BadgeVariant; text: string }> = {
       PENDING_CONFIRMATION: { variant: "secondary", text: "Beklemede" },
       ACCEPTED: { variant: "default", text: "Kabul Edildi" },
       IN_PROGRESS: { variant: "default", text: "Devam Ediyor" },
@@ -399,7 +443,7 @@ function OrderCard({ order, onUpdate }: { order: any; onUpdate: () => void }) {
             <p className="text-sm text-gray-600 mt-1">{order.addressText}</p>
             {order.items && (
               <div className="mt-2 text-sm text-gray-600">
-                {order.items.map((item: any) => (
+                {order.items.map((item) => (
                   <div key={item.id}>
                     {item.product.name} x {item.quantity}
                   </div>

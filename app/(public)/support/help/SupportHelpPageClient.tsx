@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AnimatePresence, motion } from "framer-motion";
 import { useToast } from "@/lib/hooks/useToast";
 
 
@@ -69,7 +68,28 @@ const problemCategories = [
 export default function SupportHelpPageClient() {
   const router = useRouter();
   const { success, error } = useToast();
-  const [step, setStep] = useState<
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [step, setStep] = useState<
     "category" | "subcategory" | "message" | "success"
   >("category");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -136,6 +156,17 @@ export default function SupportHelpPageClient() {
     }
   };
 
+  if (!mounted || !MotionComponents) {
+
+
+    return null; // or appropriate fallback
+
+
+  }
+
+
+
+  if (!MotionComponents) return null;
   return (
     <div className="fixed inset-0 z-[9999] bg-white">
       <div className="h-full flex flex-col">
@@ -172,16 +203,16 @@ export default function SupportHelpPageClient() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 py-8">
-            <AnimatePresence mode="wait">
+            <MotionComponents.AnimatePresence mode="wait">
               {/* Step 1: Kategori Seçimi */}
               {step === "category" && (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key="category"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
-                >
+                 suppressHydrationWarning>
                   <h2 className="text-xl font-semibold text-slate-900 mb-6">
                     Hangi konuda yardıma ihtiyacınız var?
                   </h2>
@@ -201,18 +232,18 @@ export default function SupportHelpPageClient() {
                       </button>
                     ))}
                   </div>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               )}
 
               {/* Step 2: Alt Kategori Seçimi */}
               {step === "subcategory" && currentCategory && (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key="subcategory"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
-                >
+                 suppressHydrationWarning>
                   <div className="flex items-center gap-3 mb-6">
                     <Button
                       variant="ghost"
@@ -245,18 +276,18 @@ export default function SupportHelpPageClient() {
                       </button>
                     ))}
                   </div>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               )}
 
               {/* Step 3: Mesaj Yazma */}
               {step === "message" && (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key="message"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
-                >
+                 suppressHydrationWarning>
                   <div className="flex items-center gap-3 mb-6">
                     <Button
                       variant="ghost"
@@ -314,17 +345,17 @@ export default function SupportHelpPageClient() {
                       )}
                     </Button>
                   </div>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               )}
 
               {/* Step 4: Başarı */}
               {step === "success" && (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4"
-                >
+                 suppressHydrationWarning>
                   <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
                     <CheckCircle2 className="h-8 w-8 text-emerald-600" />
                   </div>
@@ -338,9 +369,9 @@ export default function SupportHelpPageClient() {
                   <Button onClick={() => router.back()} className="mt-4">
                     Kapat
                   </Button>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               )}
-            </AnimatePresence>
+            </MotionComponents.AnimatePresence>
           </div>
         </div>
       </div>

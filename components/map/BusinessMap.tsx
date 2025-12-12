@@ -40,7 +40,7 @@ export default function BusinessMap({
   );
 
   const updateMarkers = useCallback(() => {
-    if (!map.current) return;
+    if (!map.current) {return;}
 
     // Eski marker'ları temizle
     markersRef.current.forEach((marker) => marker.remove());
@@ -108,7 +108,7 @@ export default function BusinessMap({
   }, [businesses, onBusinessClick]);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current) {return;}
 
     // MapLibre GL harita başlat
     // OpenStreetMap style kullan (ücretsiz)

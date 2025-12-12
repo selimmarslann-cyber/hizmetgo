@@ -153,7 +153,7 @@ async function aiChatHandler(req: NextRequest) {
     const currentSessionId = sessionId || `${userId}-${Date.now()}`;
 
     // Session mesajlarını cache'den al veya oluştur
-    let sessionMessages =
+    const sessionMessages =
       memoryCache.get<Array<{ role: string; content: string }>>(
         `ai:session:${currentSessionId}`,
       ) || [];

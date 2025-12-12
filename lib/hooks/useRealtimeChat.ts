@@ -53,7 +53,7 @@ export function useRealtimeChat({
 
   // Load initial messages
   const loadMessages = useCallback(async () => {
-    if (!orderId || !userId) return;
+    if (!orderId || !userId) {return;}
 
     try {
       const res = await fetch(`/api/orders/${orderId}/messages`, {
@@ -164,7 +164,7 @@ export function useRealtimeChat({
 
   // Typing indicator
   const sendTyping = useCallback(() => {
-    if (!channelRef.current || !userId) return;
+    if (!channelRef.current || !userId) {return;}
 
     // Broadcast typing status
     channelRef.current.send({
@@ -202,7 +202,7 @@ export function useRealtimeChat({
 
   // Listen for typing events
   useEffect(() => {
-    if (!channelRef.current || !userId) return;
+    if (!channelRef.current || !userId) {return;}
 
     const channel = channelRef.current;
 
@@ -211,7 +211,7 @@ export function useRealtimeChat({
         payload.payload as any;
 
       // Don't show typing indicator for own typing
-      if (typingUserId === userId) return;
+      if (typingUserId === userId) {return;}
 
       if (userIsTyping) {
         setIsTyping(true);

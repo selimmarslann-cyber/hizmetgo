@@ -1,135 +1,60 @@
-import OpenAI from "openai";
-import { config } from "dotenv";
-import { resolve } from "path";
+import "server-only";
 
-// .env dosyasını manuel yükle (Next.js bazen yüklemez)
-if (typeof window === "undefined") {
-  const envPath = resolve(process.cwd(), ".env");
-  config({ path: envPath, override: true });
-  
-  // Alternatif env path'leri dene
-  const altPaths = [
-    resolve(process.cwd(), "mahallem-main", ".env"),
-    resolve(process.cwd(), ".env.local"),
-  ];
-  
-  for (const altPath of altPaths) {
-    try {
-      config({ path: altPath, override: false });
-    } catch (e) {
-      // Sessizce devam et
-    }
+import OpenAI from "openai";
+
+let openaiInstance: OpenAI | null = null;
+
+function assertServerOnly() {
+  // Next build sırasında bu dosya client tarafına çekilmesin diye sert guard
+  if (typeof window !== "undefined") {
+    throw new Error("openai.ts client bundle içinde kullanılamaz (server-only).");
   }
 }
 
-// Lazy initialization - Next.js'de environment variables runtime'da yüklenir
-let openaiInstance: OpenAI | null = null;
+export function getOpenAIClient(): OpenAI {
+  assertServerOnly();
 
-function getOpenAIClient(): OpenAI {
   if (!openaiInstance) {
-    // Önce process.env'den oku, yoksa manuel oku
-    let apiKey = process.env.OPENAI_API_KEY?.trim();
-
-    // Eğer hala yoksa, .env dosyasından direkt oku
-    if (!apiKey) {
-      try {
-        const envPath = resolve(process.cwd(), ".env");
-        const envContent = readFileSync(envPath, "utf8");
-        const envLines = envContent.split("\n");
-        for (const line of envLines) {
-          if (line.startsWith("OPENAI_API_KEY=")) {
-            apiKey = line.replace("OPENAI_API_KEY=", "").trim();
-            break;
-          }
-        }
-      } catch (e) {
-        // Hata durumunda sessizce devam et
-      }
-    }
+    const apiKey = process.env.OPENAI_API_KEY?.trim();
 
     if (!apiKey) {
-      throw new Error(
-        "OPENAI_API_KEY environment variable bulunamadı. Lütfen .env dosyasına ekleyin.",
-      );
+      throw new Error("OPENAI_API_KEY bulunamadı. .env / Vercel Env'e ekleyin.");
     }
 
-    // Key format kontrolü
-    if (!apiKey.startsWith("sk-")) {
-      throw new Error(
-        "OPENAI_API_KEY formatı hatalı. Key 'sk-' ile başlamalı.",
-      );
-    }
-
-    openaiInstance = new OpenAI({
-      apiKey: apiKey,
-    });
+    openaiInstance = new OpenAI({ apiKey });
   }
+
   return openaiInstance;
 }
 
-export default getOpenAIClient();
+export default getOpenAIClient;
 
-// Backward compatibility için askOpenAI fonksiyonu
+// Backward compatibility
 export async function askOpenAI(
   prompt: string,
   messages: any[] = [],
   includeSystemPrompt: boolean = true,
 ) {
-  // API Key kontrolü ve trim - önce process.env'den, yoksa .env dosyasından direkt oku
-  let apiKey = process.env.OPENAI_API_KEY?.trim();
+  assertServerOnly();
 
-  // Eğer hala yoksa, .env dosyasından direkt oku
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    try {
-      const envPath = resolve(process.cwd(), ".env");
-      const envContent = readFileSync(envPath, "utf8");
-      const envLines = envContent.split("\n");
-      for (const line of envLines) {
-        if (line.startsWith("OPENAI_API_KEY=")) {
-          apiKey = line.replace("OPENAI_API_KEY=", "").trim();
-          // process.env'e de ekle
-          process.env.OPENAI_API_KEY = apiKey;
-          break;
-        }
-      }
-    } catch (e) {
-      // Hata durumunda sessizce devam et
-    }
+    throw new Error("OPENAI_API_KEY bulunamadı. .env / Vercel Env'e ekleyin.");
   }
 
-  if (!apiKey) {
-    throw new Error(
-      "OPENAI_API_KEY environment variable bulunamadı. Lütfen .env dosyasına ekleyin.",
-    );
-  }
-
-  // Key format kontrolü
-  if (!apiKey.startsWith("sk-")) {
-    throw new Error("OPENAI_API_KEY formatı hatalı. Key 'sk-' ile başlamalı.");
-  }
-
-  // System prompt sadece ilk mesajda veya açıkça istenirse gönderilir
   const messageArray: any[] = [];
 
   if (includeSystemPrompt && process.env.HIZMETGO_SYSTEM_PROMPT) {
-    messageArray.push({
-      role: "system",
-      content: process.env.HIZMETGO_SYSTEM_PROMPT,
-    });
+    messageArray.push({ role: "system", content: process.env.HIZMETGO_SYSTEM_PROMPT });
   }
 
-  // Conversation history ekle
   messageArray.push(...messages);
-
-  // Son olarak kullanıcı mesajını ekle
   messageArray.push({ role: "user", content: prompt });
 
-  // Timeout kontrolü için AbortController
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 saniye timeout
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
-    // SDK sorunlu, direkt HTTP kullan (daha güvenilir)
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -140,54 +65,19 @@ export async function askOpenAI(
         model: "gpt-4o-mini",
         messages: messageArray,
         temperature: 0.4,
-        max_tokens: 700, // Token limiti - gereksiz tüketimi engelle
+        max_tokens: 700,
       }),
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
       const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { error: { message: errorText } };
-      }
-
-      if (
-        response.status === 401 ||
-        errorData.error?.code === "invalid_api_key"
-      ) {
-        throw new Error(
-          "OpenAI API Key geçersiz. Lütfen .env dosyasındaki OPENAI_API_KEY değerini kontrol edin.",
-        );
-      }
-
-      throw new Error(
-        `OpenAI API hatası: ${errorData.error?.message || response.statusText}`,
-      );
+      throw new Error(`OpenAI API hatası: ${errorText}`);
     }
 
     const data = await response.json();
-    return data.choices[0].message.content || "";
-  } catch (error: any) {
+    return data?.choices?.[0]?.message?.content || "";
+  } finally {
     clearTimeout(timeoutId);
-
-    if (error.name === "AbortError") {
-      throw new Error("AI çağrısı zaman aşımına uğradı (10 saniye)");
-    }
-
-    if (
-      error.message.includes("invalid_api_key") ||
-      error.message.includes("API Key geçersiz")
-    ) {
-      console.error("❌ OpenAI API Key geçersiz!");
-      console.error("API Key başlangıcı:", apiKey.substring(0, 20) + "...");
-      console.error("API Key uzunluğu:", apiKey.length);
-      throw error;
-    }
-    throw error;
   }
 }

@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,11 +63,20 @@ const RANK_BONUSES = [0, 0.5, 1.0, 1.5, 2.0];
 const LEVEL_BASE_PERCENTAGES = [0, 10, 6, 5, 3, 1]; // L0 (yok), L1, L2, L3, L4, L5
 
 export default function AccountReferralPage() {
-
   const [overview, setOverview] = useState<ReferralOverview | null>(null);
   const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
 
   const loadReferralData = useCallback(async () => {
     try {
@@ -128,7 +136,7 @@ export default function AccountReferralPage() {
   };
 
   const shareWhatsApp = () => {
-    if (!overview) return;
+    if (!overview) {return;}
     const text = encodeURIComponent(
       `Hizmetgo'e katıl, mahalle ekonomisini büyüt, ömür boyu kazan! Bu link ile kayıt ol: ${overview.referralLink}`,
     );
@@ -179,12 +187,26 @@ export default function AccountReferralPage() {
     overview.level5Count;
   const activeUsers = invitedUsers.filter((u) => u.status === "active").length;
 
+  const HeroWrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const RankCardWrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const ReferralCodeWrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const EarningsCard1Wrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const EarningsCard2Wrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const EarningsCard3Wrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const EarningsCard4Wrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const LevelBreakdownWrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const InvitedUsersWrapper = mounted && MotionDiv ? MotionDiv : "div";
+  const HowItWorksWrapper = mounted && MotionDiv ? MotionDiv : "div";
+
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <HeroWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: -20 },
+          animate: { opacity: 1, y: 0 }
+        } : {})}
+        suppressHydrationWarning
       >
         <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white rounded-lg p-8">
           <div className="flex items-center gap-4 mb-4">
@@ -203,13 +225,16 @@ export default function AccountReferralPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </HeroWrapper>
 
       {/* Rank Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+      <RankCardWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: 0.1 }
+        } : {})}
+        suppressHydrationWarning
       >
         <Card className="border-2 border-primary/20">
           <CardHeader>
@@ -278,13 +303,16 @@ export default function AccountReferralPage() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </RankCardWrapper>
 
       {/* Referral Code & Link */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+      <ReferralCodeWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: 0.2 }
+        } : {})}
+        suppressHydrationWarning
       >
         <Card>
           <CardHeader>
@@ -360,14 +388,17 @@ export default function AccountReferralPage() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </ReferralCodeWrapper>
 
       {/* Earnings Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+        <EarningsCard1Wrapper
+          {...(mounted && MotionDiv ? {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: 0.3 }
+          } : {})}
+          suppressHydrationWarning
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -383,11 +414,14 @@ export default function AccountReferralPage() {
               <p className="text-xs text-muted-foreground mt-1">L1-L5 toplam</p>
             </CardContent>
           </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+        </EarningsCard1Wrapper>
+        <EarningsCard2Wrapper
+          {...(mounted && MotionDiv ? {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: 0.4 }
+          } : {})}
+          suppressHydrationWarning
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -405,11 +439,14 @@ export default function AccountReferralPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+        </EarningsCard2Wrapper>
+        <EarningsCard3Wrapper
+          {...(mounted && MotionDiv ? {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: 0.5 }
+          } : {})}
+          suppressHydrationWarning
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -425,11 +462,14 @@ export default function AccountReferralPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+        </EarningsCard3Wrapper>
+        <EarningsCard4Wrapper
+          {...(mounted && MotionDiv ? {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: 0.6 }
+          } : {})}
+          suppressHydrationWarning
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -449,14 +489,17 @@ export default function AccountReferralPage() {
               </Link>
             </CardContent>
           </Card>
-        </motion.div>
+        </EarningsCard4Wrapper>
       </div>
 
       {/* Level Breakdown */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
+      <LevelBreakdownWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: 0.7 }
+        } : {})}
+        suppressHydrationWarning
       >
         <Card>
           <CardHeader>
@@ -503,13 +546,16 @@ export default function AccountReferralPage() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </LevelBreakdownWrapper>
 
       {/* Invited Users List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
+      <InvitedUsersWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: 0.8 }
+        } : {})}
+        suppressHydrationWarning
       >
         <Card>
           <CardHeader>
@@ -569,13 +615,16 @@ export default function AccountReferralPage() {
             )}
           </CardContent>
         </Card>
-      </motion.div>
+      </InvitedUsersWrapper>
 
       {/* How It Works */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
+      <HowItWorksWrapper
+        {...(mounted && MotionDiv ? {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: 0.9 }
+        } : {})}
+        suppressHydrationWarning
       >
         <Card>
           <CardHeader>
@@ -631,7 +680,7 @@ export default function AccountReferralPage() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </HowItWorksWrapper>
     </div>
   );
 }

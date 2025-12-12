@@ -89,7 +89,7 @@ export default function MapPageClient() {
   const loadBusinessProducts = useCallback(async (businessId: string) => {
     try {
       const res = await fetch(`/api/businesses/${businessId}/products`);
-      if (!res.ok) return;
+      if (!res.ok) {return;}
       const products = (await res.json()) as Product[];
 
       setBusinesses((prev) =>
@@ -140,8 +140,8 @@ export default function MapPageClient() {
     }
 
     filtered.sort((a, b) => {
-      if (sortBy === "rating") return b.avgRating - a.avgRating;
-      if (sortBy === "distance") return (a.distance ?? 0) - (b.distance ?? 0);
+      if (sortBy === "rating") {return b.avgRating - a.avgRating;}
+      if (sortBy === "distance") {return (a.distance ?? 0) - (b.distance ?? 0);}
       return b.avgRating - a.avgRating;
     });
 
@@ -193,7 +193,7 @@ export default function MapPageClient() {
 
   const addToCartHandler = useCallback(
     (product: Product) => {
-      if (!selectedBusiness) return;
+      if (!selectedBusiness) {return;}
 
       const itemId = `${selectedBusiness.id}_${product.id}`;
       const existing = cartItems.find((i) => i.id === itemId);
@@ -219,7 +219,7 @@ export default function MapPageClient() {
 
   const removeFromCartHandler = useCallback(
     (productId: string) => {
-      if (!selectedBusiness) return;
+      if (!selectedBusiness) {return;}
 
       const itemId = `${selectedBusiness.id}_${productId}`;
       const existing = cartItems.find((i) => i.id === itemId);

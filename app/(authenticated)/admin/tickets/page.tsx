@@ -7,9 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, User } from "lucide-react";
 
+interface Ticket {
+  id: string;
+  subject: string;
+  category: string;
+  status: string;
+  priority: number;
+  email: string;
+  name?: string;
+  userId?: string;
+  createdAt: string;
+}
 
 export default function AdminTicketsPage() {
-  const [tickets, setTickets] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -52,8 +63,12 @@ export default function AdminTicketsPage() {
   };
 
   const getPriorityColor = (priority: number) => {
-    if (priority === 1) return "bg-red-500";
-    if (priority === 2) return "bg-orange-500";
+    if (priority === 1) {
+      return "bg-red-500";
+    }
+    if (priority === 2) {
+      return "bg-orange-500";
+    }
     return "bg-gray-500";
   };
 

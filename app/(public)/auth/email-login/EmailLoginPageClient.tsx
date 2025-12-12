@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,28 @@ export default function EmailLoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
-  const [email, setEmail] = useState("");
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -256,14 +276,16 @@ export default function EmailLoginPageClient() {
     }
   };
 
+  if (!MotionComponents) return null;
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <motion.div
+      <MotionComponents.MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
-      >
+       suppressHydrationWarning>
         <Card className="border-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-16 h-16 bg-brand-500 rounded-full flex items-center justify-center mb-4">
@@ -485,7 +507,7 @@ export default function EmailLoginPageClient() {
             )}
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionComponents.MotionDiv>
     </div>
   );
 }

@@ -117,7 +117,7 @@ export default function OrderChatPageClient() {
 
   // Handle typing indicator
   useEffect(() => {
-    if (!messageContent.trim()) return;
+    if (!messageContent.trim()) {return;}
 
     const timeoutId = setTimeout(() => {
       sendTyping();

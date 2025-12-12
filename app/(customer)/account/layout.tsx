@@ -2,7 +2,6 @@
 import { ReactNode, useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   User,
@@ -60,6 +59,8 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
 
   const loadUser = useCallback(async () => {
     try {
@@ -76,6 +77,14 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
       setLoading(false);
     }
   }, [router, pathname]);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
 
   useEffect(() => {
     loadUser();
@@ -158,7 +167,8 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
 
                   return (
                     <Link key={item.key} href={item.href}>
-                      <motion.div
+                      {mounted && MotionDiv ? (
+                        <MotionDiv
                         whileHover={{ x: 4 }}
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
@@ -169,7 +179,20 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
                       >
                         <Icon className="w-5 h-5" />
                         <span className="font-medium">{item.label}</span>
-                      </motion.div>
+                        </MotionDiv>
+                      ) : (
+                        <div
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-gray-700 hover:bg-gray-100",
+                          )}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                      )}
                     </Link>
                   );
                 })}
@@ -195,12 +218,89 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
               className="lg:hidden fixed inset-0 z-50 bg-black/50"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <motion.div
+              {mounted && MotionDiv ? (
+                <MotionDiv
                 initial={{ x: -300 }}
                 animate={{ x: 0 }}
                 exit={{ x: -300 }}
                 className="w-64 h-full bg-white shadow-xl"
-                onClick={(e) => e.stopPropagation()}
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                >
+                  <div className="p-4 border-b flex items-center justify-between">
+                    <h2 className="font-semibold">Menü</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+
+                  <div className="p-4 border-b">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={user?.avatarUrl} />
+                        <AvatarFallback>
+                          {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">
+                          {user?.name || "Kullanıcı"}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user?.email || user?.phone}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <nav className="p-4 space-y-1">
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive =
+                        pathname === item.href ||
+                        (item.href !== "/account" &&
+                          pathname.startsWith(item.href));
+
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <div
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                              isActive
+                                ? "bg-primary text-primary-foreground"
+                                : "text-gray-700 hover:bg-gray-100",
+                            )}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span className="font-medium">{item.label}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </nav>
+
+                  <div className="p-4 border-t mt-auto">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-5 h-5 mr-3" />
+                      Çıkış Yap
+                    </Button>
+                  </div>
+                </MotionDiv>
+              ) : (
+                <div
+                  className="w-64 h-full bg-white shadow-xl"
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 <div className="p-4 border-b flex items-center justify-between">
                   <h2 className="font-semibold">Menü</h2>
@@ -272,7 +372,8 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
                     Çıkış Yap
                   </Button>
                 </div>
-              </motion.div>
+                </div>
+              )}
             </div>
           )}
 

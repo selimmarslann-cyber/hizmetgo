@@ -53,13 +53,13 @@ export async function PATCH(request: NextRequest) {
 
     // Profili güncelle - null değerleri undefined'a çevir
     const updateData: any = {};
-    if (validated.name !== undefined) updateData.name = validated.name;
+    if (validated.name !== undefined) {updateData.name = validated.name;}
     if (validated.email !== undefined && validated.email !== null)
-      updateData.email = validated.email;
+      {updateData.email = validated.email;}
     if (validated.avatarUrl !== undefined && validated.avatarUrl !== null)
-      updateData.avatarUrl = validated.avatarUrl;
+      {updateData.avatarUrl = validated.avatarUrl;}
     if (validated.city !== undefined && validated.city !== null)
-      updateData.city = validated.city;
+      {updateData.city = validated.city;}
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },

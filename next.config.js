@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
+﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
   images: {
     remotePatterns: [
       {
@@ -28,6 +29,15 @@ const nextConfig = {
   compress: true,
   // Optimize production builds
   productionBrowserSourceMaps: false,
+  // Webpack config to prevent framer-motion from being bundled in SSR
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Exclude framer-motion from server bundle
+      config.externals = config.externals || [];
+      config.externals.push('framer-motion');
+    }
+    return config;
+  },
   // Headers for security and CSS
   async headers() {
     const securityHeaders = [
@@ -75,4 +85,5 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
 

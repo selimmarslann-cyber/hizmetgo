@@ -9,8 +9,8 @@ const offerSchema = z.object({
 
 // Fiyat hesaplama: İlk 50 TL, 2. 40 TL, 3. ve sonrası 30 TL
 function calculateOfferAmount(offerCount: number): number {
-  if (offerCount === 0) return 50;
-  if (offerCount === 1) return 40;
+  if (offerCount === 0) {return 50;}
+  if (offerCount === 1) {return 40;}
   return 30;
 }
 

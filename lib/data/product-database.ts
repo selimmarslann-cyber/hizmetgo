@@ -1185,7 +1185,7 @@ export function findProductByName(
 
   const matches = PRODUCT_DATABASE.filter((product) => {
     // Sektör filtresi
-    if (sector && product.sector !== sector) return false;
+    if (sector && product.sector !== sector) {return false;}
 
     // Tam eşleşme veya variation eşleşmesi
     return product.nameVariations.some(

@@ -5,7 +5,7 @@
  * Store butonları, screenshot'lar, app açıklaması
  */
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,76 +73,122 @@ const SCREENSHOTS = [
 ];
 
 export default function DownloadPageClient() {
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    MotionA?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+  const [scrollHooks, setScrollHooks] = useState<{
+    useScroll: any;
+    useTransform: any;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsMounted(true);
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        MotionA: mod.motion.a,
+        AnimatePresence: mod.AnimatePresence,
+      });
+      // Import scroll hooks from framer-motion
+      import("framer-motion").then((motionMod) => {
+        setScrollHooks({
+          useScroll: motionMod.useScroll,
+          useTransform: motionMod.useTransform,
+        });
+      });
+    });
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const scrollYProgress = scrollHooks?.useScroll
+    ? scrollHooks.useScroll({
+        target: containerRef,
+        offset: ["start start", "end end"],
+      }).scrollYProgress
+    : null;
 
   // Scroll animasyonları - Thumbtack tarzı subtle
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const orb1Y = useTransform(scrollYProgress, [0, 1], ["0px", "120px"]);
-  const orb1X = useTransform(scrollYProgress, [0, 1], ["0px", "60px"]);
-  const orb1Opacity = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [0.25, 0.4, 0.25],
-  );
-  const orb2Y = useTransform(scrollYProgress, [0, 1], ["0px", "-100px"]);
-  const orb2X = useTransform(scrollYProgress, [0, 1], ["0px", "-40px"]);
-  const orb2Opacity = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [0.2, 0.35, 0.2],
-  );
-  const orb3Scale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
-  const orb3Opacity = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [0.12, 0.2, 0.12],
-  );
+  const backgroundY = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], ["0%", "25%"])
+    : "0%";
+  const orb1Y = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], ["0px", "120px"])
+    : "0px";
+  const orb1X = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], ["0px", "60px"])
+    : "0px";
+  const orb1Opacity = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 0.5, 1], [0.25, 0.4, 0.25])
+    : 0.25;
+  const orb2Y = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], ["0px", "-100px"])
+    : "0px";
+  const orb2X = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], ["0px", "-40px"])
+    : "0px";
+  const orb2Opacity = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 0.35, 0.2])
+    : 0.2;
+  const orb3Scale = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 1], [1, 1.3])
+    : 1;
+  const orb3Opacity = scrollHooks?.useTransform && scrollYProgress
+    ? scrollHooks.useTransform(scrollYProgress, [0, 0.5, 1], [0.12, 0.2, 0.12])
+    : 0.12;
+
+  if (!mounted || !MotionComponents) {
+    return null;
+  }
+
+
 
   return (
     <div ref={containerRef} className="relative min-h-screen overflow-hidden">
       {/* Animated Background - Thumbtack Style */}
-      {isMounted ? (
-        <motion.div
+      {mounted ? (
+        <MotionComponents.MotionDiv
           className="fixed inset-0 -z-10 bg-gradient-to-b from-white via-orange-50/30 to-white"
           style={{
             y: backgroundY,
           }}
-        >
+         suppressHydrationWarning>
           {/* Floating Orbs - Subtle parallax */}
-          <motion.div
+          <MotionComponents.MotionDiv
             className="absolute top-32 right-20 w-72 h-72 rounded-full bg-gradient-to-br from-orange-200/25 to-orange-100/15 blur-3xl"
             style={{
               y: orb1Y,
               x: orb1X,
               opacity: orb1Opacity,
             }}
+            suppressHydrationWarning
           />
-          <motion.div
+          <MotionComponents.MotionDiv
             className="absolute bottom-32 left-20 w-96 h-96 rounded-full bg-gradient-to-br from-amber-200/20 to-orange-200/10 blur-3xl"
             style={{
               y: orb2Y,
               x: orb2X,
               opacity: orb2Opacity,
             }}
+            suppressHydrationWarning
           />
-          <motion.div
+          <MotionComponents.MotionDiv
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-orange-100/12 to-amber-100/8 blur-3xl"
             style={{
               scale: orb3Scale,
               opacity: orb3Opacity,
             }}
+            suppressHydrationWarning
           />
-        </motion.div>
+        </MotionComponents.MotionDiv>
       ) : (
         <div className="fixed inset-0 -z-10 bg-gradient-to-b from-white via-orange-50/30 to-white" />
       )}
@@ -151,12 +197,12 @@ export default function DownloadPageClient() {
         {/* Hero Section */}
         <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="text-center max-w-3xl mx-auto"
-            >
+             suppressHydrationWarning>
               <Badge className="bg-orange-100 text-orange-700 border-orange-200 mb-6 px-4 py-1.5 rounded-full text-sm font-semibold">
                 <Smartphone className="w-4 h-4 mr-2 inline" />
                 Mobil Uygulama
@@ -175,13 +221,14 @@ export default function DownloadPageClient() {
 
               {/* Store Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                <motion.a
+                <MotionComponents.MotionA
                   href="https://play.google.com/store/apps/details?id=com.hizmetgo.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="inline-block"
+                  suppressHydrationWarning
                 >
                   <Button
                     size="lg"
@@ -190,10 +237,10 @@ export default function DownloadPageClient() {
                     <Download className="w-5 h-5 mr-2" />
                     Google Play&apos;den İndir
                   </Button>
-                </motion.a>
-                <motion.a
+                </MotionComponents.MotionA>
+                <MotionComponents.MotionA
                   href="#"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.preventDefault();
                     alert(
                       "App Store bağlantısı yakında eklenecek. Lütfen daha sonra tekrar deneyin.",
@@ -202,6 +249,7 @@ export default function DownloadPageClient() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="inline-block"
+                  suppressHydrationWarning
                 >
                   <Button
                     size="lg"
@@ -211,7 +259,7 @@ export default function DownloadPageClient() {
                     <Download className="w-5 h-5 mr-2" />
                     App Store&apos;dan İndir
                   </Button>
-                </motion.a>
+                </MotionComponents.MotionA>
               </div>
 
               {/* Stats */}
@@ -235,38 +283,38 @@ export default function DownloadPageClient() {
                   <div className="text-sm text-slate-600">Aktif Esnaf</div>
                 </div>
               </div>
-            </motion.div>
+            </MotionComponents.MotionDiv>
           </div>
         </section>
 
         {/* Screenshots Section */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
           <div className="max-w-7xl mx-auto">
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="text-center mb-12"
-            >
+             suppressHydrationWarning>
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                 Uygulamayı Keşfet
               </h2>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                 Hizmetgo ile mahallendeki tüm işleri tek yerden yönet
               </p>
-            </motion.div>
+            </MotionComponents.MotionDiv>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {SCREENSHOTS.map((screenshot, index) => (
-                <motion.div
+                <MotionComponents.MotionDiv
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -8 }}
-                >
+                 suppressHydrationWarning>
                   <Card className="overflow-hidden hover:shadow-xl transition-all">
                     <div className="aspect-[9/16] bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center relative overflow-hidden">
                       <div className="text-center p-4 z-10">
@@ -289,7 +337,7 @@ export default function DownloadPageClient() {
                       </p>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               ))}
             </div>
           </div>
@@ -298,33 +346,33 @@ export default function DownloadPageClient() {
         {/* Features Section */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
           <div className="max-w-7xl mx-auto">
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="text-center mb-12"
-            >
+             suppressHydrationWarning>
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                 Neden Hizmetgo?
               </h2>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                 Mahallendeki tüm işler için tek uygulama
               </p>
-            </motion.div>
+            </MotionComponents.MotionDiv>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {FEATURES.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <motion.div
+                  <MotionComponents.MotionDiv
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
                     whileHover={{ y: -4 }}
-                  >
+                   suppressHydrationWarning>
                     <Card className="h-full hover:shadow-xl transition-all">
                       <CardContent className="p-6">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-4">
@@ -338,7 +386,7 @@ export default function DownloadPageClient() {
                         </p>
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </MotionComponents.MotionDiv>
                 );
               })}
             </div>
@@ -348,12 +396,12 @@ export default function DownloadPageClient() {
         {/* CTA Section */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#FF7A00] to-[#FFB347]">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.div
+            <MotionComponents.MotionDiv
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-            >
+             suppressHydrationWarning>
               <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
                 Hemen İndir, Başla
               </h2>
@@ -362,12 +410,13 @@ export default function DownloadPageClient() {
                 kullanmaya başla.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <motion.a
+                <MotionComponents.MotionA
                   href="https://play.google.com/store/apps/details?id=com.hizmetgo.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  suppressHydrationWarning
                 >
                   <Button
                     size="lg"
@@ -376,10 +425,10 @@ export default function DownloadPageClient() {
                     <Download className="w-5 h-5 mr-2" />
                     Google Play
                   </Button>
-                </motion.a>
-                <motion.a
+                </MotionComponents.MotionA>
+                <MotionComponents.MotionA
                   href="#"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.preventDefault();
                     alert(
                       "App Store bağlantısı yakında eklenecek. Lütfen daha sonra tekrar deneyin.",
@@ -387,6 +436,7 @@ export default function DownloadPageClient() {
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  suppressHydrationWarning
                 >
                   <Button
                     size="lg"
@@ -396,9 +446,9 @@ export default function DownloadPageClient() {
                     <Download className="w-5 h-5 mr-2" />
                     App Store
                   </Button>
-                </motion.a>
+                </MotionComponents.MotionA>
               </div>
-            </motion.div>
+            </MotionComponents.MotionDiv>
           </div>
         </section>
       </div>

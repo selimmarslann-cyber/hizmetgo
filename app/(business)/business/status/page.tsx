@@ -99,7 +99,7 @@ export default function BusinessStatusPage() {
   };
 
   const handleGoOnline = async () => {
-    if (!business) return;
+    if (!business) {return;}
 
     setUpdating(true);
     try {
@@ -127,7 +127,7 @@ export default function BusinessStatusPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayOrders = orders.filter((o) => {
-    if (!o.scheduledAt) return false;
+    if (!o.scheduledAt) {return false;}
     const orderDate = new Date(o.scheduledAt);
     orderDate.setHours(0, 0, 0, 0);
     return orderDate.getTime() === today.getTime();

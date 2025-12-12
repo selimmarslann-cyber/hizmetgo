@@ -1,21 +1,62 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+import type React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, CheckCircle2, Phone } from "lucide-react";
 import { useToast } from "@/lib/hooks/useToast";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
+type MotionComponentsType = {
+  MotionDiv: any;
+  MotionSpan: any;
+  MotionButton: any;
+  MotionP: any;
+  MotionForm: any;
+  AnimatePresence: any;
+};
 
-// Static generation'ı engelle
 export default function PhoneLoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] =
+    useState<MotionComponentsType | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+
+    let cancelled = false;
+    import("framer-motion").then((mod) => {
+      if (cancelled) return;
+
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        MotionForm: mod.motion.form,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState([
@@ -40,6 +81,9 @@ export default function PhoneLoginPageClient() {
     }
 
     setIsSending(true);
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+
     try {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
@@ -58,21 +102,34 @@ export default function PhoneLoginPageClient() {
       setStep("code");
       setCountdown(60);
 
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
+          if (prev <= 1) return 0;
           return prev - 1;
         });
       }, 1000);
-    } catch (err) {
+    } catch {
       error("Bir hata oluştu");
     } finally {
       setIsSending(false);
+      if (interval) {
+        // interval bitmeden send tekrar çağrılırsa bile leak olmasın
+        setTimeout(() => clearInterval(interval!), 0);
+      }
     }
   };
+
+  useEffect(() => {
+    if (countdown === 0) return;
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) return 0;
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdown]);
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length > 1) return;
@@ -81,7 +138,6 @@ export default function PhoneLoginPageClient() {
     newCode[index] = value;
     setVerificationCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`code-${index + 1}`);
       nextInput?.focus();
@@ -90,7 +146,7 @@ export default function PhoneLoginPageClient() {
 
   const handleCodeKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
       const prevInput = document.getElementById(`code-${index - 1}`);
@@ -115,7 +171,7 @@ export default function PhoneLoginPageClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: cleanedPhone,
-          code: code,
+          code,
         }),
         credentials: "include",
       });
@@ -131,20 +187,29 @@ export default function PhoneLoginPageClient() {
       const redirect = searchParams.get("redirect") || "/account";
       router.push(redirect);
       router.refresh();
-    } catch (err) {
+    } catch {
       error("Bir hata oluştu");
     } finally {
       setIsVerifying(false);
     }
   };
 
+  if (!mounted || !MotionComponents) return null;
+
+  const {
+    MotionDiv,
+    MotionForm,
+    AnimatePresence,
+  } = MotionComponents;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
+        suppressHydrationWarning
       >
         <Card className="border-2 border-slate-200 shadow-xl">
           <CardHeader className="text-center pb-4">
@@ -160,10 +225,11 @@ export default function PhoneLoginPageClient() {
                 : `${phoneNumber} numarasına gönderilen kodu girin.`}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <AnimatePresence mode="wait">
               {step === "phone" ? (
-                <motion.form
+                <MotionForm
                   key="phone"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -172,10 +238,7 @@ export default function PhoneLoginPageClient() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="phone"
-                      className="text-slate-900 font-semibold"
-                    >
+                    <Label htmlFor="phone" className="text-slate-900 font-semibold">
                       Telefon Numarası
                     </Label>
                     <div className="relative">
@@ -187,15 +250,14 @@ export default function PhoneLoginPageClient() {
                         value={phoneNumber}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, "");
-                          if (value.length <= 11) {
-                            setPhoneNumber(value);
-                          }
+                          if (value.length <= 11) setPhoneNumber(value);
                         }}
                         required
                         className="pl-10 h-12 border-2 border-slate-200 focus:border-brand-500"
                       />
                     </div>
                   </div>
+
                   <Button
                     type="submit"
                     className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
@@ -210,9 +272,9 @@ export default function PhoneLoginPageClient() {
                       </>
                     )}
                   </Button>
-                </motion.form>
+                </MotionForm>
               ) : (
-                <motion.form
+                <MotionForm
                   key="code"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -224,6 +286,7 @@ export default function PhoneLoginPageClient() {
                     <Label className="text-slate-900 font-semibold text-center block">
                       6 Haneli Doğrulama Kodu
                     </Label>
+
                     <div className="flex gap-2 justify-center">
                       {verificationCode.map((digit, index) => (
                         <Input
@@ -233,14 +296,13 @@ export default function PhoneLoginPageClient() {
                           inputMode="numeric"
                           maxLength={1}
                           value={digit}
-                          onChange={(e) =>
-                            handleCodeChange(index, e.target.value)
-                          }
+                          onChange={(e) => handleCodeChange(index, e.target.value)}
                           onKeyDown={(e) => handleCodeKeyDown(index, e)}
                           className="w-12 h-14 text-center text-2xl font-bold border-2 border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                         />
                       ))}
                     </div>
+
                     {countdown > 0 && (
                       <p className="text-center text-sm text-slate-500">
                         Kod tekrar gönderilebilir: {countdown} saniye
@@ -262,6 +324,7 @@ export default function PhoneLoginPageClient() {
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Geri
                     </Button>
+
                     <Button
                       type="submit"
                       className="flex-1 h-12 bg-brand-500 hover:bg-brand-600 text-white font-semibold"
@@ -277,7 +340,7 @@ export default function PhoneLoginPageClient() {
                       )}
                     </Button>
                   </div>
-                </motion.form>
+                </MotionForm>
               )}
             </AnimatePresence>
 
@@ -291,7 +354,7 @@ export default function PhoneLoginPageClient() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionDiv>
     </div>
   );
 }

@@ -107,7 +107,7 @@ function ListingDetailPageContent() {
   }, [listingId, isCreated]);
 
   const handlePublish = async () => {
-    if (!listing) return;
+    if (!listing) {return;}
 
     setIsPublishing(true);
     try {

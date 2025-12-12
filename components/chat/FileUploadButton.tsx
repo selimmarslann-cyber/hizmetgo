@@ -32,7 +32,7 @@ export default function FileUploadButton({
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     // Validate file
     const maxSize = 5 * 1024 * 1024; // 5 MB

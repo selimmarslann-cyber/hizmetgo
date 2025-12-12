@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShoppingBag,
@@ -17,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/lib/hooks/useToast";
 
 const supportCategories = [
@@ -117,6 +116,22 @@ export default function SupportCategoryForm({
   );
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    AnimatePresence: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);
 
   const handleCategorySelect = (category: (typeof supportCategories)[0]) => {
     setSelectedCategory(category);
@@ -133,7 +148,7 @@ export default function SupportCategoryForm({
   };
 
   const handleSubmit = async () => {
-    if (!selectedCategory) return;
+    if (!selectedCategory) {return;}
 
     // "Diğer" veya subcategory seçilmişse mesaj zorunlu
     if (
@@ -191,18 +206,11 @@ export default function SupportCategoryForm({
     }
   };
 
-  return (
-    <div className="w-full max-w-2xl mx-auto">
-      <AnimatePresence mode="wait">
-        {/* Step 1: Kategori Seçimi */}
-        {step === "category" && (
-          <motion.div
-            key="category"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
-          >
+  const renderStepContent = () => {
+    // Step 1: Kategori Seçimi
+    if (step === "category") {
+      const categoryContent = (
+        <div className="space-y-4">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Size nasıl yardımcı olabiliriz?
@@ -235,18 +243,30 @@ export default function SupportCategoryForm({
                 );
               })}
             </div>
-          </motion.div>
-        )}
+        </div>
+      );
 
-        {/* Step 2: Alt Kategori Seçimi */}
-        {step === "subcategory" && selectedCategory && (
-          <motion.div
-            key="subcategory"
+      if (!mounted || !MotionComponents) {
+        return <div key="category">{categoryContent}</div>;
+      }
+
+      return (
+        <MotionComponents.MotionDiv
+          key="category"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
-          >
+          suppressHydrationWarning
+        >
+          {categoryContent}
+        </MotionComponents.MotionDiv>
+      );
+    }
+
+    // Step 2: Alt Kategori Seçimi
+    if (step === "subcategory" && selectedCategory) {
+      const subcategoryContent = (
+        <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6">
               <Button
                 variant="ghost"
@@ -282,18 +302,30 @@ export default function SupportCategoryForm({
                 </button>
               ))}
             </div>
-          </motion.div>
-        )}
+        </div>
+      );
 
-        {/* Step 3: Mesaj Yazma */}
-        {step === "message" && selectedCategory && (
-          <motion.div
-            key="message"
+      if (!mounted || !MotionComponents) {
+        return <div key="subcategory">{subcategoryContent}</div>;
+      }
+
+      return (
+        <MotionComponents.MotionDiv
+          key="subcategory"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
-          >
+          suppressHydrationWarning
+        >
+          {subcategoryContent}
+        </MotionComponents.MotionDiv>
+      );
+    }
+
+    // Step 3: Mesaj Yazma
+    if (step === "message" && selectedCategory) {
+      const messageContent = (
+        <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6">
               <Button
                 variant="ghost"
@@ -355,17 +387,30 @@ export default function SupportCategoryForm({
                 )}
               </Button>
             </div>
-          </motion.div>
-        )}
+        </div>
+      );
 
-        {/* Step 4: Başarı */}
-        {step === "success" && (
-          <motion.div
-            key="success"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4"
-          >
+      if (!mounted || !MotionComponents) {
+        return <div key="message">{messageContent}</div>;
+      }
+
+      return (
+        <MotionComponents.MotionDiv
+          key="message"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          suppressHydrationWarning
+        >
+          {messageContent}
+        </MotionComponents.MotionDiv>
+      );
+    }
+
+    // Step 4: Başarı
+    if (step === "success") {
+      const successContent = (
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
@@ -380,9 +425,42 @@ export default function SupportCategoryForm({
                 Gelen kutunuza yönlendiriliyorsunuz...
               </span>
             </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      );
+
+      if (!mounted || !MotionComponents) {
+        return <div key="success">{successContent}</div>;
+      }
+
+      return (
+        <MotionComponents.MotionDiv
+          key="success"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          suppressHydrationWarning
+        >
+          {successContent}
+        </MotionComponents.MotionDiv>
+      );
+    }
+
+    return null;
+  };
+
+  if (!mounted || !MotionComponents) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        {renderStepContent()}
+      </div>
+    );
+  }
+
+  if (!MotionComponents) return null;
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <MotionComponents.AnimatePresence mode="wait">
+        {renderStepContent()}
+      </MotionComponents.AnimatePresence>
     </div>
   );
 }

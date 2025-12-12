@@ -58,7 +58,7 @@ export async function createOrLinkSocialAccount(
   }
 
   // Check if user with email exists
-  let user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email: socialInfo.email },
     include: { accounts: true },
   });

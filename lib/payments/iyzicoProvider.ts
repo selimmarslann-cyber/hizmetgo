@@ -288,6 +288,7 @@ export class IyzicoProvider implements PaymentProviderInterface {
   private sha256(message: string): string {
     // This should use Node.js crypto module or iyzico SDK
     // Simplified for now - needs proper implementation
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const crypto = require("crypto");
     return crypto.createHash("sha256").update(message).digest("hex");
   }

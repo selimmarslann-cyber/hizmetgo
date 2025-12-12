@@ -2,6 +2,9 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * Authenticated layout - sadece giriş yapmış kullanıcılar erişebilir
  */

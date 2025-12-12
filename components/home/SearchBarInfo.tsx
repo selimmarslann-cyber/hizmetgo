@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { Sparkles, Search, FileText, CheckCircle2, MessageSquare } from "lucide-react";
 
 const steps = [
@@ -27,33 +27,32 @@ const steps = [
 ];
 
 export default function SearchBarInfo() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-4xl mx-auto mb-4 md:mb-6"
-    >
-      <div className="bg-white rounded-2xl p-6 md:p-8">
-        {/* Açıklama */}
-        <div className="text-center mb-6">
-          <p className="text-sm md:text-base text-slate-600 max-w-2xl mx-auto">
-            Hizmetgo ile ihtiyacını karşılamak çok kolay. Yapay zeka destekli ilan oluşturma ile sadece birkaç adımda teklifler al.
-          </p>
-        </div>
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
 
-        {/* Adımlar - Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="flex flex-col items-center text-center group"
-              >
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
+  const content = (
+    <div className="bg-white rounded-2xl p-6 md:p-8">
+      {/* Açıklama */}
+      <div className="text-center mb-6">
+        <p className="text-sm md:text-base text-slate-600 max-w-2xl mx-auto">
+          Hizmetgo ile ihtiyacını karşılamak çok kolay. Yapay zeka destekli ilan oluşturma ile sadece birkaç adımda teklifler al.
+        </p>
+      </div>
+
+      {/* Adımlar - Grid Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          const stepContent = (
+            <>
                 {/* Icon Circle */}
                 <div className="relative mb-4">
                   <div className="w-14 h-14 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200 group-hover:border-brand-300 group-hover:bg-brand-50">
@@ -69,28 +68,68 @@ export default function SearchBarInfo() {
                 <h4 className="text-sm md:text-base font-bold text-slate-900 mb-2">
                   {step.title}
                 </h4>
-                <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                  {step.description}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
+              <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                {step.description}
+              </p>
+            </>
+          );
 
-        {/* Örnek Kategori */}
-        <div className="mt-6 pt-6 border-t border-slate-200">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-slate-600">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-              <span>Örnek:</span>
-            </span>
-            <span className="font-medium text-slate-700">
-              "Elektrik tamiri" ara → AI ilan oluştur → Onayla → Teklifler al
-            </span>
-          </div>
+          if (!mounted || !MotionDiv) {
+            return (
+              <div key={index} className="flex flex-col items-center text-center group">
+                {stepContent}
+              </div>
+            );
+          }
+
+          return (
+            <MotionDiv
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="flex flex-col items-center text-center group"
+              suppressHydrationWarning
+            >
+              {stepContent}
+            </MotionDiv>
+          );
+        })}
+      </div>
+
+      {/* Örnek Kategori */}
+      <div className="mt-6 pt-6 border-t border-slate-200">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-slate-600">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <span>Örnek:</span>
+          </span>
+          <span className="font-medium text-slate-700">
+            "Elektrik tamiri" ara → AI ilan oluştur → Onayla → Teklifler al
+          </span>
         </div>
       </div>
-    </motion.div>
+    </div>
+  );
+
+  if (!mounted || !MotionDiv) {
+    return (
+      <div className="w-full max-w-4xl mx-auto mb-4 md:mb-6">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <MotionDiv
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-4xl mx-auto mb-4 md:mb-6"
+      suppressHydrationWarning
+    >
+      {content}
+    </MotionDiv>
   );
 }
 

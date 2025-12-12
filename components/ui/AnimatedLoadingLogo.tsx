@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
 const phrases = ["Yükleniyor...", "Veriler getiriliyor...", "Hazırlanıyor..."];
 
@@ -14,17 +13,32 @@ export default function AnimatedLoadingLogo({
 }: AnimatedLoadingLogoProps) {
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan: any;
+    AnimatePresence: any;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
     const t = setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
     }, 2000); // Her 2 saniyede bir değiş
     return () => clearInterval(t);
   }, []);
 
+  const current = mounted ? phrases[index] : phrases[0];
+
   // SSR'da hydration hatasını önlemek için
-  if (!mounted) {
+  if (!mounted || !MotionComponents) {
     return (
       <div
         className={`flex flex-col items-center justify-center py-20 ${className}`}
@@ -37,14 +51,14 @@ export default function AnimatedLoadingLogo({
         </div>
         <div className="h-12 md:h-16 overflow-hidden">
           <div className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 text-center">
-            {phrases[0]}
+            {current}
           </div>
         </div>
       </div>
     );
   }
 
-  const current = phrases[index];
+  const { MotionDiv, MotionSpan, AnimatePresence } = MotionComponents;
 
   return (
     <div
@@ -52,14 +66,14 @@ export default function AnimatedLoadingLogo({
       suppressHydrationWarning
     >
       {/* Logo - Animasyonlu */}
-      <motion.div
+      <MotionDiv
         className="flex items-center justify-center mb-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         suppressHydrationWarning
       >
-        <motion.div
+        <MotionDiv
           className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-brand-500 flex items-center justify-center"
           animate={{
             scale: [1, 1.05, 1],
@@ -72,7 +86,7 @@ export default function AnimatedLoadingLogo({
           }}
           suppressHydrationWarning
         >
-          <motion.span
+          <MotionSpan
             className="text-white font-bold text-2xl md:text-3xl"
             animate={{
               scale: [1, 1.1, 1],
@@ -85,14 +99,14 @@ export default function AnimatedLoadingLogo({
             suppressHydrationWarning
           >
             H
-          </motion.span>
-        </motion.div>
-      </motion.div>
+          </MotionSpan>
+        </MotionDiv>
+      </MotionDiv>
 
       {/* Animasyonlu Yazı */}
       <div className="h-12 md:h-16 overflow-hidden">
         <AnimatePresence mode="wait">
-          <motion.div
+          <MotionDiv
             key={current}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -103,7 +117,7 @@ export default function AnimatedLoadingLogo({
             suppressHydrationWarning
           >
             {current}
-          </motion.div>
+          </MotionDiv>
         </AnimatePresence>
       </div>
     </div>

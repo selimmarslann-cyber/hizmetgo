@@ -9,78 +9,76 @@ export async function POST(req: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { error: "E-posta ve şifre gereklidir." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Kullanıcıyı bul
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: String(email).toLowerCase() },
+      select: { id: true, email: true, passwordHash: true },
     });
 
     if (!user) {
       return NextResponse.json(
         { error: "E-posta veya şifre hatalı." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Şifre kontrolü
-    if (!user.password) {
+    if (!user.passwordHash) {
       return NextResponse.json(
-        { error: "Bu hesap için şifre doğrulaması yapılamıyor. Lütfen sosyal giriş kullanıyorsanız destek ile iletişime geçin." },
-        { status: 401 }
+        {
+          error:
+            "Bu hesap için şifre doğrulaması yapılamıyor. Lütfen sosyal giriş kullanıyorsanız destek ile iletişime geçin.",
+        },
+        { status: 401 },
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: "E-posta veya şifre hatalı." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Hesap silme talebi oluştur (30 gün sonra silinecek)
     const deleteAt = new Date();
     deleteAt.setDate(deleteAt.getDate() + 30);
 
-    // User modelinde deleteAt field'ı yoksa, şimdilik sadece log tutabiliriz
-    // veya ayrı bir tablo oluşturabiliriz
-    // Şimdilik basit bir yaklaşım: user'ı işaretle (eğer schema'da varsa)
-    
-    // Alternatif: Support ticket olarak kaydet
+    const content =
+      `Hesap silme talebi oluşturuldu.` +
+      (reason ? `\n\nNeden: ${reason}` : "") +
+      `\n\nHesap 30 gün sonra (${deleteAt.toLocaleDateString("tr-TR")}) silinecektir.`;
+
     await prisma.supportTicket.create({
       data: {
         userId: user.id,
+        email: user.email, // ✅ FIX
         subject: "Hesap Silme Talebi",
         category: "ACCOUNT",
-        priority: "HIGH",
+        priority: 3,
         status: "OPEN",
         messages: {
           create: {
             userId: user.id,
-            content: `Hesap silme talebi oluşturuldu.${reason ? `\n\nNeden: ${reason}` : ""}\n\nHesap 30 gün sonra (${deleteAt.toLocaleDateString("tr-TR")}) silinecektir.`,
-            isFromUser: true,
+            content,
           },
         },
       },
     });
 
-    // TODO: E-posta gönder
-    // await sendAccountDeletionEmail(user.email, deleteAt);
-
     return NextResponse.json({
       success: true,
-      message: "Hesap silme talebi oluşturuldu. Hesabınız 30 gün sonra silinecektir.",
+      message:
+        "Hesap silme talebi oluşturuldu. Hesabınız 30 gün sonra silinecektir.",
       deleteAt: deleteAt.toISOString(),
     });
   } catch (error) {
     console.error("Account deletion error:", error);
     return NextResponse.json(
       { error: "Bir hata oluştu. Lütfen tekrar deneyin." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

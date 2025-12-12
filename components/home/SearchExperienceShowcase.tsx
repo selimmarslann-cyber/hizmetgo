@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FileText, MessageSquare, CheckCircle2, ArrowRight } from "lucide-react";
 import MobileDemo from "./MobileDemo";
@@ -27,6 +27,17 @@ const benefits = [
 ];
 
 export function SearchExperienceShowcase() {
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
   return (
     <section className="py-12 md:py-16">
       <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8">
@@ -49,15 +60,8 @@ export function SearchExperienceShowcase() {
               const href =
                 index === 0 ? "/request" : index === 1 ? "/jobs" : "/jobs";
               const Icon = benefit.icon;
-              return (
-                <Link key={index} href={href} className="block group">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="relative bg-white border border-slate-200/80 rounded-xl p-5 md:p-6 transition-all duration-200 hover:shadow-lg hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer"
-                  >
+              const content = (
+                <>
                     {/* Content */}
                     <div className="relative">
                       {/* Icon and Title Row */}
@@ -88,7 +92,31 @@ export function SearchExperienceShowcase() {
                         <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
                       </div>
                     </div>
-                  </motion.div>
+                </>
+              );
+
+              if (!mounted || !MotionDiv) {
+                return (
+                  <Link key={index} href={href} className="block group">
+                    <div className="relative bg-white border border-slate-200/80 rounded-xl p-5 md:p-6 transition-all duration-200 hover:shadow-lg hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer">
+                      {content}
+                    </div>
+                  </Link>
+                );
+              }
+
+              return (
+                <Link key={index} href={href} className="block group">
+                  <MotionDiv
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="relative bg-white border border-slate-200/80 rounded-xl p-5 md:p-6 transition-all duration-200 hover:shadow-lg hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer"
+                    suppressHydrationWarning
+                  >
+                    {content}
+                  </MotionDiv>
                 </Link>
               );
             })}

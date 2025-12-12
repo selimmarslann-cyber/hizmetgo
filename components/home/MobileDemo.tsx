@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import Logo from "@/components/layout/Logo";
 import { cn } from "@/lib/utils/cn";
 
 const transitionMessages = [
@@ -26,9 +24,22 @@ export default function MobileDemo() {
   const [hasShownInitialFlow, setHasShownInitialFlow] = useState(false);
   const [rotatingPhraseIndex, setRotatingPhraseIndex] = useState(0);
   const [serviceQuery, setServiceQuery] = useState("");
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan: any;
+    AnimatePresence: any;
+  } | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
   }, []);
 
   const steps = useMemo(
@@ -179,7 +190,10 @@ export default function MobileDemo() {
                 className="rounded-2xl bg-white border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2 shadow-sm"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-slate-200" style={{ position: 'relative' }}>
+                  <div
+                    className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-slate-200"
+                    style={{ position: "relative" }}
+                  >
                     <Image
                       src={u.avatar}
                       alt={u.name}
@@ -214,91 +228,111 @@ export default function MobileDemo() {
     [],
   );
 
-  // İlk ekran: "Usta arıyorum" yazma animasyonu
+  // ✅ İlk ekran typing animasyonu (TS-safe: her path return eder + cleanup)
   useEffect(() => {
-    if (isInitialLoading && !hasShownInitialFlow) {
-      const text = "Usta arıyorum";
-      let currentIndex = 0;
-
-      const typingInterval = setInterval(() => {
-        if (currentIndex < text.length) {
-          setTypingText(text.slice(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setTimeout(() => {
-            setIsInitialLoading(false);
-            setIndex(0);
-            setHasShownInitialFlow(true);
-          }, 3000);
-        }
-      }, 100);
-
-      return () => clearInterval(typingInterval);
+    if (!isInitialLoading || hasShownInitialFlow) {
+      return; // TS "not all code paths" fix
     }
+
+    const text = "Usta arıyorum";
+    let currentIndex = 0;
+
+    let finishTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < text.length) {
+        setTypingText(text.slice(0, currentIndex + 1));
+        currentIndex++;
+        return;
+      }
+
+      clearInterval(typingInterval);
+
+      finishTimeout = setTimeout(() => {
+        setIsInitialLoading(false);
+        setIndex(0);
+        setHasShownInitialFlow(true);
+      }, 3000);
+    }, 100);
+
+    return () => {
+      clearInterval(typingInterval);
+      if (finishTimeout) clearTimeout(finishTimeout);
+    };
   }, [isInitialLoading, hasShownInitialFlow]);
 
-  // Hareketli yazı (step-1)
+  // ✅ step-1 hareketli başlık (TS-safe)
   useEffect(() => {
-    if (hasShownInitialFlow && index === 0) {
-      const t = setInterval(() => {
-        setRotatingPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
-      }, 3000);
-      return () => clearInterval(t);
+    if (!hasShownInitialFlow || index !== 0) {
+      return;
     }
+
+    const t = setInterval(() => {
+      setRotatingPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
+    }, 3000);
+
+    return () => clearInterval(t);
   }, [hasShownInitialFlow, index]);
 
-  // step-1,2,3 döngü
+  // ✅ step-1,2,3 döngü (TS-safe + timeout cleanup)
   useEffect(() => {
-    if (
-      hasShownInitialFlow &&
-      !isInitialLoading &&
-      index >= 0 &&
-      index < steps.length
-    ) {
-      const t = setInterval(() => {
-        const nextIndex = (index + 1) % steps.length;
-        const nextStep = steps[nextIndex];
-
-        if (!nextStep || !nextStep.transitionMessage) return;
-
-        setIsTransitioning(true);
-        setShowTransitionMessage(true);
-        setTransitionMessage(nextStep.transitionMessage as string);
-
-        setTimeout(() => {
-          setIndex(nextIndex);
-          setShowTransitionMessage(false);
-
-          setTimeout(() => {
-            setIsTransitioning(false);
-          }, 500);
-        }, 2000);
-      }, 3500);
-
-      return () => clearInterval(t);
+    if (!hasShownInitialFlow || isInitialLoading || index < 0 || index >= steps.length) {
+      return;
     }
+
+    let t1: ReturnType<typeof setTimeout> | null = null;
+    let t2: ReturnType<typeof setTimeout> | null = null;
+
+    const t = setInterval(() => {
+      const nextIndex = (index + 1) % steps.length;
+      const nextStep = steps[nextIndex];
+
+      if (!nextStep?.transitionMessage) {
+        return;
+      }
+
+      setIsTransitioning(true);
+      setShowTransitionMessage(true);
+      setTransitionMessage(nextStep.transitionMessage);
+
+      t1 = setTimeout(() => {
+        setIndex(nextIndex);
+        setShowTransitionMessage(false);
+
+        t2 = setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500);
+      }, 2000);
+    }, 3500);
+
+    return () => {
+      clearInterval(t);
+      if (t1) clearTimeout(t1);
+      if (t2) clearTimeout(t2);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, hasShownInitialFlow, isInitialLoading]); // steps'i dependency'den çıkardık çünkü useMemo ile sabit
+  }, [index, hasShownInitialFlow, isInitialLoading]);
 
   const current = steps[index] ?? steps[0];
 
+  // (isteğe bağlı) mount kullanılmıyorsa kaldırabilirsin, build’e etkisi yok
+  void isMounted;
+
+  if (!MotionComponents) return null;
   return (
     <div
       className="flex items-center justify-center w-full pointer-events-none relative z-0"
       suppressHydrationWarning
     >
       <div className="relative w-full max-w-[240px] md:w-[240px] lg:w-[260px]">
-        {/* Telefon gölgesi */}
         <div className="absolute inset-0 bg-black/0.05 rounded-[3rem] blur-sm scale-110" />
-        
-        {/* Telefon çerçevesi - Profesyonel */}
+
         <div className="relative rounded-[2.5rem] bg-slate-900 p-1.5 shadow-2xl">
-          {/* Ekran */}
           <div className="aspect-[9/19.5] rounded-[2rem] bg-white overflow-hidden border-2 border-slate-800 flex flex-col">
-            {/* Status bar */}
             <div className="h-10 bg-white flex items-center justify-between px-4 pt-1 flex-shrink-0">
-              <span className="text-[10px] font-semibold text-slate-900">9:41</span>
+              <span className="text-[10px] font-semibold text-slate-900">
+                9:41
+              </span>
               <div className="flex items-center gap-0.5">
                 <div className="w-3 h-1.5 border border-slate-900 rounded-sm">
                   <div className="w-2.5 h-1 bg-slate-900 rounded-sm m-0.5" />
@@ -307,18 +341,16 @@ export default function MobileDemo() {
               </div>
             </div>
 
-            {/* İç ekran - Animasyonlar burada kalacak */}
             <div className="flex-1 bg-white flex flex-col overflow-hidden min-h-0">
-              {/* App Header - Profesyonel */}
               <div className="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-white">
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-6 h-6 rounded-full bg-white flex items-center justify-center"
                     style={{
                       border: "2px solid #FF6000",
                     }}
                   >
-                    <span 
+                    <span
                       className="text-[10px] font-black"
                       style={{ color: "#FF6000" }}
                     >
@@ -330,7 +362,9 @@ export default function MobileDemo() {
                       <span className="text-slate-900">hizmet</span>
                       <span className="text-brand-500">go</span>
                     </p>
-                    <p className="text-[7px] text-slate-500">Mahallendeki esnaflar</p>
+                    <p className="text-[7px] text-slate-500">
+                      Mahallendeki esnaflar
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -347,41 +381,210 @@ export default function MobileDemo() {
               </div>
 
               <div className="flex-1 bg-white relative overflow-hidden">
-              <AnimatePresence mode="wait">
-                {isInitialLoading ? (
-                  <motion.div
-                    key="initial"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10"
-                  >
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-center"
+                {!isMounted || !MotionComponents ? (
+                  <div className="absolute inset-0 z-0">
+                    {isInitialLoading ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10">
+                        <div className="text-center">
+                          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                            {typingText}
+                            <span className="inline-block w-0.5 h-6 bg-slate-900 ml-1" />
+                          </h2>
+                        </div>
+                        {typingText === "Usta arıyorum" && (
+                          <div className="flex flex-col items-center gap-4">
+                            <div
+                              className="w-16 h-16 rounded-full bg-white flex items-center justify-center"
+                              style={{ border: "2px solid #FF6000" }}
+                            >
+                              <span
+                                className="font-bold text-2xl"
+                                style={{ color: "#FF6000" }}
+                              >
+                                H
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : isTransitioning && showTransitionMessage ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 z-20">
+                        <div className="flex items-center justify-center">
+                          <div
+                            className="w-16 h-16 rounded-full bg-white flex items-center justify-center"
+                            style={{ border: "2px solid #FF6000" }}
+                          >
+                            <span
+                              className="font-bold text-2xl"
+                              style={{ color: "#FF6000" }}
+                            >
+                              H
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-sm font-medium text-slate-700 text-center px-4">
+                          {transitionMessage}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 z-0">
+                        {current.id === "step-1" ? (
+                          <div className="absolute inset-0 overflow-y-auto p-5 flex flex-col items-center justify-start pt-8">
+                            <div className="flex justify-center mb-4">
+                              <div
+                                className="w-14 h-14 rounded-full bg-white flex items-center justify-center"
+                                style={{ border: "2px solid #FF6000" }}
+                              >
+                                <span
+                                  className="font-black text-2xl"
+                                  style={{ color: "#FF6000" }}
+                                >
+                                  H
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-center mb-6">
+                              <div className="h-7 overflow-hidden mb-1">
+                                <div
+                                  className="text-2xl font-bold text-slate-900"
+                                  style={{
+                                    lineHeight: 1.1,
+                                    letterSpacing: "-0.02em",
+                                  }}
+                                >
+                                  {rotatingPhrases[rotatingPhraseIndex]}
+                                </div>
+                              </div>
+                              <p
+                                className="text-2xl font-bold text-slate-900"
+                                style={{
+                                  lineHeight: 1.1,
+                                  letterSpacing: "-0.02em",
+                                }}
+                              >
+                                Kolaylaştırıldı.
+                              </p>
+                            </div>
+                            <div className="w-full max-w-[260px]">
+                              <form
+                                className="flex flex-col gap-2"
+                                onSubmit={(e) => e.preventDefault()}
+                              >
+                                <div className="flex items-stretch gap-1.5 bg-white rounded-2xl border border-slate-200/80 px-3 py-2.5">
+                                  <input
+                                    type="text"
+                                    placeholder="İhtiyacını yaz..."
+                                    value={serviceQuery}
+                                    onChange={(e) => setServiceQuery(e.target.value)}
+                                    className="flex-1 bg-transparent border-none outline-none text-[11px] text-slate-900 placeholder:text-slate-500 font-normal"
+                                    disabled
+                                  />
+                                  <button
+                                    type="button"
+                                    disabled
+                                    className="px-3 py-1.5 text-[11px] font-semibold bg-brand-500 text-white rounded-xl flex items-center justify-center cursor-default"
+                                  >
+                                    <Search className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        ) : (
+                          current.screen
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <MotionComponents.AnimatePresence mode="wait">
+                  {isInitialLoading ? (
+                      <MotionComponents.MotionDiv
+                      key="initial"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10"
+                        suppressHydrationWarning
                     >
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                        {typingText}
-                        <motion.span
-                          animate={{ opacity: [1, 0] }}
-                          transition={{ duration: 0.8, repeat: Infinity }}
-                          className="inline-block w-0.5 h-6 bg-slate-900 ml-1"
-                        />
-                      </h2>
-                    </motion.div>
-                    {typingText === "Usta arıyorum" && (
-                      <motion.div
+                        <MotionComponents.MotionDiv
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center"
+                          suppressHydrationWarning
+                      >
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                          {typingText}
+                            <MotionComponents.MotionSpan
+                            animate={{ opacity: [1, 0] }}
+                            transition={{ duration: 0.8, repeat: Infinity }}
+                            className="inline-block w-0.5 h-6 bg-slate-900 ml-1"
+                              suppressHydrationWarning
+                          />
+                        </h2>
+                        </MotionComponents.MotionDiv>
+
+                      {typingText === "Usta arıyorum" && (
+                          <MotionComponents.MotionDiv
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.3 }}
+                          className="flex flex-col items-center gap-4"
+                            suppressHydrationWarning
+                        >
+                            <MotionComponents.MotionDiv
+                            className="w-16 h-16 rounded-full bg-white flex items-center justify-center"
+                              style={{ border: "2px solid #FF6000" }}
+                            animate={{
+                              scale: [1, 1.1, 1],
+                              rotate: [0, 10, -10, 0],
+                            }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                              suppressHydrationWarning
+                          >
+                              <MotionComponents.MotionSpan
+                              className="font-bold text-2xl"
+                              style={{ color: "#FF6000" }}
+                              animate={{
+                                scale: [1, 1.15, 1],
+                              }}
+                              transition={{
+                                duration: 1.2,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                              }}
+                                suppressHydrationWarning
+                            >
+                              H
+                              </MotionComponents.MotionSpan>
+                            </MotionComponents.MotionDiv>
+                          </MotionComponents.MotionDiv>
+                      )}
+                      </MotionComponents.MotionDiv>
+                  ) : isTransitioning && showTransitionMessage ? (
+                      <MotionComponents.MotionDiv
+                      key="transition"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 z-20"
+                        suppressHydrationWarning
+                    >
+                        <MotionComponents.MotionDiv
+                        className="flex items-center justify-center"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="flex flex-col items-center gap-4"
+                        transition={{ duration: 0.4 }}
+                          suppressHydrationWarning
                       >
-                        <motion.div
+                          <MotionComponents.MotionDiv
                           className="w-16 h-16 rounded-full bg-white flex items-center justify-center"
-                          style={{
-                            border: "2px solid #FF6000",
-                          }}
+                            style={{ border: "2px solid #FF6000" }}
                           animate={{
                             scale: [1, 1.1, 1],
                             rotate: [0, 10, -10, 0],
@@ -391,8 +594,9 @@ export default function MobileDemo() {
                             repeat: Infinity,
                             ease: "easeInOut",
                           }}
+                            suppressHydrationWarning
                         >
-                          <motion.span
+                            <MotionComponents.MotionSpan
                             className="font-bold text-2xl"
                             style={{ color: "#FF6000" }}
                             animate={{
@@ -403,194 +607,152 @@ export default function MobileDemo() {
                               repeat: Infinity,
                               ease: "easeInOut",
                             }}
+                              suppressHydrationWarning
                           >
                             H
-                          </motion.span>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                ) : isTransitioning && showTransitionMessage ? (
-                  <motion.div
-                    key="transition"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 z-20"
-                  >
-                    <motion.div
-                      className="flex items-center justify-center"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <motion.div
-                        className="w-16 h-16 rounded-full bg-white flex items-center justify-center"
-                        style={{
-                          border: "2px solid #FF6000",
-                        }}
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 10, -10, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
+                            </MotionComponents.MotionSpan>
+                          </MotionComponents.MotionDiv>
+                        </MotionComponents.MotionDiv>
+                        <MotionComponents.MotionDiv
+                          as="p"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.4 }}
+                        className="text-sm font-medium text-slate-700 text-center px-4"
+                          suppressHydrationWarning
                       >
-                        <motion.span
-                          className="font-bold text-2xl"
-                          style={{ color: "#FF6000" }}
-                          animate={{
-                            scale: [1, 1.15, 1],
-                          }}
-                          transition={{
-                            duration: 1.2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          }}
-                        >
-                          H
-                        </motion.span>
-                      </motion.div>
-                    </motion.div>
-                    <motion.p
-                      initial={{ opacity: 0, y: 10 }}
+                        {transitionMessage}
+                        </MotionComponents.MotionDiv>
+                      </MotionComponents.MotionDiv>
+                  ) : (
+                      <MotionComponents.MotionDiv
+                      key={current.id}
+                      initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.4 }}
-                      className="text-sm font-medium text-slate-700 text-center px-4"
+                      exit={{ opacity: 0, y: -16 }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                      className="absolute inset-0 z-0"
+                        suppressHydrationWarning
                     >
-                      {transitionMessage}
-                    </motion.p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={current.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -16 }}
-                    transition={{ duration: 0.35, ease: "easeOut" }}
-                    className="absolute inset-0 z-0"
-                  >
-                    {current.id === "step-1" ? (
-                      <div className="absolute inset-0 overflow-y-auto p-5 flex flex-col items-center justify-start pt-8">
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="flex justify-center mb-4"
-                        >
-                          <motion.div
-                            className="w-14 h-14 rounded-full bg-white flex items-center justify-center"
-                            style={{
-                              border: "2px solid #FF6000",
-                            }}
-                            animate={{
-                              scale: [1, 1.05, 1],
-                              rotate: [0, 5, -5, 0],
-                            }}
-                            transition={{
-                              duration: 3,
-                              repeat: Infinity,
-                              ease: "easeInOut",
-                            }}
+                      {current.id === "step-1" ? (
+                        <div className="absolute inset-0 overflow-y-auto p-5 flex flex-col items-center justify-start pt-8">
+                            <MotionComponents.MotionDiv
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex justify-center mb-4"
+                              suppressHydrationWarning
                           >
-                            <motion.span
-                              className="font-black text-2xl"
-                              style={{ color: "#FF6000" }}
+                              <MotionComponents.MotionDiv
+                              className="w-14 h-14 rounded-full bg-white flex items-center justify-center"
+                                style={{ border: "2px solid #FF6000" }}
                               animate={{
-                                scale: [1, 1.1, 1],
+                                scale: [1, 1.05, 1],
+                                rotate: [0, 5, -5, 0],
                               }}
                               transition={{
-                                duration: 1.5,
+                                duration: 3,
                                 repeat: Infinity,
                                 ease: "easeInOut",
                               }}
+                                suppressHydrationWarning
                             >
-                              H
-                            </motion.span>
-                          </motion.div>
-                        </motion.div>
-
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-center mb-6"
-                        >
-                          <div className="h-7 overflow-hidden mb-1">
-                            <AnimatePresence mode="wait">
-                              <motion.div
-                                key={rotatingPhrases[rotatingPhraseIndex]}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.4 }}
-                                className="text-2xl font-bold text-slate-900"
-                                style={{
-                                  lineHeight: 1.1,
-                                  letterSpacing: "-0.02em",
+                                <MotionComponents.MotionSpan
+                                className="font-black text-2xl"
+                                style={{ color: "#FF6000" }}
+                                animate={{
+                                  scale: [1, 1.1, 1],
                                 }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                }}
+                                  suppressHydrationWarning
                               >
-                                {rotatingPhrases[rotatingPhraseIndex]}
-                              </motion.div>
-                            </AnimatePresence>
-                          </div>
-                          <p
-                            className="text-2xl font-bold text-slate-900"
-                            style={{
-                              lineHeight: 1.1,
-                              letterSpacing: "-0.02em",
-                            }}
-                          >
-                            Kolaylaştırıldı.
-                          </p>
-                        </motion.div>
+                                H
+                                </MotionComponents.MotionSpan>
+                              </MotionComponents.MotionDiv>
+                            </MotionComponents.MotionDiv>
 
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                          className="w-full max-w-[260px]"
-                        >
-                          <form
-                            className="flex flex-col gap-2"
-                            onSubmit={(e) => e.preventDefault()}
+                            <MotionComponents.MotionDiv
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-center mb-6"
+                              suppressHydrationWarning
                           >
-                            <div className="flex items-stretch gap-1.5 bg-white rounded-2xl border border-slate-200/80 px-3 py-2.5">
-                              <input
-                                type="text"
-                                placeholder="İhtiyacını yaz..."
-                                value={serviceQuery}
-                                onChange={(e) =>
-                                  setServiceQuery(e.target.value)
-                                }
-                                className="flex-1 bg-transparent border-none outline-none text-[11px] text-slate-900 placeholder:text-slate-500 font-normal"
-                                disabled
-                              />
-                              <button
-                                type="button"
-                                disabled
-                                className="px-3 py-1.5 text-[11px] font-semibold bg-brand-500 text-white rounded-xl flex items-center justify-center cursor-default"
-                              >
-                                <Search className="h-3.5 w-3.5" />
-                              </button>
+                            <div className="h-7 overflow-hidden mb-1">
+                                <MotionComponents.AnimatePresence mode="wait">
+                                  <MotionComponents.MotionDiv
+                                  key={rotatingPhrases[rotatingPhraseIndex]}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{ duration: 0.4 }}
+                                  className="text-2xl font-bold text-slate-900"
+                                  style={{
+                                    lineHeight: 1.1,
+                                    letterSpacing: "-0.02em",
+                                  }}
+                                    suppressHydrationWarning
+                                >
+                                  {rotatingPhrases[rotatingPhraseIndex]}
+                                  </MotionComponents.MotionDiv>
+                                </MotionComponents.AnimatePresence>
                             </div>
-                          </form>
-                        </motion.div>
-                      </div>
-                    ) : (
-                      current.screen
+                            <p
+                              className="text-2xl font-bold text-slate-900"
+                              style={{
+                                lineHeight: 1.1,
+                                letterSpacing: "-0.02em",
+                              }}
+                            >
+                              Kolaylaştırıldı.
+                            </p>
+                            </MotionComponents.MotionDiv>
+
+                            <MotionComponents.MotionDiv
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="w-full max-w-[260px]"
+                              suppressHydrationWarning
+                          >
+                            <form
+                              className="flex flex-col gap-2"
+                              onSubmit={(e) => e.preventDefault()}
+                            >
+                              <div className="flex items-stretch gap-1.5 bg-white rounded-2xl border border-slate-200/80 px-3 py-2.5">
+                                <input
+                                  type="text"
+                                  placeholder="İhtiyacını yaz..."
+                                  value={serviceQuery}
+                                  onChange={(e) => setServiceQuery(e.target.value)}
+                                  className="flex-1 bg-transparent border-none outline-none text-[11px] text-slate-900 placeholder:text-slate-500 font-normal"
+                                  disabled
+                                />
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="px-3 py-1.5 text-[11px] font-semibold bg-brand-500 text-white rounded-xl flex items-center justify-center cursor-default"
+                                >
+                                  <Search className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </form>
+                            </MotionComponents.MotionDiv>
+                        </div>
+                      ) : (
+                        current.screen
+                      )}
+                      </MotionComponents.MotionDiv>
                     )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </MotionComponents.AnimatePresence>
+                  )}
               </div>
             </div>
-            
-            {/* Home indicator (iPhone) */}
+
             <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-slate-300 rounded-full" />
           </div>
         </div>

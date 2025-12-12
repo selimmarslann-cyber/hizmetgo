@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { LucideIcon, ArrowRight } from "lucide-react";
@@ -23,13 +23,18 @@ export default function FeatureCard({
   color = "bg-[#FF6000]",
   isActive = false,
 }: FeatureCardProps) {
-  return (
-    <Link href={href}>
-      <motion.div
-        whileHover={{ y: -4, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      >
+  const [mounted, setMounted] = useState(false);
+  const [MotionDiv, setMotionDiv] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Dynamically import framer-motion only on client
+    import("framer-motion").then((mod) => {
+      setMotionDiv(mod.motion.div);
+    });
+  }, []);
+
+  const cardContent = (
         <Card
           className={cn(
             "h-full cursor-pointer border-2 transition-all duration-200 overflow-hidden group bg-white",
@@ -88,7 +93,28 @@ export default function FeatureCard({
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+  );
+
+  if (!mounted || !MotionDiv) {
+    return (
+      <Link href={href}>
+        <div>
+          {cardContent}
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={href}>
+      <MotionDiv
+        whileHover={{ y: -4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        suppressHydrationWarning
+      >
+        {cardContent}
+      </MotionDiv>
     </Link>
   );
 }

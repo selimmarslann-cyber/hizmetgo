@@ -128,9 +128,12 @@ export async function searchServiceCategories(
   const results: SearchResult[] = [];
 
   // AI ile kategori tespiti (opsiyonel)
-  let aiCategoryIds: string[] = [];
-  if (useAI) {
+  // NOT: AI sadece server-side'da kullanılabilir (server-only modül)
+  // Client tarafından çağrılırsa AI kullanılmaz, sadece keyword matching yapılır
+  const aiCategoryIds: string[] = [];
+  if (useAI && typeof window === "undefined") {
     try {
+      // Dynamic import - sadece server-side'da çalışır
       const { classifyServiceCategory } =
         await import("@/lib/ai/classifyServiceCategory");
       const classification = await classifyServiceCategory(query);

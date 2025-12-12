@@ -71,7 +71,7 @@ export default function AIChatBox({ userId }: AIChatBoxProps) {
 
   // ONLY handler that triggers API calls
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading) {return;}
 
     const userMessageText = input.trim();
     setInput("");

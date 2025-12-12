@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +29,28 @@ import type { SkillKeyword } from "@/lib/types/mahallem";
 export default function AccountProfilePageClient() {
   const router = useRouter();
   const { currentUser, updateUserSkills } = useHizmetgoStore();
-  const { success, error } = useToast();
+
+  const [mounted, setMounted] = useState(false);
+  const [MotionComponents, setMotionComponents] = useState<{
+    MotionDiv: any;
+    MotionSpan?: any;
+    MotionButton?: any;
+    MotionP?: any;
+    AnimatePresence?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        MotionDiv: mod.motion.div,
+        MotionSpan: mod.motion.span,
+        MotionButton: mod.motion.button,
+        MotionP: mod.motion.p,
+        AnimatePresence: mod.AnimatePresence,
+      });
+    });
+  }, []);  const { success, error } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -126,7 +146,7 @@ export default function AccountProfilePageClient() {
   };
 
   const handleSaveSkills = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {return;}
 
     setSaving(true);
     try {
@@ -155,7 +175,7 @@ export default function AccountProfilePageClient() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -216,12 +236,21 @@ export default function AccountProfilePageClient() {
   const isVendor = currentUser?.role === "vendor" || user?.role === "vendor";
 
   if (loading) {
+    if (!mounted || !MotionComponents) {
+
+      return null; // or appropriate fallback
+
+    }
+
+
     return (
       <div className="min-h-screen bg-[#F5F5F7]">
         <AnimatedLoadingLogo />
       </div>
     );
   }
+
+  if (!MotionComponents) return null;
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] pt-24 pb-24 md:pb-0">
@@ -610,13 +639,13 @@ export default function AccountProfilePageClient() {
           <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
             <div className="flex items-center gap-2">
               {saveSuccess && (
-                <motion.div
+                <MotionComponents.MotionDiv
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="flex items-center gap-2 text-green-600"
-                >
+                 suppressHydrationWarning>
                   <span className="text-sm font-medium">Kaydedildi!</span>
-                </motion.div>
+                </MotionComponents.MotionDiv>
               )}
             </div>
             <div className="flex gap-3">

@@ -68,11 +68,21 @@ export function validatePassword(password: string): PasswordPolicyResult {
 export function getPasswordStrength(password: string): number {
   let score = 0;
 
-  if (password.length >= MIN_LENGTH) score++;
-  if (password.length >= 12) score++;
-  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+  if (password.length >= MIN_LENGTH) {
+    score++;
+  }
+  if (password.length >= 12) {
+    score++;
+  }
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
+    score++;
+  }
+  if (/[0-9]/.test(password)) {
+    score++;
+  }
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    score++;
+  }
 
   return Math.min(score, 4);
 }
