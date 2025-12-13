@@ -33,14 +33,6 @@ const AppHeader = dynamic(
   }
 );
 
-const CategoryBar = dynamic(
-  () => import("@/components/layout/CategoryBar"),
-  { 
-    ssr: false,
-    loading: () => <div className="h-[50px] bg-white border-b border-slate-200" />
-  }
-);
-
 const PopularCategoriesSection = dynamic(
   () => import("@/components/home/PopularCategoriesTabs").then((mod) => ({ default: mod.PopularCategoriesSection })),
   { 
@@ -72,10 +64,6 @@ export default function HomePageClient() {
       <PromotionalBanner />
       <Suspense fallback={<div className="h-[170px] bg-white border-b border-slate-200" />}>
         <AppHeader isPublic={true} />
-      </Suspense>
-      
-      <Suspense fallback={<div className="h-[50px] bg-white border-b border-slate-200" />}>
-        <CategoryBar />
       </Suspense>
 
       {/* Main Content */}

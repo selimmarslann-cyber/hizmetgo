@@ -18,7 +18,7 @@ export default function CustomerLayoutClient({ children }: { children: ReactNode
       <Suspense fallback={<div className="h-[170px] bg-white border-b border-slate-200" />}>
         <AppHeader />
       </Suspense>
-      <main className="flex-1 pt-[170px]">{children}</main>
+      <main className="flex-1">{children}</main>
       <AppFooter />
     </div>
   );

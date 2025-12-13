@@ -164,8 +164,9 @@ export default function AppHeader({
   }
 
   return (
+    <div className="w-full sticky top-0 z-50 bg-white">
     <header
-      className="w-full transition-all sticky top-0 z-50 bg-white shadow-sm"
+      className="w-full transition-all shadow-sm"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Üst menü - Ortalanmış */}
@@ -433,9 +434,9 @@ export default function AppHeader({
           </div>
         )}
       </div>
-      
-      {/* Category Bar - Header'a yapışık */}
-      {isPublic && <CategoryBar />}
     </header>
+    {/* Category Bar - Header'a yapışık, header'ın hemen altında */}
+    {isPublic && <CategoryBar />}
+    </div>
   );
 }

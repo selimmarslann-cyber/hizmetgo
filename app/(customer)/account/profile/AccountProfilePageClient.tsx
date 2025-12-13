@@ -11,8 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 import { Switch } from "@/components/ui/switch";
-import { Bell, Camera, LinkIcon, Lock, LogOut, MapPin, Save, Store, User, X, Zap } from "lucide-react";
-import { getSectors, getSkillsBySector } from "@/lib/data/skills";
+import { Bell, Camera, LinkIcon, Lock, LogOut, MapPin, Save, Store, User, X, Zap, Trash2, Search } from "lucide-react";
+import { getSectors, getSkillsBySector, getAllSkills } from "@/lib/data/skills";
 import { useHizmetgoStore } from "@/lib/store/useHizmetgoStore";
 import { useToast } from "@/lib/hooks/useToast";
 import {
@@ -56,14 +56,18 @@ export default function AccountProfilePageClient() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const skillSearchRef = useRef<HTMLDivElement>(null);
 
   // Skills state
   const [selectedSector, setSelectedSector] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<SkillKeyword[]>([]);
   const [availableSkills, setAvailableSkills] = useState<SkillKeyword[]>([]);
+  const [skillSearchQuery, setSkillSearchQuery] = useState("");
+  const [showSkillResults, setShowSkillResults] = useState(false);
   const [instantJobNotifications, setInstantJobNotifications] = useState(false);
   const [referralLink, setReferralLink] = useState("");
   const sectors = getSectors();
+  const allSkills = getAllSkills();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -128,10 +132,46 @@ export default function AccountProfilePageClient() {
     loadUser();
   }, [loadUser]);
 
+  // Close skill search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillSearchRef.current &&
+        !skillSearchRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleSectorChange = (sectorId: string) => {
     setSelectedSector(sectorId);
     const skills = getSkillsBySector(sectorId);
     setAvailableSkills(skills);
+  };
+
+  // Filter skills based on search query
+  const filteredSkills = skillSearchQuery.trim()
+    ? allSkills.filter((skill) =>
+        skill.label.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
+        skill.sector?.toLowerCase().includes(skillSearchQuery.toLowerCase())
+      )
+    : [];
+
+  const handleSkillSearch = (query: string) => {
+    setSkillSearchQuery(query);
+    setShowSkillResults(query.trim().length > 0);
+  };
+
+  const handleSelectSkillFromSearch = (skill: SkillKeyword) => {
+    handleSkillToggle(skill);
+    setSkillSearchQuery("");
+    setShowSkillResults(false);
   };
 
   const handleSkillToggle = (skill: SkillKeyword) => {
@@ -466,48 +506,77 @@ export default function AccountProfilePageClient() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="sector">Sektör Seçin</Label>
-                <Select
-                  value={selectedSector}
-                  onValueChange={handleSectorChange}
-                >
-                  <SelectTrigger id="sector" className="h-12">
-                    <SelectValue placeholder="Sektör seçin (örn: Elektrik, Tesisat, Temizlik)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectors.map((sector) => (
-                      <SelectItem key={sector.id} value={sector.id}>
-                        {sector.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="skill-search">Yetenek ve Uzmanlık Alanı Ara</Label>
+                <div className="relative" ref={skillSearchRef}>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Input
+                    id="skill-search"
+                    type="text"
+                    value={skillSearchQuery}
+                    onChange={(e) => handleSkillSearch(e.target.value)}
+                    onFocus={() => setShowSkillResults(skillSearchQuery.trim().length > 0)}
+                    placeholder="Yazın: elektrik, tesisat, temizlik, boya..."
+                    className="h-12 pl-10"
+                  />
+                  {showSkillResults && filteredSkills.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
+                      {filteredSkills.slice(0, 20).map((skill) => {
+                        const isSelected = selectedSkills.some((s) => s.id === skill.id);
+                        return (
+                          <button
+                            key={skill.id}
+                            type="button"
+                            onClick={() => handleSelectSkillFromSearch(skill)}
+                            className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors flex items-center justify-between ${
+                              isSelected ? "bg-brand-50 text-brand-700" : ""
+                            }`}
+                          >
+                            <div>
+                              <span className="font-medium">{skill.label}</span>
+                              {skill.sector && (
+                                <span className="text-xs text-slate-500 ml-2">
+                                  ({skill.sector})
+                                </span>
+                              )}
+                            </div>
+                            {isSelected && (
+                              <span className="text-brand-600 text-sm font-semibold">✓ Seçili</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                      {filteredSkills.length > 20 && (
+                        <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-200">
+                          +{filteredSkills.length - 20} sonuç daha...
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {showSkillResults && skillSearchQuery.trim() && filteredSkills.length === 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg p-4 text-center text-slate-500">
+                      Eşleşen sonuç bulunamadı
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {selectedSector && availableSkills.length > 0 && (
+              {/* Seçilen Yetenekler */}
+              {selectedSkills.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Yeteneklerinizi Seçin</Label>
-                  <div className="flex flex-wrap gap-2 p-4 border-2 border-slate-200 rounded-xl min-h-[100px] max-h-[200px] overflow-y-auto bg-slate-50">
-                    {availableSkills.map((skill) => {
-                      const isSelected = selectedSkills.some(
-                        (s) => s.id === skill.id,
-                      );
-                      return (
-                        <Badge
-                          key={skill.id}
-                          variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected
-                              ? "bg-[#FF6000] text-white border-[#FF6000]"
-                              : ""
-                          }`}
+                  <Label>Seçilen Yetenekler ({selectedSkills.length})</Label>
+                  <div className="flex flex-wrap gap-2 p-4 border-2 border-slate-200 rounded-xl min-h-[60px] bg-slate-50">
+                    {selectedSkills.map((skill) => (
+                      <Badge key={skill.id} className="bg-[#FF6000] text-white">
+                        {skill.label}
+                        <button
+                          type="button"
                           onClick={() => handleSkillToggle(skill)}
+                          className="ml-1 hover:bg-[#FF5500] rounded"
                         >
-                          {skill.label}
-                          {isSelected && <X className="w-3 h-3 ml-1" />}
-                        </Badge>
-                      );
-                    })}
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
@@ -648,7 +717,7 @@ export default function AccountProfilePageClient() {
                 </MotionComponents.MotionDiv>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <Button
                 type="button"
                 variant="outline"
@@ -656,6 +725,15 @@ export default function AccountProfilePageClient() {
               >
                 <Lock className="w-4 h-4 mr-2" />
                 Gizlilik
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/account/delete")}
+                className="text-red-600 hover:text-red-700 hover:border-red-300 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Hesabımı Dondur
               </Button>
               <Button
                 type="button"
