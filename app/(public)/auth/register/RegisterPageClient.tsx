@@ -18,14 +18,21 @@ export default function RegisterPageClient() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [tckn, setTckn] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
-  const [instantJobNotifications, setInstantJobNotifications] = useState(false);
-  const [unskilledJobNotifications, setUnskilledJobNotifications] = useState(false);
-  const [whatsappNotifications, setWhatsappNotifications] = useState(false);
-  const [smsNotifications, setSmsNotifications] = useState(false);
-  const [emailMarketing, setEmailMarketing] = useState(false);
+  const [instantJobNotifications, setInstantJobNotifications] = useState(true);
+  const [unskilledJobNotifications, setUnskilledJobNotifications] = useState(true);
+  const [whatsappNotifications, setWhatsappNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(true);
+  const [emailMarketing, setEmailMarketing] = useState(true);
+  
+  // Faturalandırma bilgileri (isteğe bağlı)
+  const [companyName, setCompanyName] = useState("");
+  const [taxNumber, setTaxNumber] = useState("");
+  const [taxOffice, setTaxOffice] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
 
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -51,11 +58,16 @@ export default function RegisterPageClient() {
           name,
           email,
           password,
+          tckn: tckn || undefined,
           instantJobNotifications,
           unskilledJobNotifications,
           whatsappNotifications,
           smsNotifications,
           emailMarketing,
+          companyName: companyName || undefined,
+          taxNumber: taxNumber || undefined,
+          taxOffice: taxOffice || undefined,
+          billingAddress: billingAddress || undefined,
         }),
         credentials: "include",
       });
@@ -184,6 +196,28 @@ export default function RegisterPageClient() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="tckn" className="text-slate-900 font-semibold">
+                  TC Kimlik No <span className="text-slate-500 font-normal text-sm">(İsteğe Bağlı)</span>
+                </Label>
+                <Input
+                  id="tckn"
+                  type="text"
+                  placeholder="TC Kimlik Numaranız (isteğe bağlı)"
+                  value={tckn}
+                  onChange={(e) => {
+                    // Sadece rakam girişine izin ver, maksimum 11 karakter
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 11);
+                    setTckn(value);
+                  }}
+                  maxLength={11}
+                  className="h-12 border border-slate-200 focus:border-brand-500"
+                />
+                <p className="text-xs text-slate-500">
+                  TC Kimlik Numaranızı girmek isteğe bağlıdır. Bu bilgi güvenli bir şekilde saklanır.
+                </p>
+              </div>
+
               {/* Bildirim Tercihleri */}
               <div className="space-y-6 p-6 border border-slate-200 rounded">
                 <h3 className="text-lg font-semibold text-slate-900">
@@ -288,6 +322,74 @@ export default function RegisterPageClient() {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Kampanyalar, özel fırsatlar ve tanıtımları e-posta ile alırsınız. Yeni özellikler, özel indirimler ve platformdaki gelişmeler hakkında bilgilendirilirsiniz. İstediğiniz zaman bu e-postaları durdurabilirsiniz.
                   </p>
+                </div>
+              </div>
+
+              {/* Faturalandırma Bilgileri (İsteğe Bağlı) */}
+              <div className="space-y-6 p-6 border border-slate-200 rounded">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Faturalandırma (İsteğe Bağlı)
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Fatura almak istiyorsanız aşağıdaki bilgileri doldurabilirsiniz. Bu bilgiler isteğe bağlıdır ve daha sonra profil ayarlarınızdan güncelleyebilirsiniz.
+                </p>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-slate-900 font-semibold">
+                      Firma Adı <span className="text-slate-500 font-normal text-sm">(İsteğe Bağlı)</span>
+                    </Label>
+                    <Input
+                      id="companyName"
+                      type="text"
+                      placeholder="Firma adınız (isteğe bağlı)"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="h-12 border border-slate-200 focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxNumber" className="text-slate-900 font-semibold">
+                      Vergi Numarası <span className="text-slate-500 font-normal text-sm">(İsteğe Bağlı)</span>
+                    </Label>
+                    <Input
+                      id="taxNumber"
+                      type="text"
+                      placeholder="Vergi numaranız (isteğe bağlı)"
+                      value={taxNumber}
+                      onChange={(e) => setTaxNumber(e.target.value)}
+                      className="h-12 border border-slate-200 focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxOffice" className="text-slate-900 font-semibold">
+                      Vergi Dairesi <span className="text-slate-500 font-normal text-sm">(İsteğe Bağlı)</span>
+                    </Label>
+                    <Input
+                      id="taxOffice"
+                      type="text"
+                      placeholder="Vergi dairesi (isteğe bağlı)"
+                      value={taxOffice}
+                      onChange={(e) => setTaxOffice(e.target.value)}
+                      className="h-12 border border-slate-200 focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="billingAddress" className="text-slate-900 font-semibold">
+                      Fatura Adresi <span className="text-slate-500 font-normal text-sm">(İsteğe Bağlı)</span>
+                    </Label>
+                    <Input
+                      id="billingAddress"
+                      type="text"
+                      placeholder="Fatura adresiniz (isteğe bağlı)"
+                      value={billingAddress}
+                      onChange={(e) => setBillingAddress(e.target.value)}
+                      className="h-12 border border-slate-200 focus:border-brand-500"
+                    />
+                  </div>
                 </div>
               </div>
 

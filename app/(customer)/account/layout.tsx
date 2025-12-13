@@ -134,7 +134,7 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
       <div className="flex flex-col min-h-screen">
         <div className="flex flex-1">
           {/* Sidebar - Desktop */}
-          <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:top-0 bg-white border-r">
+          <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:top-0 lg:z-50 bg-white border-r">
             <div className="flex-1 overflow-y-auto pt-0">
               {/* User Info */}
               <div className="p-6 border-b pt-6">

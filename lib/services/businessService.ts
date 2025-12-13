@@ -19,11 +19,64 @@ export async function createBusiness(data: {
   addressText: string;
   coverImageUrl?: string;
   workingHoursJson?: any;
+  // İletişim Bilgileri
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+  website?: string;
+  // Teslimat Bilgileri
+  hasDelivery?: boolean;
+  minOrderAmount?: number | null;
+  deliveryRadius?: number | null;
+  deliveryFee?: number | null;
+  deliveryTime?: number | null;
+  freeDeliveryThreshold?: number | null;
+  // Yasal Belgeler
+  taxDocumentUrl?: string;
+  idDocumentUrl?: string;
+  licenseUrl?: string;
+  // Finansal Bilgiler
+  iban?: string;
+  accountHolder?: string;
+  bankName?: string;
+  taxNumber?: string;
+  taxOffice?: string;
 }) {
   return prisma.business.create({
     data: {
-      ...data,
+      ownerUserId: data.ownerUserId,
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      lat: data.lat,
+      lng: data.lng,
+      addressText: data.addressText,
+      coverImageUrl: data.coverImageUrl,
+      workingHoursJson: data.workingHoursJson,
+      // İletişim Bilgileri
+      phone: data.phone,
+      email: data.email,
+      whatsapp: data.whatsapp,
+      website: data.website,
+      // Teslimat Bilgileri
+      hasDelivery: data.hasDelivery || false,
+      minOrderAmount: data.minOrderAmount,
+      deliveryRadius: data.deliveryRadius,
+      deliveryFee: data.deliveryFee,
+      deliveryTime: data.deliveryTime,
+      freeDeliveryThreshold: data.freeDeliveryThreshold,
+      // Yasal Belgeler
+      taxDocumentUrl: data.taxDocumentUrl,
+      idDocumentUrl: data.idDocumentUrl,
+      licenseUrl: data.licenseUrl,
+      // Finansal Bilgiler
+      iban: data.iban,
+      accountHolder: data.accountHolder,
+      bankName: data.bankName,
+      taxNumber: data.taxNumber,
+      taxOffice: data.taxOffice,
       onlineStatus: "OFFLINE", // Yeni işletme varsayılan olarak offline
+      verificationStatus: "PENDING", // Yeni işletme beklemede
     },
   });
 }

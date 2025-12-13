@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Camera, LinkIcon, Lock, LogOut, MapPin, Save, Store, User, X, Zap, Trash2, Search } from "lucide-react";
 import { getSectors, getSkillsBySector, getAllSkills } from "@/lib/data/skills";
+import { SERVICE_CATEGORIES } from "@/lib/data/service-categories";
 import { useHizmetgoStore } from "@/lib/store/useHizmetgoStore";
 import { useToast } from "@/lib/hooks/useToast";
 import {
@@ -102,7 +103,40 @@ export default function AccountProfilePageClient() {
         avatarUrl: data.user.avatarUrl || "",
       });
 
-      if (data.user.skills) {
+      // Convert skillCategories (category ID array) to SkillKeyword[] format
+      if (data.user.skillCategories && Array.isArray(data.user.skillCategories) && data.user.skillCategories.length > 0) {
+        const matchedSkills: SkillKeyword[] = [];
+        
+        // skillCategories contains category IDs (e.g., ["electricity", "cleaning"])
+        data.user.skillCategories.forEach((categoryId: string) => {
+          // Find the category in SERVICE_CATEGORIES
+          const category = SERVICE_CATEGORIES.find((cat) => cat.id === categoryId);
+          
+          if (category) {
+            // Get all skills for this category using getSkillsBySector
+            const categorySkills = getSkillsBySector(categoryId);
+            // Add all skills from this category
+            matchedSkills.push(...categorySkills);
+          } else {
+            // If category not found, try to find by name (backward compatibility)
+            const categoryByName = SERVICE_CATEGORIES.find(
+              (cat) => cat.name.toLowerCase() === categoryId.toLowerCase()
+            );
+            if (categoryByName) {
+              const categorySkills = getSkillsBySector(categoryByName.id);
+              matchedSkills.push(...categorySkills);
+            }
+          }
+        });
+        
+        // Remove duplicates based on skill ID
+        const uniqueSkills = matchedSkills.filter(
+          (skill, index, self) => index === self.findIndex((s) => s.id === skill.id)
+        );
+        
+        setSelectedSkills(uniqueSkills);
+      } else if (data.user.skills) {
+        // Fallback to skills if available (for backward compatibility)
         setSelectedSkills(data.user.skills);
       }
 

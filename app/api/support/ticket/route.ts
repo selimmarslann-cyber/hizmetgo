@@ -9,7 +9,59 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     const body = await req.json();
-    const { action } = body;
+    const { action, category, subCategory, message, type } = body;
+
+    // Eğer category, subCategory ve message varsa, yeni ticket oluştur
+    if (category && message) {
+      const user = session?.userId
+        ? await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { id: true, name: true, email: true },
+          })
+        : null;
+
+      // Kategori mapping
+      const categoryMap: Record<string, any> = {
+        siparis: "ORDER",
+        hizmet: "TECHNICAL",
+        hesap: "ACCOUNT",
+        odeme: "PAYMENT",
+        diger: "OTHER",
+      };
+
+      const ticketCategory = categoryMap[category] || "GENERAL";
+
+      // Ticket oluştur
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          userId: user?.id || null,
+          email: user?.email || session?.email || "anonymous@hizmetgo.app",
+          name: user?.name || null,
+          category: ticketCategory,
+          subject: subCategory
+            ? `${category} - ${subCategory}`
+            : category,
+          status: "ADMIN_OPEN",
+          priority: category === "odeme" || category === "hizmet" ? 2 : 3,
+        },
+      });
+
+      // İlk mesajı ekle
+      await prisma.supportMessage.create({
+        data: {
+          ticketId: ticket.id,
+          type: "USER",
+          content: message.trim(),
+          userId: user?.id || null,
+          isRead: false,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        ticketId: ticket.id,
+      });
+    }
 
     if (action === "get_or_create") {
       // Kullanıcı bilgisini al (eğer giriş yapmışsa)

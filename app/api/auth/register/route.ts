@@ -23,14 +23,23 @@ const registerSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi girin"),
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
-  instantJobNotifications: z.boolean().optional().default(false),
-  unskilledJobNotifications: z.boolean().optional().default(false), // schema'da kalabilir
-  whatsappNotifications: z.boolean().optional().default(false),
-  smsNotifications: z.boolean().optional().default(false),
-  emailMarketing: z.boolean().optional().default(false),
+  tckn: z.string().optional().refine(
+    (val) => !val || /^\d{11}$/.test(val),
+    { message: "TC Kimlik No 11 haneli olmalıdır" }
+  ),
+  instantJobNotifications: z.boolean().optional().default(true),
+  unskilledJobNotifications: z.boolean().optional().default(true), // schema'da kalabilir
+  whatsappNotifications: z.boolean().optional().default(true),
+  smsNotifications: z.boolean().optional().default(true),
+  emailMarketing: z.boolean().optional().default(true),
   skillCategories: z.array(z.string()).optional().default([]),
   publishWithoutKeyword: z.boolean().optional().default(false),
   ref: z.string().optional(),
+  // Faturalandırma bilgileri (isteğe bağlı)
+  companyName: z.string().optional(),
+  taxNumber: z.string().optional(),
+  taxOffice: z.string().optional(),
+  billingAddress: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -83,13 +92,40 @@ export async function POST(request: NextRequest) {
       email: sanitizedEmail,
       password: validated.password,
       name: sanitizedName,
-      instantJobNotifications: validated.instantJobNotifications || false,
-      whatsappNotifications: validated.whatsappNotifications || false,
-      smsNotifications: validated.smsNotifications || false,
-      emailMarketing: validated.emailMarketing || false,
+      instantJobNotifications: validated.instantJobNotifications ?? true,
+      whatsappNotifications: validated.whatsappNotifications ?? true,
+      smsNotifications: validated.smsNotifications ?? true,
+      emailMarketing: validated.emailMarketing ?? true,
       skillCategories: finalSkillCategories,
       publishWithoutKeyword: validated.publishWithoutKeyword || false,
     });
+
+    // Faturalandırma bilgileri varsa UserBillingProfile oluştur
+    if (validated.companyName || validated.taxNumber || validated.taxOffice || validated.billingAddress || validated.tckn) {
+      await prisma.userBillingProfile.create({
+        data: {
+          userId: user.id,
+          billingType: validated.companyName ? "COMPANY" : "PERSONAL",
+          fullName: validated.name || null,
+          tckn: validated.tckn || null,
+          companyName: validated.companyName || null,
+          taxNumber: validated.taxNumber || null,
+          taxOffice: validated.taxOffice || null,
+          addressLine: validated.billingAddress || null,
+          isComplete: !!(validated.companyName && validated.taxNumber && validated.taxOffice),
+        },
+      });
+    } else if (validated.tckn) {
+      // Sadece TCKN varsa da UserBillingProfile oluştur
+      await prisma.userBillingProfile.create({
+        data: {
+          userId: user.id,
+          billingType: "PERSONAL",
+          fullName: validated.name || null,
+          tckn: validated.tckn || null,
+        },
+      });
+    }
 
     const cookieStore = await cookies();
     let utmData: any = null;

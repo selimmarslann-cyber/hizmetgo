@@ -151,7 +151,7 @@ export default function AppHeader({
   // SSR sırasında basit bir header render et
   if (!mounted) {
     return (
-      <header className="w-full transition-all sticky top-0 z-50 bg-white shadow-sm">
+      <header className="w-full transition-all sticky top-0 z-40 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 py-3">
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -164,7 +164,7 @@ export default function AppHeader({
   }
 
   return (
-    <div className="w-full sticky top-0 z-50 bg-white">
+    <div className="w-full sticky top-0 z-40 bg-white">
     <header
       className="w-full transition-all shadow-sm"
     >

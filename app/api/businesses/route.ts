@@ -20,6 +20,28 @@ export async function POST(request: NextRequest) {
       addressText: validated.addressText,
       coverImageUrl: validated.coverImageUrl || undefined,
       workingHoursJson: validated.workingHoursJson,
+      // İletişim Bilgileri
+      phone: validated.phone,
+      email: validated.email,
+      whatsapp: validated.whatsapp,
+      website: validated.website || undefined,
+      // Teslimat Bilgileri
+      hasDelivery: validated.hasDelivery,
+      minOrderAmount: validated.minOrderAmount,
+      deliveryRadius: validated.deliveryRadius,
+      deliveryFee: validated.deliveryFee,
+      deliveryTime: validated.deliveryTime,
+      freeDeliveryThreshold: validated.freeDeliveryThreshold,
+      // Yasal Belgeler
+      taxDocumentUrl: validated.taxDocumentUrl || undefined,
+      idDocumentUrl: validated.idDocumentUrl || undefined,
+      licenseUrl: validated.licenseUrl || undefined,
+      // Finansal Bilgiler
+      iban: validated.iban,
+      accountHolder: validated.accountHolder,
+      bankName: validated.bankName,
+      taxNumber: validated.taxNumber,
+      taxOffice: validated.taxOffice,
     });
 
     return NextResponse.json(business, { status: 201 });

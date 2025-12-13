@@ -22,6 +22,16 @@ export async function GET(request: NextRequest) {
         name: true,
         avatarUrl: true,
         role: true,
+        phone: true,
+        city: true,
+        district: true,
+        address: true,
+        bio: true,
+        skillCategories: true,
+        instantJobNotifications: true,
+        whatsappNotifications: true,
+        smsNotifications: true,
+        emailMarketing: true,
       },
     });
 

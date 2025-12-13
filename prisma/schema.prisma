@@ -112,6 +112,31 @@ model Business {
   mainCategories String[] @default([]) @map("main_categories") // ["electricity", "plumbing"]
   subServices    String[] @default([]) @map("sub_services") // ["home-repair", "full-installation"]
 
+  // İletişim Bilgileri
+  phone          String?  @map("phone") // Telefon numarası
+  email          String?  @map("email") // İşletme e-postası
+  whatsapp       String?  @map("whatsapp") // WhatsApp numarası
+  website        String?  @map("website") // Web sitesi URL
+
+  // Yasal Belgeler
+  taxDocumentUrl String?  @map("tax_document_url") // Vergi levhası URL
+  idDocumentUrl  String?  @map("id_document_url") // Kimlik belgesi URL
+  licenseUrl     String?  @map("license_url") // İşletme ruhsatı URL
+  verificationStatus String @default("PENDING") @map("verification_status") // PENDING, APPROVED, REJECTED
+  rejectionReason String? @map("rejection_reason") // Red nedeni
+
+  // Finansal Bilgiler
+  iban           String?  @map("iban") // IBAN numarası
+  accountHolder  String?  @map("account_holder") // Hesap sahibi adı
+  bankName       String?  @map("bank_name") // Banka adı
+  taxNumber      String?  @map("tax_number") // Vergi numarası
+  taxOffice      String?  @map("tax_office") // Vergi dairesi
+
+  // Teslimat Detayları
+  deliveryFee    Decimal? @map("delivery_fee") @db.Decimal(10, 2) // Teslimat ücreti
+  deliveryTime  Int?     @map("delivery_time") // Teslimat süresi (dakika)
+  freeDeliveryThreshold Decimal? @map("free_delivery_threshold") @db.Decimal(10, 2) // Ücretsiz teslimat eşiği
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

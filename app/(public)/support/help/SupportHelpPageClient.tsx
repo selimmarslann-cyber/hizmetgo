@@ -1,11 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Send, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Send,
+  X,
+  ShoppingBag,
+  Wrench,
+  CreditCard,
+  User,
+  HelpCircle,
+  ArrowRight,
+  Clock,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/lib/hooks/useToast";
-
 
 // Static generation'ı engelle
 // Sorun kategorileri
@@ -13,7 +26,10 @@ const problemCategories = [
   {
     id: "siparis",
     title: "Sipariş Sorunu",
-    icon: "📦",
+    icon: ShoppingBag,
+    color: "bg-blue-50 hover:bg-blue-100",
+    iconColor: "text-blue-600",
+    description: "Sipariş takibi, iptal ve iade işlemleri",
     subCategories: [
       { id: "siparis-gelmedi", title: "Siparişim gelmedi" },
       { id: "siparis-yanlis", title: "Yanlış sipariş geldi" },
@@ -24,7 +40,10 @@ const problemCategories = [
   {
     id: "hizmet",
     title: "Hizmet Sorunu",
-    icon: "🔧",
+    icon: Wrench,
+    color: "bg-purple-50 hover:bg-purple-100",
+    iconColor: "text-purple-600",
+    description: "Hizmet kalitesi, gecikme ve fiyat sorunları",
     subCategories: [
       {
         id: "hizmet-kalitesi",
@@ -38,7 +57,10 @@ const problemCategories = [
   {
     id: "hesap",
     title: "Hesap Sorunu",
-    icon: "👤",
+    icon: User,
+    color: "bg-green-50 hover:bg-green-100",
+    iconColor: "text-green-600",
+    description: "Giriş, şifre ve hesap yönetimi",
     subCategories: [
       { id: "hesap-giris", title: "Giriş yapamıyorum" },
       { id: "hesap-sifre", title: "Şifremi unuttum" },
@@ -49,7 +71,10 @@ const problemCategories = [
   {
     id: "odeme",
     title: "Ödeme Sorunu",
-    icon: "💳",
+    icon: CreditCard,
+    color: "bg-orange-50 hover:bg-orange-100",
+    iconColor: "text-orange-600",
+    description: "Ödeme, iade ve fatura işlemleri",
     subCategories: [
       { id: "odeme-reddedildi", title: "Ödeme reddedildi" },
       { id: "odeme-iade", title: "İade talep ediyorum" },
@@ -60,13 +85,17 @@ const problemCategories = [
   {
     id: "diger",
     title: "Diğer",
-    icon: "❓",
+    icon: HelpCircle,
+    color: "bg-gray-50 hover:bg-gray-100",
+    iconColor: "text-gray-600",
+    description: "Diğer sorularınız için",
     subCategories: [],
   },
 ];
 
 export default function SupportHelpPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { success, error } = useToast();
 
   const [mounted, setMounted] = useState(false);
@@ -89,7 +118,9 @@ export default function SupportHelpPageClient() {
         AnimatePresence: mod.AnimatePresence,
       });
     });
-  }, []);  const [step, setStep] = useState<
+  }, []);
+
+  const [step, setStep] = useState<
     "category" | "subcategory" | "message" | "success"
   >("category");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -98,6 +129,22 @@ export default function SupportHelpPageClient() {
   );
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // URL'den kategori parametresini kontrol et
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      const category = problemCategories.find((c) => c.id === categoryParam);
+      if (category) {
+        setSelectedCategory(categoryParam);
+        if (category.subCategories.length === 0) {
+          setStep("message");
+        } else {
+          setStep("subcategory");
+        }
+      }
+    }
+  }, [searchParams]);
 
   const currentCategory = problemCategories.find(
     (c) => c.id === selectedCategory,
@@ -212,26 +259,80 @@ export default function SupportHelpPageClient() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
-                 suppressHydrationWarning>
-                  <h2 className="text-xl font-semibold text-slate-900 mb-6">
-                    Hangi konuda yardıma ihtiyacınız var?
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {problemCategories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => handleCategorySelect(category.id)}
-                        className="p-4 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-all text-left group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{category.icon}</span>
-                          <span className="font-medium text-slate-900 group-hover:text-brand-700">
-                            {category.title}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                  suppressHydrationWarning
+                >
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                      Hangi konuda yardıma ihtiyacınız var?
+                    </h2>
+                    <p className="text-gray-600">
+                      Sorununuzu kategorilere göre seçin, size en hızlı şekilde yardımcı olalım
+                    </p>
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {problemCategories.map((category, index) => {
+                      const Icon = category.icon;
+                      return (
+                        <MotionComponents.MotionDiv
+                          key={category.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          whileHover={{ scale: 1.02, y: -4 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <button
+                            onClick={() => handleCategorySelect(category.id)}
+                            className={`w-full p-6 rounded-xl border-2 transition-all text-left group ${category.color} hover:border-brand-300`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className={`w-12 h-12 rounded-xl ${category.color} flex items-center justify-center flex-shrink-0`}>
+                                <Icon className={`w-6 h-6 ${category.iconColor}`} />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-brand-700">
+                                  {category.title}
+                                </h3>
+                                <p className="text-sm text-gray-600 mb-3">
+                                  {category.description}
+                                </p>
+                                <div className="flex items-center text-brand-600 text-sm font-medium">
+                                  Devam et
+                                  <ArrowRight className="w-4 h-4 ml-1" />
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        </MotionComponents.MotionDiv>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Quick Help */}
+                  <Card className="mt-8 bg-gradient-to-br from-brand-50 to-white border-2 border-brand-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center">
+                          <MessageSquare className="w-6 h-6 text-brand-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">Hızlı Destek</h3>
+                          <p className="text-sm text-gray-600 mb-3">
+                            Sorununuzu kategorilere ayırmak istemiyorsanız, doğrudan canlı destek ile iletişime geçebilirsiniz.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push("/support/chat")}
+                            className="border-brand-300 text-brand-600 hover:bg-brand-50"
+                          >
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Canlı Destek Başlat
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </MotionComponents.MotionDiv>
               )}
 
@@ -263,18 +364,32 @@ export default function SupportHelpPageClient() {
                       <p className="text-sm text-slate-500">Sorununuzu seçin</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {currentCategory.subCategories.map((subCat) => (
-                      <button
-                        key={subCat.id}
-                        onClick={() => handleSubCategorySelect(subCat.id)}
-                        className="w-full p-4 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-all text-left group"
-                      >
-                        <span className="font-medium text-slate-900 group-hover:text-brand-700">
-                          {subCat.title}
-                        </span>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {currentCategory.subCategories.map((subCat, index) => {
+                      const Icon = currentCategory.icon;
+                      return (
+                        <MotionComponents.MotionDiv
+                          key={subCat.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.02, x: 4 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <button
+                            onClick={() => handleSubCategorySelect(subCat.id)}
+                            className={`w-full p-4 rounded-xl border-2 transition-all text-left group ${currentCategory.color} hover:border-brand-300`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Icon className={`w-5 h-5 ${currentCategory.iconColor}`} />
+                              <span className="font-medium text-slate-900 group-hover:text-brand-700">
+                                {subCat.title}
+                              </span>
+                            </div>
+                          </button>
+                        </MotionComponents.MotionDiv>
+                      );
+                    })}
                   </div>
                 </MotionComponents.MotionDiv>
               )}
@@ -354,21 +469,38 @@ export default function SupportHelpPageClient() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4"
-                 suppressHydrationWarning>
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-                  </div>
-                  <h2 className="text-2xl font-semibold text-slate-900">
+                  className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6"
+                  suppressHydrationWarning
+                >
+                  <MotionComponents.MotionDiv
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+                    </div>
+                  </MotionComponents.MotionDiv>
+                  <h2 className="text-3xl font-bold text-slate-900">
                     Mesajınız gönderildi!
                   </h2>
-                  <p className="text-slate-600 max-w-md">
-                    En kısa sürede size dönüş yapacağız. Genellikle 24 saat
-                    içinde yanıt veriyoruz.
-                  </p>
-                  <Button onClick={() => router.back()} className="mt-4">
-                    Kapat
-                  </Button>
+                  <div className="space-y-2">
+                    <p className="text-slate-600 max-w-md text-lg">
+                      En kısa sürede size dönüş yapacağız.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                      <Clock className="w-4 h-4" />
+                      <span>Genellikle 24 saat içinde yanıt veriyoruz</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-4">
+                    <Button onClick={() => router.push("/support")} variant="outline">
+                      Destek Merkezi
+                    </Button>
+                    <Button onClick={() => router.back()}>
+                      Kapat
+                    </Button>
+                  </div>
                 </MotionComponents.MotionDiv>
               )}
             </MotionComponents.AnimatePresence>

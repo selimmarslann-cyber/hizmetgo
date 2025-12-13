@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Popup } from "react-leaflet";
 import L from "leaflet";
 
 // Leaflet CSS - client-side only
@@ -25,6 +25,10 @@ interface LeafletMapRegisterProps {
   zoom?: number;
   selectedLocation: { lat: number; lng: number } | null;
   onLocationSelect: (lat: number, lng: number) => void;
+  businessLogo?: string;
+  businessName?: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 function MapController({
@@ -48,16 +52,62 @@ export default function LeafletMapRegister({
   zoom = 13,
   selectedLocation,
   onLocationSelect,
+  businessLogo,
+  businessName,
+  rating,
+  reviewCount,
 }: LeafletMapRegisterProps) {
   const mapRef = useRef<L.Map | null>(null);
 
-  // Custom icon for selected location
+  // Custom icon for selected location - dükkan emojisi veya logo
   const selectedIcon = L.divIcon({
     className: "custom-selected-marker",
-    html: `<div style="background-color: #FF6000; width: 32px; height: 32px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer;"></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    html: businessLogo 
+      ? `<div style="
+          width: 48px; 
+          height: 48px; 
+          border-radius: 8px; 
+          border: 3px solid white; 
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
+          cursor: pointer;
+          overflow: hidden;
+          background: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <img src="${businessLogo}" alt="${businessName || 'Dükkan'}" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>`
+      : `<div style="
+          width: 48px; 
+          height: 48px; 
+          border-radius: 8px; 
+          border: 3px solid white; 
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
+          cursor: pointer;
+          background: #FF6000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+        ">🏪</div>`,
+    iconSize: [48, 48],
+    iconAnchor: [24, 48],
   });
+
+  // Popup content with rating and review count
+  const popupContent = businessName 
+    ? `<div style="padding: 8px; min-width: 150px;">
+        <div style="font-weight: bold; margin-bottom: 4px; font-size: 14px;">${businessName}</div>
+        ${rating !== undefined && reviewCount !== undefined ? `
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #666;">
+            <span style="color: #FFA500;">⭐</span>
+            <span style="font-weight: 600;">${rating.toFixed(1)}</span>
+            <span style="color: #999;">(${reviewCount} değerlendirme)</span>
+          </div>
+        ` : ''}
+      </div>`
+    : '';
 
   useEffect(() => {
     const map = mapRef.current;
@@ -93,7 +143,13 @@ export default function LeafletMapRegister({
           <Marker
             position={[selectedLocation.lat, selectedLocation.lng]}
             icon={selectedIcon}
-          />
+          >
+            {popupContent && (
+              <Popup>
+                <div dangerouslySetInnerHTML={{ __html: popupContent }} />
+              </Popup>
+            )}
+          </Marker>
         )}
       </MapContainer>
 
