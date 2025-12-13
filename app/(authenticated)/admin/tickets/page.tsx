@@ -113,92 +113,121 @@ export default function AdminTicketsPage() {
       {/* Tickets Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Ticket Listesi ({filteredTickets.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Ticket Listesi ({filteredTickets.length})</CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                Açık: {tickets.filter((t) => ["OPEN", "ADMIN_OPEN", "ADMIN_REPLIED"].includes(t.status)).length}
+              </Badge>
+              <Badge variant="outline">
+                Yüksek Öncelik: {tickets.filter((t) => t.priority <= 2 && ["OPEN", "ADMIN_OPEN", "ADMIN_REPLIED"].includes(t.status)).length}
+              </Badge>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    ID
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Konu
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Kullanıcı
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Kategori
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Durum
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Öncelik
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Tarih
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTickets.map((ticket) => (
-                  <tr
-                    key={ticket.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="py-3 px-4 font-mono text-sm">
-                      {ticket.id.substring(0, 8)}...
-                    </td>
-                    <td className="py-3 px-4">{ticket.subject}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span>{ticket.name || ticket.email}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant="outline">{ticket.category}</Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge className={getStatusColor(ticket.status)}>
-                        {ticket.status}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-3 h-3 rounded-full ${getPriorityColor(ticket.priority)}`}
-                        />
-                        <span className="text-sm">
-                          {ticket.priority === 1
-                            ? "Yüksek"
-                            : ticket.priority === 2
-                              ? "Orta"
-                              : "Düşük"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {new Date(ticket.createdAt).toLocaleDateString("tr-TR")}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Link href={`/admin/tickets/${ticket.id}`}>
-                        <Button variant="outline" size="sm">
-                          Görüntüle
-                        </Button>
-                      </Link>
-                    </td>
+          {filteredTickets.length === 0 ? (
+            <div className="text-center py-12">
+              <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 font-medium mb-2">Ticket bulunamadı</p>
+              <p className="text-sm text-gray-500">
+                {searchQuery ? "Arama kriterlerinize uygun ticket bulunamadı." : "Henüz hiç ticket oluşturulmamış."}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      ID
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Konu
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Kullanıcı
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Kategori
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Durum
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Öncelik
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Tarih
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      İşlemler
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredTickets.map((ticket) => (
+                    <tr
+                      key={ticket.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-3 px-4 font-mono text-sm text-gray-500">
+                        {ticket.id.substring(0, 8)}...
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-gray-900">{ticket.subject}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm">{ticket.name || ticket.email}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="text-xs">
+                          {ticket.category}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge className={`${getStatusColor(ticket.status)} text-xs`}>
+                          {ticket.status}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-3 h-3 rounded-full ${getPriorityColor(ticket.priority)}`}
+                          />
+                          <span className="text-sm text-gray-600">
+                            {ticket.priority === 1
+                              ? "Yüksek"
+                              : ticket.priority === 2
+                                ? "Orta"
+                                : "Düşük"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-600 text-sm">
+                        {new Date(ticket.createdAt).toLocaleDateString("tr-TR", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Link href={`/admin/tickets/${ticket.id}`}>
+                          <Button variant="outline" size="sm" className="text-xs">
+                            Görüntüle
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

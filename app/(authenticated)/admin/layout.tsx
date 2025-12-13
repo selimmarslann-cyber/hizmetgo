@@ -12,8 +12,10 @@ import {
   Settings,
   LogOut,
   Shield,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/lib/hooks/useToast";
 
 export default function AdminLayout({
@@ -26,6 +28,8 @@ export default function AdminLayout({
   const { success } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [openTickets, setOpenTickets] = useState(0);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -51,6 +55,43 @@ export default function AdminLayout({
     checkAuth();
   }, [checkAuth]);
 
+  // Bildirim ve ticket sayılarını yükle
+  useEffect(() => {
+    const loadCounts = async () => {
+      try {
+        // Okunmamış bildirim sayısı
+        const notifRes = await fetch("/api/notifications/unread-count", {
+          credentials: "include",
+        });
+        if (notifRes.ok) {
+          const notifData = await notifRes.json();
+          setUnreadNotifications(notifData.count || 0);
+        }
+
+        // Açık ticket sayısı
+        const ticketsRes = await fetch("/api/admin/tickets", {
+          credentials: "include",
+        });
+        if (ticketsRes.ok) {
+          const ticketsData = await ticketsRes.json();
+          const openCount = (ticketsData.tickets || []).filter(
+            (t: any) => ["OPEN", "ADMIN_OPEN", "ADMIN_REPLIED"].includes(t.status),
+          ).length;
+          setOpenTickets(openCount);
+        }
+      } catch (err) {
+        console.error("Counts load error:", err);
+      }
+    };
+
+    if (user) {
+      loadCounts();
+      // Her 30 saniyede bir güncelle
+      const interval = setInterval(loadCounts, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", {
@@ -70,7 +111,12 @@ export default function AdminLayout({
     { icon: Store, label: "İşletmeler", href: "/admin/businesses" },
     { icon: ShoppingCart, label: "Siparişler", href: "/admin/orders" },
     { icon: MessageSquare, label: "Yorumlar", href: "/admin/reviews" },
-    { icon: MessageSquare, label: "Destek Talepleri", href: "/admin/tickets" },
+    {
+      icon: MessageSquare,
+      label: "Destek Talepleri",
+      href: "/admin/tickets",
+      badge: openTickets,
+    },
     { icon: BarChart3, label: "İstatistikler", href: "/admin/stats" },
     { icon: Settings, label: "Ayarlar", href: "/admin/settings" },
   ];
@@ -99,6 +145,33 @@ export default function AdminLayout({
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Bildirimler */}
+            <Link href="/admin/tickets">
+              <Button variant="ghost" size="sm" className="relative">
+                <MessageSquare className="w-5 h-5" />
+                {openTickets > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs min-w-[20px]"
+                  >
+                    {openTickets > 99 ? "99+" : openTickets}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+            <Link href="/notifications">
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="w-5 h-5" />
+                {unreadNotifications > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs min-w-[20px]"
+                  >
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
             <span className="text-sm text-gray-600">
               {user?.name || "Admin"}
             </span>
@@ -122,14 +195,24 @@ export default function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? "bg-brand-500 text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </div>
+                  {item.badge && item.badge > 0 && (
+                    <Badge
+                      variant={isActive ? "secondary" : "destructive"}
+                      className="ml-auto"
+                    >
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </Badge>
+                  )}
                 </Link>
               );
             })}

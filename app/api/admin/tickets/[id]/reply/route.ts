@@ -69,6 +69,26 @@ export async function POST(
       });
     });
 
+    // Kullanıcıya bildirim gönder (eğer ticket'ı olan bir kullanıcı varsa)
+    try {
+      if (ticket.userId) {
+        const { createNotification } = await import("@/lib/notifications/createNotification");
+        await createNotification({
+          userId: ticket.userId,
+          type: "GENERAL",
+          title: "Destek talebinize yanıt verildi",
+          body: `${user.name || "Admin"} destek talebinize yanıt verdi: ${ticket.subject}`,
+          data: {
+            ticketId: params.id,
+            link: `/inbox/support/${params.id}`,
+          },
+        });
+      }
+    } catch (notifError) {
+      console.error("Notification creation error:", notifError);
+      // Notification hatası yanıt gönderme akışını etkilememeli
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Admin ticket reply error:", error);

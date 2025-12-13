@@ -48,6 +48,78 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Destek merkezi istatistikleri
+    const totalTickets = await prisma.supportTicket.count();
+    const resolvedTickets = await prisma.supportTicket.count({
+      where: {
+        status: {
+          in: ["RESOLVED", "CLOSED", "BOT_RESOLVED"],
+        },
+      },
+    });
+
+    // Son 24 saat içinde oluşturulan ticket'lar
+    const last24Hours = new Date();
+    last24Hours.setHours(last24Hours.getHours() - 24);
+    const ticketsLast24Hours = await prisma.supportTicket.count({
+      where: {
+        createdAt: {
+          gte: last24Hours,
+        },
+      },
+    });
+
+    // Yüksek öncelikli açık ticket'lar
+    const highPriorityTickets = await prisma.supportTicket.count({
+      where: {
+        status: {
+          in: ["OPEN", "ADMIN_OPEN", "ADMIN_REPLIED"],
+        },
+        priority: {
+          lte: 2, // 1 veya 2 (yüksek/orta)
+        },
+      },
+    });
+
+    // Ortalama yanıt süresi (dakika)
+    const ticketsWithResponse = await prisma.supportTicket.findMany({
+      where: {
+        status: {
+          in: ["RESOLVED", "CLOSED", "BOT_RESOLVED", "ADMIN_REPLIED"],
+        },
+        messages: {
+          some: {},
+        },
+      },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: "asc",
+          },
+          take: 1,
+        },
+      },
+      take: 100, // Son 100 ticket için hesapla
+    });
+
+    let totalResponseTime = 0;
+    let countWithResponseTime = 0;
+
+    for (const ticket of ticketsWithResponse) {
+      if (ticket.messages.length > 0 && ticket.updatedAt) {
+        const firstMessage = ticket.messages[0];
+        const responseTime = ticket.updatedAt.getTime() - firstMessage.createdAt.getTime();
+        if (responseTime > 0) {
+          totalResponseTime += responseTime;
+          countWithResponseTime++;
+        }
+      }
+    }
+
+    const avgResponseTimeMinutes = countWithResponseTime > 0
+      ? Math.round(totalResponseTime / countWithResponseTime / 1000 / 60)
+      : 0;
+
     // Toplam gelir (tamamlanmış siparişlerden platform fee)
     const revenueResult = await prisma.payment.aggregate({
       where: {
@@ -84,6 +156,17 @@ export async function GET(req: NextRequest) {
       openTickets,
       totalRevenue,
       monthlyRevenue,
+      // Destek merkezi istatistikleri
+      supportStats: {
+        totalTickets,
+        resolvedTickets,
+        ticketsLast24Hours,
+        highPriorityTickets,
+        avgResponseTimeMinutes,
+        satisfactionRate: totalTickets > 0
+          ? Math.round((resolvedTickets / totalTickets) * 100)
+          : 0,
+      },
     });
 
     return NextResponse.json(successResponse);

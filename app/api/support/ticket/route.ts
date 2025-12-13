@@ -29,7 +29,46 @@ export async function POST(req: NextRequest) {
         diger: "OTHER",
       };
 
+      const categoryTitles: Record<string, string> = {
+        siparis: "Sipariş Sorunu",
+        hizmet: "Hizmet Sorunu",
+        hesap: "Hesap Sorunu",
+        odeme: "Ödeme Sorunu",
+        diger: "Diğer",
+      };
+
+      const subCategoryTitles: Record<string, Record<string, string>> = {
+        siparis: {
+          "siparis-gelmedi": "Siparişim gelmedi",
+          "siparis-yanlis": "Yanlış sipariş geldi",
+          "siparis-iptal": "Siparişimi iptal etmek istiyorum",
+          "siparis-odeme": "Ödeme sorunu",
+        },
+        hizmet: {
+          "hizmet-kalitesi": "Hizmet kalitesi beklentimi karşılamadı",
+          "hizmet-gecikme": "Hizmet gecikti",
+          "hizmet-iptal": "Hizmet iptal edildi",
+          "hizmet-fiyat": "Fiyat uyuşmazlığı",
+        },
+        hesap: {
+          "hesap-giris": "Giriş yapamıyorum",
+          "hesap-sifre": "Şifremi unuttum",
+          "hesap-bilgi": "Hesap bilgilerimi güncellemek istiyorum",
+          "hesap-silme": "Hesabımı silmek istiyorum",
+        },
+        odeme: {
+          "odeme-reddedildi": "Ödeme reddedildi",
+          "odeme-iade": "İade talep ediyorum",
+          "odeme-fatura": "Fatura sorunu",
+          "odeme-kart": "Kart bilgileri sorunu",
+        },
+      };
+
       const ticketCategory = categoryMap[category] || "GENERAL";
+      const categoryTitle = categoryTitles[category] || category;
+      const subCategoryTitle = subCategory
+        ? subCategoryTitles[category]?.[subCategory] || subCategory
+        : null;
 
       // Ticket oluştur
       const ticket = await prisma.supportTicket.create({
@@ -38,9 +77,9 @@ export async function POST(req: NextRequest) {
           email: user?.email || session?.email || "anonymous@hizmetgo.app",
           name: user?.name || null,
           category: ticketCategory,
-          subject: subCategory
-            ? `${category} - ${subCategory}`
-            : category,
+          subject: subCategoryTitle
+            ? `${categoryTitle} - ${subCategoryTitle}`
+            : categoryTitle,
           status: "ADMIN_OPEN",
           priority: category === "odeme" || category === "hizmet" ? 2 : 3,
         },
@@ -56,6 +95,33 @@ export async function POST(req: NextRequest) {
           isRead: false,
         },
       });
+
+      // Admin'lere bildirim gönder
+      try {
+        const adminUsers = await prisma.user.findMany({
+          where: { role: "ADMIN" },
+          select: { id: true },
+        });
+
+        if (adminUsers.length > 0) {
+          const { createNotificationsForUsers } =
+            await import("@/lib/notifications/createNotification");
+          await createNotificationsForUsers(
+            adminUsers.map((admin) => admin.id),
+            "GENERAL",
+            "Yeni destek talebi",
+            `${user?.name || "Bir kullanıcı"} yeni bir destek talebi oluşturdu: ${ticket.subject}`,
+            {
+              ticketId: ticket.id,
+              category: ticketCategory,
+              link: `/admin/tickets/${ticket.id}`,
+            },
+          );
+        }
+      } catch (notifError) {
+        console.error("Notification creation error:", notifError);
+        // Notification hatası ticket oluşturma akışını etkilememeli
+      }
 
       return NextResponse.json({
         success: true,
